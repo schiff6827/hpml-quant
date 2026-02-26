@@ -237,7 +237,7 @@ def main() -> None:
     for i, m in enumerate(selected, 1):
         key: str = m["key"]
         repo_id: str = m["repo_id"]
-        revision: Optional[str] = m["revision"]
+        # revision: Optional[str] = m["revision"]
         view_dir_raw: Optional[str] = m["view_dir"]
 
         if root and args.min_free_gb > 0:
