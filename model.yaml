@@ -1,0 +1,274 @@
+version: 1
+project: "hpml-scale-vs-precision"
+hardware_envelope:
+  vram_gb: 96
+  gpu: "RTX 6000 Pro Blackwell Max-Q"
+  compute_dtype_default: "bf16"
+
+paths:
+  hf_home: "/opt/hpml_project/models/huggingface"
+  checkpoints_root: "/opt/hpml_project/models/checkpoints"
+
+runtime:
+  framework: "vllm"
+  vllm_version: "TBD"
+  torch_version: "TBD"
+  cuda_version: "TBD"
+  driver_version: "TBD"
+
+models:
+  # --------------------------
+  # FP16 "Gold" (unquantized)
+  # --------------------------
+  - key: "qwen25-7b-instruct-fp16"
+    family: "qwen2.5"
+    params_b: 7
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen2.5-7B-Instruct" }
+    precision: { weights: "fp16", compute: "bf16" }
+    formats: ["hf_transformers"]
+    local: { snapshot_dir: "/opt/hpml_project/models/checkpoints/Qwen--Qwen2.5-7B-Instruct" }
+    tags: ["frontier", "fp16", "gold", "dense"]
+
+  - key: "qwen25-14b-instruct-fp16"
+    family: "qwen2.5"
+    params_b: 14
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen2.5-14B-Instruct" }
+    precision: { weights: "fp16", compute: "bf16" }
+    formats: ["hf_transformers"]
+    local: { snapshot_dir: "/opt/hpml_project/models/checkpoints/Qwen--Qwen2.5-14B-Instruct" }
+    tags: ["frontier", "fp16", "gold", "dense"]
+
+  - key: "qwen25-32b-instruct-fp16"
+    family: "qwen2.5"
+    params_b: 32
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen2.5-32B-Instruct" }
+    precision: { weights: "fp16", compute: "bf16" }
+    formats: ["hf_transformers"]
+    local: { snapshot_dir: "/opt/hpml_project/models/checkpoints/Qwen--Qwen2.5-32B-Instruct" }
+    tags: ["frontier", "fp16", "gold", "dense"]
+
+  # --------------------------
+  # INT8 (canonical = official GPTQ-Int8 checkpoints)
+  # --------------------------
+  - key: "qwen25-7b-instruct-gptq-int8"
+    family: "qwen2.5"
+    params_b: 7
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen2.5-7B-Instruct-GPTQ-Int8" }
+    precision: { weights: "int8_gptq", compute: "bf16" }
+    formats: ["gptq"]
+    local: { snapshot_dir: "/opt/hpml_project/models/checkpoints/Qwen--Qwen2.5-7B-Instruct-GPTQ-Int8" }
+    tags: ["frontier", "int8", "gptq", "official", "ptq", "dense"]
+
+  - key: "qwen25-14b-instruct-gptq-int8"
+    family: "qwen2.5"
+    params_b: 14
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen2.5-14B-Instruct-GPTQ-Int8" }
+    precision: { weights: "int8_gptq", compute: "bf16" }
+    formats: ["gptq"]
+    local: { snapshot_dir: "/opt/hpml_project/models/checkpoints/Qwen--Qwen2.5-14B-Instruct-GPTQ-Int8" }
+    tags: ["frontier", "int8", "gptq", "official", "ptq", "dense"]
+
+  - key: "qwen25-32b-instruct-gptq-int8"
+    family: "qwen2.5"
+    params_b: 32
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen2.5-32B-Instruct-GPTQ-Int8" }
+    precision: { weights: "int8_gptq", compute: "bf16" }
+    formats: ["gptq"]
+    local: { snapshot_dir: "/opt/hpml_project/models/checkpoints/Qwen--Qwen2.5-32B-Instruct-GPTQ-Int8" }
+    tags: ["frontier", "int8", "gptq", "official", "ptq", "dense"]
+
+  - key: "qwen25-72b-instruct-gptq-int8"
+    family: "qwen2.5"
+    params_b: 72
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen2.5-72B-Instruct-GPTQ-Int8" }
+    precision: { weights: "int8_gptq", compute: "bf16" }
+    formats: ["gptq"]
+    local: { snapshot_dir: "/opt/hpml_project/models/checkpoints/Qwen--Qwen2.5-72B-Instruct-GPTQ-Int8" }
+    tags: ["frontier", "int8", "gptq", "official", "ptq", "headline", "dense"]
+
+  # --------------------------
+  # INT4 (canonical = official AWQ-Int4 checkpoints)
+  # --------------------------
+  - key: "qwen25-7b-instruct-awq-int4"
+    family: "qwen2.5"
+    params_b: 7
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen2.5-7B-Instruct-AWQ" }
+    precision: { weights: "int4_awq", compute: "bf16" }
+    formats: ["awq"]
+    local: { snapshot_dir: "/opt/hpml_project/models/checkpoints/Qwen--Qwen2.5-7B-Instruct-AWQ" }
+    tags: ["frontier", "int4", "awq", "official", "ptq", "dense"]
+
+  - key: "qwen25-14b-instruct-awq-int4"
+    family: "qwen2.5"
+    params_b: 14
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen2.5-14B-Instruct-AWQ" }
+    precision: { weights: "int4_awq", compute: "bf16" }
+    formats: ["awq"]
+    local: { snapshot_dir: "/opt/hpml_project/models/checkpoints/Qwen--Qwen2.5-14B-Instruct-AWQ" }
+    tags: ["frontier", "int4", "awq", "official", "ptq", "dense"]
+
+  - key: "qwen25-32b-instruct-awq-int4"
+    family: "qwen2.5"
+    params_b: 32
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen2.5-32B-Instruct-AWQ" }
+    precision: { weights: "int4_awq", compute: "bf16" }
+    formats: ["awq"]
+    local: { snapshot_dir: "/opt/hpml_project/models/checkpoints/Qwen--Qwen2.5-32B-Instruct-AWQ" }
+    tags: ["frontier", "int4", "awq", "official", "ptq", "dense"]
+
+  - key: "qwen25-72b-instruct-awq-int4"
+    family: "qwen2.5"
+    params_b: 72
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen2.5-72B-Instruct-AWQ" }
+    precision: { weights: "int4_awq", compute: "bf16" }
+    formats: ["awq"]
+    local: { snapshot_dir: "/opt/hpml_project/models/checkpoints/Qwen--Qwen2.5-72B-Instruct-AWQ" }
+    tags: ["method_slice", "frontier", "int4", "awq", "official", "ptq", "headline", "dense"]
+
+  # --------------------------
+  # Method slice additions
+  # --------------------------
+  - key: "qwen25-72b-instruct-gptq-int4"
+    family: "qwen2.5"
+    params_b: 72
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen2.5-72B-Instruct-GPTQ-Int4" }
+    precision: { weights: "int4_gptq", compute: "bf16" }
+    formats: ["gptq"]
+    local: { snapshot_dir: "/opt/hpml_project/models/checkpoints/Qwen--Qwen2.5-72B-Instruct-GPTQ-Int4" }
+    tags: ["method_slice", "int4", "gptq", "official", "ptq", "headline", "dense"]
+
+  - key: "qwen25-72b-instruct-bnb-nf4"
+    family: "qwen2.5"
+    params_b: 72
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen2.5-72B-Instruct" }
+    precision:
+      weights: "bnb_nf4"
+      compute: "bf16"
+      bnb:
+        load_in_4bit: true
+        quant_type: "nf4"
+        double_quant: true
+        compute_dtype: "bf16"
+    formats: ["bnb_4bit"]
+    tags: ["method_slice", "int4", "bnb", "nf4", "load_time_quant", "headline", "dense"]
+
+
+
+
+  # ============================================================
+  # Qwen 3 Frontier (Scale × Precision)
+  # ============================================================
+
+
+
+
+  # --------------------------
+  # FP16 "Gold"
+  # --------------------------
+  - key: "qwen3-8b-instruct-fp16"
+    family: "qwen3"
+    params_b: 8
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen3-8B-Instruct" }
+    precision: { weights: "fp16", compute: "bf16" }
+    formats: ["hf_transformers"]
+    local: { snapshot_dir: "/opt/hpml_project/models/checkpoints/Qwen--Qwen3-8B-Instruct" }
+    tags: ["frontier", "fp16", "gold", "dense"]
+
+  - key: "qwen3-32b-instruct-fp16"
+    family: "qwen3"
+    params_b: 32
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen3-32B-Instruct" }
+    precision: { weights: "fp16", compute: "bf16" }
+    formats: ["hf_transformers"]
+    local: { snapshot_dir: "/opt/hpml_project/models/checkpoints/Qwen--Qwen3-32B-Instruct" }
+    tags: ["frontier", "fp16", "gold", "dense"]
+
+  # --------------------------
+  # INT8 (official GPTQ)
+  # --------------------------
+  - key: "qwen3-8b-instruct-gptq-int8"
+    family: "qwen3"
+    params_b: 8
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen3-8B-Instruct-GPTQ-Int8" }
+    precision: { weights: "int8_gptq", compute: "bf16" }
+    formats: ["gptq"]
+    local: { snapshot_dir: "/opt/hpml_project/models/checkpoints/Qwen--Qwen3-8B-Instruct-GPTQ-Int8" }
+    tags: ["frontier", "int8", "gptq", "official", "ptq", "dense"]
+
+  - key: "qwen3-32b-instruct-gptq-int8"
+    family: "qwen3"
+    params_b: 32
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen3-32B-Instruct-GPTQ-Int8" }
+    precision: { weights: "int8_gptq", compute: "bf16" }
+    formats: ["gptq"]
+    local: { snapshot_dir: "/opt/hpml_project/models/checkpoints/Qwen--Qwen3-32B-Instruct-GPTQ-Int8" }
+    tags: ["frontier", "int8", "gptq", "official", "ptq", "dense"]
+
+  # --------------------------
+  # INT4 (official AWQ)
+  # --------------------------
+  - key: "qwen3-8b-instruct-awq-int4"
+    family: "qwen3"
+    params_b: 8
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen3-8B-Instruct-AWQ" }
+    precision: { weights: "int4_awq", compute: "bf16" }
+    formats: ["awq"]
+    local: { snapshot_dir: "/opt/hpml_project/models/checkpoints/Qwen--Qwen3-8B-Instruct-AWQ" }
+    tags: ["frontier", "int4", "awq", "official", "ptq", "dense"]
+
+  - key: "qwen3-32b-instruct-awq-int4"
+    family: "qwen3"
+    params_b: 32
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen3-32B-Instruct-AWQ" }
+    precision: { weights: "int4_awq", compute: "bf16" }
+    formats: ["awq"]
+    local: { snapshot_dir: "/opt/hpml_project/models/checkpoints/Qwen--Qwen3-32B-Instruct-AWQ" }
+    tags: ["frontier", "int4", "awq", "official", "ptq", "dense"]
+
+  # --------------------------
+  # Method Slice: INT4 variants (32B)
+  # --------------------------
+  - key: "qwen3-32b-instruct-gptq-int4"
+    family: "qwen3"
+    params_b: 32
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen3-32B-Instruct-GPTQ-Int4" }
+    precision: { weights: "int4_gptq", compute: "bf16" }
+    formats: ["gptq"]
+    local: { snapshot_dir: "/opt/hpml_project/models/checkpoints/Qwen--Qwen3-32B-Instruct-GPTQ-Int4" }
+    tags: ["method_slice", "int4", "gptq", "official", "ptq", "dense"]
+
+  - key: "qwen3-32b-instruct-bnb-nf4"
+    family: "qwen3"
+    params_b: 32
+    variant: "instruct"
+    source: { type: "hf", id: "Qwen/Qwen3-32B-Instruct" }
+    precision:
+      weights: "bnb_nf4"
+      compute: "bf16"
+      bnb:
+        load_in_4bit: true
+        quant_type: "nf4"
+        double_quant: true
+        compute_dtype: "bf16"
+    formats: ["bnb_4bit"]
+    tags: ["method_slice", "int4", "bnb", "nf4", "load_time_quant", "dense"]
