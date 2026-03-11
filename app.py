@@ -2,6 +2,8 @@ import config
 from nicegui import ui, app, background_tasks
 import pages.models
 import pages.servers
+import pages.monitor
+import pages.chat
 import pages.settings
 
 
@@ -17,6 +19,8 @@ def index():
             search_tab = ui.tab('Search HuggingFace')
             cached_tab = ui.tab('Downloaded Models')
             servers_tab = ui.tab('Servers')
+            monitor_tab = ui.tab('Monitor')
+            chat_tab = ui.tab('Chat')
 
         with ui.tab_panels(tabs, value=search_tab).classes('w-full'):
             with ui.tab_panel(search_tab):
@@ -25,12 +29,20 @@ def index():
                 cached_refresh = pages.models.cached_panel()
             with ui.tab_panel(servers_tab):
                 servers_refresh = pages.servers.content()
+            with ui.tab_panel(monitor_tab):
+                monitor_refresh = pages.monitor.content()
+            with ui.tab_panel(chat_tab):
+                chat_refresh = pages.chat.content()
 
         def on_tab_change(e):
             if e.value == cached_tab:
                 background_tasks.create(cached_refresh())
             elif e.value == servers_tab:
                 background_tasks.create(servers_refresh())
+            elif e.value == monitor_tab:
+                background_tasks.create(monitor_refresh())
+            elif e.value == chat_tab:
+                background_tasks.create(chat_refresh())
 
         tabs.on_value_change(on_tab_change)
 

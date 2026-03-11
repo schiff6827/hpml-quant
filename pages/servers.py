@@ -1,6 +1,13 @@
 import asyncio
+import subprocess
+import os
+import signal
 from nicegui import ui, app, run
-from services import hf_service, vllm_service
+from services import hf_service, vllm_service, metrics_service
+
+_webui_proc = None
+WEBUI_ENV = "/opt/hpml_project/openwebui_env"
+WEBUI_PORT = 3000
 
 
 def content():
@@ -41,6 +48,7 @@ def content():
                     value='',
                     label='Quantization',
                 ).classes('w-36')
+            record_check = ui.checkbox('Record metrics to CSV')
             launch_btn = ui.button('Launch Server', icon='play_arrow').props('color=positive')
             launch_status = ui.label('').classes('text-sm')
             launch_log = ui.log(max_lines=200).classes('w-full').style('height: 800px')
@@ -73,6 +81,7 @@ def content():
                 ui.notify('Select a server first', type='warning')
                 return
             row = server_grid.selected[0]
+            metrics_service.stop_recording(row['port'])
             await run.io_bound(vllm_service.stop_server, row['port'])
             ui.notify(f"Stopped server on port {row['port']}", type='positive')
             await refresh_servers()
@@ -123,6 +132,9 @@ def content():
                     if healthy:
                         launch_status.set_text(f'Server ready on port {port}')
                         ui.notify(f'Server ready on port {port}', type='positive')
+                        if record_check.value:
+                            metrics_service.start_recording(port, model)
+                            ui.notify('Metrics recording started', type='info')
                         break
                 else:
                     launch_status.set_text(f'Server on port {port} may still be loading...')
@@ -138,8 +150,69 @@ def content():
         stop_btn.on_click(stop_selected)
         launch_btn.on_click(launch)
 
+        ui.separator()
+
+        ui.label('Open WebUI').classes('text-subtitle1 font-bold')
+        with ui.row().classes('gap-2 items-center'):
+            webui_launch_btn = ui.button('Launch Open WebUI', icon='open_in_new').props('color=accent')
+            webui_stop_btn = ui.button('Stop', icon='stop').props('color=negative flat')
+            webui_stop_btn.visible = False
+            webui_status = ui.label('').classes('text-sm')
+
+        async def launch_webui():
+            global _webui_proc
+            if _webui_proc and _webui_proc.poll() is None:
+                ui.notify('Open WebUI is already running', type='info')
+                ui.navigate.to(f'http://localhost:{WEBUI_PORT}', new_tab=True)
+                return
+            env_python = os.path.join(WEBUI_ENV, 'bin', 'python')
+            if not os.path.exists(env_python):
+                ui.notify(f'Open WebUI env not found at {WEBUI_ENV}. Install it first.', type='negative')
+                return
+            webui_launch_btn.props('disable')
+            webui_status.set_text('Starting Open WebUI...')
+            webui_bin = os.path.join(WEBUI_ENV, 'bin', 'open-webui')
+            _webui_proc = subprocess.Popen(
+                [webui_bin, 'serve', '--port', str(WEBUI_PORT)],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                env={**os.environ, 'OPENAI_API_BASE_URLS': 'http://localhost:8001/v1'},
+            )
+            for _ in range(30):
+                await asyncio.sleep(2)
+                if _webui_proc.poll() is not None:
+                    webui_status.set_text('Open WebUI failed to start')
+                    ui.notify('Open WebUI crashed', type='negative')
+                    webui_launch_btn.props(remove='disable')
+                    return
+                try:
+                    import requests
+                    r = requests.get(f'http://localhost:{WEBUI_PORT}', timeout=2)
+                    if r.status_code == 200:
+                        break
+                except Exception:
+                    pass
+            webui_status.set_text(f'Running on port {WEBUI_PORT}')
+            webui_stop_btn.visible = True
+            webui_launch_btn.props(remove='disable')
+            ui.navigate.to(f'http://localhost:{WEBUI_PORT}', new_tab=True)
+
+        def stop_webui():
+            global _webui_proc
+            if _webui_proc and _webui_proc.poll() is None:
+                _webui_proc.send_signal(signal.SIGTERM)
+                try:
+                    _webui_proc.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    _webui_proc.kill()
+            _webui_proc = None
+            webui_stop_btn.visible = False
+            webui_status.set_text('')
+            ui.notify('Open WebUI stopped', type='info')
+
+        webui_launch_btn.on_click(launch_webui)
+        webui_stop_btn.on_click(stop_webui)
+
         ui.timer(10.0, refresh_servers)
-        # Auto-load model list on first render
         ui.timer(0.1, refresh_models, once=True)
 
     return refresh_all
