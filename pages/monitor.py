@@ -186,7 +186,7 @@ def content():
         await poll_metrics()
 
     refresh_btn.on_click(refresh_all)
-    ui.timer(0.1, refresh_all, once=True)
+    ui.timer(2.0, refresh_server_list)
     ui.timer(0.5, poll_metrics)
 
     return refresh_all

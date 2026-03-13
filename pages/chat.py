@@ -104,6 +104,6 @@ def content():
     send_btn.on_click(send_message)
     user_input.on('keydown.enter.prevent', send_message)
 
-    ui.timer(0.1, refresh_servers, once=True)
+    ui.timer(2.0, refresh_servers)
 
     return refresh_servers
