@@ -48,8 +48,22 @@ def content():
             model_select = ui.select([], label='Model (downloaded)', with_input=True).classes('w-96')
             with ui.row().classes('gap-4 items-end'):
                 port_input = ui.number('Port', value=8001, min=1024, max=65535, step=1).classes('w-32')
+            with ui.row().classes('gap-4 items-center'):
+                cache_mode = ui.radio(['KV Cache (GB)', 'GPU Mem %'], value='KV Cache (GB)').props('inline')
+                kv_cache_input = ui.number('KV Cache (GB)', value=10, min=1, max=96, step=1).classes('w-32')
                 gpu_slider = ui.slider(min=0.1, max=1.0, step=0.05, value=0.90).classes('w-48')
-                ui.label().bind_text_from(gpu_slider, 'value', backward=lambda v: f'GPU Mem: {v:.0%}')
+                gpu_label = ui.label().bind_text_from(gpu_slider, 'value', backward=lambda v: f'GPU Mem: {v:.0%}')
+                gpu_slider.visible = False
+                gpu_label.visible = False
+
+                def _toggle_cache_mode():
+                    is_gb = cache_mode.value == 'KV Cache (GB)'
+                    kv_cache_input.visible = is_gb
+                    gpu_slider.visible = not is_gb
+                    gpu_label.visible = not is_gb
+
+                cache_mode.on_value_change(lambda _: _toggle_cache_mode())
+                _toggle_cache_mode()
             with ui.row().classes('gap-4 items-end'):
                 dtype_select = ui.select(['auto', 'float16', 'bfloat16'], value='auto', label='DType').classes('w-36')
                 quant_select = ui.select(
@@ -128,6 +142,7 @@ def content():
             token = app.storage.general.get('hf_token', '')
             try:
                 extra = ['--trust-remote-code'] if trust_remote_check.value else None
+                use_kv_gb = cache_mode.value == 'KV Cache (GB)'
                 port = vllm_service.launch_server(
                     model=model,
                     port=int(port_input.value),
@@ -136,6 +151,7 @@ def content():
                     quantization=quant_select.value or None,
                     extra_args=extra,
                     token=token or None,
+                    kv_cache_gb=int(kv_cache_input.value) if use_kv_gb else None,
                 )
                 log_path = f'/tmp/vllm_{port}.log'
                 launch_status.set_text(f'Server launching on port {port}...')

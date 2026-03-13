@@ -231,8 +231,11 @@ def list_cached_models():
     except Exception:
         return []
     results = []
+    _hidden = {'sentence-transformers/all-MiniLM-L6-v2'}
     for repo in cache_info.repos:
         if repo.repo_type != "model":
+            continue
+        if repo.repo_id in _hidden:
             continue
         last_mod = ""
         if repo.revisions:

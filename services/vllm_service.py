@@ -9,7 +9,7 @@ import config
 _running = {}
 
 
-def launch_server(model, port=None, gpu_mem_util=None, dtype=None, quantization=None, extra_args=None, token=None):
+def launch_server(model, port=None, gpu_mem_util=None, dtype=None, quantization=None, extra_args=None, token=None, kv_cache_gb=None):
     if port is None:
         port = _next_free_port()
     if port in _running:
@@ -23,12 +23,15 @@ def launch_server(model, port=None, gpu_mem_util=None, dtype=None, quantization=
         "--model", model,
         "--host", "0.0.0.0",
         "--port", str(port),
-        "--gpu-memory-utilization", str(gpu_mem_util),
         "--dtype", dtype,
         "--download-dir", config.MODEL_CACHE_DIR,
         "--no-enable-log-requests",
         "--uvicorn-log-level", "warning",
     ]
+    if kv_cache_gb is not None:
+        cmd += ["--kv-cache-memory-bytes", f"{kv_cache_gb}G"]
+    else:
+        cmd += ["--gpu-memory-utilization", str(gpu_mem_util)]
     if quantization:
         cmd += ["--quantization", quantization]
     if extra_args:
