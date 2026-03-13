@@ -2,6 +2,7 @@ import subprocess
 import signal
 import sys
 import os
+import getpass
 import requests
 import config
 
@@ -41,7 +42,7 @@ def launch_server(model, port=None, gpu_mem_util=None, dtype=None, quantization=
     if token:
         env["HF_TOKEN"] = token
 
-    log_path = f"/tmp/vllm_{port}.log"
+    log_path = f"/tmp/vllm_{getpass.getuser()}_{port}.log"
     log_file = open(log_path, "w")
     proc = subprocess.Popen(cmd, stdout=log_file, stderr=subprocess.STDOUT, env=env)
 
@@ -169,7 +170,7 @@ def list_running():
         del _running[port]
 
     return {
-        port: {k: v for k, v in info.items() if k not in ("proc", "log_file", "log_path")}
+        port: {k: v for k, v in info.items() if k not in ("proc", "log_file")}
         for port, info in _running.items()
     }
 
@@ -178,7 +179,18 @@ def get_server_info(port):
     info = _running.get(port)
     if not info:
         return None
-    return {k: v for k, v in info.items() if k not in ("proc", "log_file", "log_path")}
+    return {k: v for k, v in info.items() if k not in ("proc", "log_file")}
+
+
+def _find_log_for_port(port):
+    import glob
+    matches = glob.glob(f"/tmp/vllm_*_{port}.log")
+    if matches:
+        return max(matches, key=os.path.getmtime)
+    old = f"/tmp/vllm_{port}.log"
+    if os.path.exists(old):
+        return old
+    return None
 
 
 def reconnect_orphans():
@@ -200,7 +212,7 @@ def reconnect_orphans():
                     "gpu_mem_util": "?",
                     "dtype": "?",
                     "quantization": None,
-                    "log_path": f"/tmp/vllm_{port}.log",
+                    "log_path": _find_log_for_port(port),
                     "log_file": None,
                 }
         except Exception:

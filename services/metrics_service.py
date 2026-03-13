@@ -8,7 +8,6 @@ from datetime import datetime
 from pathlib import Path
 
 METRICS_DIR = Path("metrics")
-METRICS_DIR.mkdir(exist_ok=True)
 
 _recorders = {}
 
@@ -127,6 +126,7 @@ def start_recording(port, model_name):
     """Start recording metrics to CSV in a background thread."""
     if port in _recorders:
         return
+    METRICS_DIR.mkdir(exist_ok=True)
     safe_name = model_name.replace("/", "_")
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     csv_path = METRICS_DIR / f"{safe_name}_{ts}.csv"

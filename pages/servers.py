@@ -153,7 +153,8 @@ def content():
                     token=token or None,
                     kv_cache_gb=int(kv_cache_input.value) if use_kv_gb else None,
                 )
-                log_path = f'/tmp/vllm_{port}.log'
+                info = vllm_service.get_server_info(port)
+                log_path = info.get('log_path') if info else f'/tmp/vllm_{port}.log'
                 launch_status.set_text(f'Server launching on port {port}...')
                 launch_log.visible = True
                 copy_log_btn.visible = True
