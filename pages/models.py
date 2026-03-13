@@ -35,7 +35,14 @@ def _sort_rows(rows, sort_by, descending):
     return non_empty + empties
 
 
+def _disk_space_text():
+    ds = hf_service.get_disk_space()
+    return f"Disk: {ds['free_gb']:.0f} GB free / {ds['total_gb']:.0f} GB total"
+
+
 def search_panel():
+    disk_label = ui.label('').classes('text-sm text-grey')
+
     with ui.row().classes('items-center gap-2 w-full flex-wrap'):
         provider_select = ui.select(
             hf_service.TOP_PROVIDERS,
@@ -46,7 +53,7 @@ def search_panel():
         search_input = ui.input('Search', placeholder='model name...').classes('w-64')
         search_btn = ui.button('Search', icon='search')
         clear_btn = ui.button('Clear', icon='clear').props('flat')
-        dl_btn = ui.button('Download', icon='download').props('disable')
+        dl_btn = ui.button('Download Selected', icon='download').props('disable')
         dl_progress = ui.linear_progress(value=0, show_value=False).props('instant-feedback').classes('w-48')
         dl_progress.visible = False
         dl_status = ui.label('').classes('text-sm text-grey')
@@ -83,11 +90,10 @@ def search_panel():
         ],
         rows=[],
         row_key='id',
-        selection='single',
+        selection='multiple',
         pagination={'rowsPerPage': 50},
     ).props('dense').classes('w-full')
 
-    # Custom sortable headers — no Quasar sort, fully Python-controlled
     results_table.add_slot('header-cell', r'''
         <q-th :props="props" @click="() => $parent.$emit('sort_click', props.col.name)"
                class="cursor-pointer select-none" :style="props.col.headerStyle">
@@ -97,11 +103,9 @@ def search_panel():
         </q-th>
     ''')
 
-    selected_row = {'current': None}
     all_rows = {'data': []}
     sort_state = {'col': None, 'desc': False}
 
-    # Expose sort state to the Vue template via custom props
     results_table._props['sortCol'] = None
     results_table._props['sortDesc'] = False
 
@@ -189,7 +193,7 @@ def search_panel():
 
     ui.timer(1.0, poll_progress)
 
-    async def do_search():
+    async def do_search(sort_by="downloads"):
         search_btn.disable()
         ui.notify('Searching...', type='info', timeout=2000)
         prov = provider_select.value
@@ -199,6 +203,7 @@ def search_panel():
             hf_service.search_models,
             query=search_input.value,
             provider=prov,
+            sort_by=sort_by,
         )
         all_rows['data'] = results
         sort_state['col'] = None
@@ -208,6 +213,7 @@ def search_panel():
         results_table._props['sortDesc'] = False
         results_table.update()
         search_btn.enable()
+        disk_label.set_text(_disk_space_text())
         ui.notify(f'Showing {len(results)} models', type='positive')
 
     def do_clear():
@@ -216,51 +222,57 @@ def search_panel():
         all_rows['data'] = []
         results_table.rows = []
         results_table.update()
-        selected_row['current'] = None
         dl_btn.props('disable')
 
     def on_select(e):
         if e.selection:
-            selected_row['current'] = e.selection[0]
             dl_btn.props(remove='disable')
         else:
-            selected_row['current'] = None
             dl_btn.props('disable')
 
     async def do_download():
-        row = selected_row['current']
-        if not row:
-            ui.notify('Select a model first', type='warning')
+        selected = results_table.selected
+        if not selected:
+            ui.notify('Select models first', type='warning')
             return
         token = app.storage.general.get('hf_token', '')
-        if row['gated'] != 'No' and not token:
-            ui.notify('This model is gated. Set your HF token in Settings first.', type='warning')
+        gated_no_token = [r for r in selected if r['gated'] != 'No' and not token]
+        if gated_no_token:
+            names = ', '.join(r['model_name'] for r in gated_no_token)
+            ui.notify(f'Gated models need HF token: {names}', type='warning')
+
+        downloadable = [r for r in selected if r['gated'] == 'No' or token]
+        if not downloadable:
             return
+
         dl_btn.props('disable')
         dl_progress.visible = True
         dl_status.visible = True
-        progress_state["value"] = 0.0
-        progress_state["bytes_downloaded"] = 0
-        progress_state["bytes_total"] = row.get("size_raw", 0)
-        progress_state["start_time"] = time.time()
-        progress_state["status"] = "Starting download..."
-        progress_state["expected_bytes"] = row.get("size_raw", 0)
-        dl_progress.set_value(0.0)
-        dl_status.set_text("Starting download...")
-        try:
-            await run.io_bound(hf_service.download_model, row['id'], token, progress_state)
-            ui.notify(f"Downloaded {row['id']}", type='positive')
-            for r in all_rows['data']:
-                if r['id'] == row['id']:
-                    r['downloaded'] = True
-            apply_sort()
-        except Exception as e:
-            ui.notify(f"Download failed: {e}", type='negative')
-        finally:
-            dl_btn.props(remove='disable')
-            dl_progress.visible = False
-            dl_status.visible = False
+
+        for i, row in enumerate(downloadable):
             progress_state["value"] = 0.0
+            progress_state["bytes_downloaded"] = 0
+            progress_state["bytes_total"] = row.get("size_raw", 0)
+            progress_state["start_time"] = time.time()
+            progress_state["status"] = f"Downloading {row['id']} ({i+1}/{len(downloadable)})..."
+            progress_state["expected_bytes"] = row.get("size_raw", 0)
+            dl_progress.set_value(0.0)
+            dl_status.set_text(progress_state["status"])
+            try:
+                await run.io_bound(hf_service.download_model, row['id'], token, progress_state)
+                ui.notify(f"Downloaded {row['id']}", type='positive')
+                for r in all_rows['data']:
+                    if r['id'] == row['id']:
+                        r['downloaded'] = True
+            except Exception as e:
+                ui.notify(f"Failed {row['id']}: {e}", type='negative')
+
+        apply_sort()
+        disk_label.set_text(_disk_space_text())
+        dl_btn.props(remove='disable')
+        dl_progress.visible = False
+        dl_status.visible = False
+        progress_state["value"] = 0.0
 
     search_btn.on_click(do_search)
     search_input.on('keydown.enter', do_search)
@@ -268,8 +280,17 @@ def search_panel():
     results_table.on_select(on_select)
     dl_btn.on_click(do_download)
 
+    # Default search: top trending models
+    async def initial_load():
+        disk_label.set_text(_disk_space_text())
+        await do_search(sort_by="trending_score")
+
+    ui.timer(0.1, initial_load, once=True)
+
 
 def cached_panel():
+    disk_label = ui.label('').classes('text-sm text-grey')
+
     with ui.column().classes('w-full gap-2'):
         with ui.row().classes('gap-2'):
             refresh_btn = ui.button('Refresh', icon='refresh')
@@ -291,6 +312,7 @@ def cached_panel():
             models = await run.io_bound(hf_service.list_cached_models)
             cached_grid.rows = models
             cached_grid.update()
+            disk_label.set_text(_disk_space_text())
 
         async def delete_selected():
             if not cached_grid.selected:

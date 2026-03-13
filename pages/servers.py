@@ -4,6 +4,7 @@ import os
 import signal
 from nicegui import ui, app, run
 from services import hf_service, vllm_service, metrics_service
+import config
 
 _webui_proc = None
 WEBUI_ENV = "/opt/hpml_project/openwebui_env"
@@ -14,9 +15,10 @@ def content():
     """Servers panel. Returns a refresh callable for tab-switch triggering."""
     with ui.column().classes('w-full gap-4'):
         ui.label('Running Servers').classes('text-subtitle1 font-bold')
+        hostname = config.APP_HOSTNAME
         server_grid = ui.table(
             columns=[
-                {'name': 'port', 'label': 'Port', 'field': 'port', 'sortable': True},
+                {'name': 'endpoint', 'label': 'Endpoint', 'field': 'endpoint', 'align': 'left'},
                 {'name': 'model', 'label': 'Model', 'field': 'model', 'align': 'left'},
                 {'name': 'gpu_mem_util', 'label': 'GPU Mem %', 'field': 'gpu_mem_util'},
                 {'name': 'dtype', 'label': 'DType', 'field': 'dtype'},
@@ -27,6 +29,13 @@ def content():
             row_key='port',
             selection='single',
         ).classes('w-full')
+
+        server_grid.add_slot('body-cell-endpoint', '''
+            <q-td :props="props">
+                <a :href="'http://' + props.value + '/docs'" target="_blank"
+                   class="text-primary" style="text-decoration: none;">{{ props.value }}</a>
+            </q-td>
+        ''')
 
         with ui.row().classes('gap-2'):
             refresh_btn = ui.button('Refresh', icon='refresh')
@@ -48,11 +57,28 @@ def content():
                     value='',
                     label='Quantization',
                 ).classes('w-36')
-            record_check = ui.checkbox('Record metrics to CSV')
-            launch_btn = ui.button('Launch Server', icon='play_arrow').props('color=positive')
+            with ui.row().classes('gap-4'):
+                trust_remote_check = ui.checkbox('Trust remote code')
+                record_check = ui.checkbox('Record metrics to CSV')
+            with ui.row().classes('gap-2 items-center'):
+                launch_btn = ui.button('Launch Server', icon='play_arrow').props('color=positive')
+                webui_launch_btn = ui.button('Launch Open WebUI', icon='open_in_new').props('color=accent')
+                webui_stop_btn = ui.button('Stop WebUI', icon='stop').props('color=negative')
+                webui_stop_btn.visible = False
+                webui_status = ui.label('').classes('text-sm')
             launch_status = ui.label('').classes('text-sm')
+            with ui.row().classes('gap-2 items-center'):
+                copy_log_btn = ui.button('Copy log', icon='content_copy').props('flat dense')
+                copy_log_btn.visible = False
             launch_log = ui.log(max_lines=200).classes('w-full').style('height: 800px')
             launch_log.visible = False
+
+            def copy_log():
+                log_id = f'c{launch_log.id}'
+                ui.run_javascript(f'navigator.clipboard.writeText(document.getElementById("{log_id}")?.innerText || "")')
+                ui.notify('Log copied to clipboard', type='positive')
+
+            copy_log_btn.on_click(copy_log)
 
         async def refresh_servers():
             running = vllm_service.list_running()
@@ -61,6 +87,7 @@ def content():
                 healthy = await run.io_bound(vllm_service.check_health, port)
                 rows.append({
                     **info,
+                    'endpoint': f'{hostname}:{port}',
                     'health': 'Healthy' if healthy else 'Starting...',
                 })
             server_grid.rows = rows
@@ -70,6 +97,8 @@ def content():
             cached = await run.io_bound(hf_service.list_cached_models)
             model_ids = [m['id'] for m in cached]
             model_select.options = model_ids
+            if len(model_ids) == 1:
+                model_select.value = model_ids[0]
             model_select.update()
 
         async def refresh_all():
@@ -95,19 +124,23 @@ def content():
             launch_status.set_text('Starting vLLM server...')
             launch_log.clear()
             launch_log.visible = False
+            copy_log_btn.visible = False
             token = app.storage.general.get('hf_token', '')
             try:
+                extra = ['--trust-remote-code'] if trust_remote_check.value else None
                 port = vllm_service.launch_server(
                     model=model,
                     port=int(port_input.value),
                     gpu_mem_util=gpu_slider.value,
                     dtype=dtype_select.value,
                     quantization=quant_select.value or None,
+                    extra_args=extra,
                     token=token or None,
                 )
                 log_path = f'/tmp/vllm_{port}.log'
                 launch_status.set_text(f'Server launching on port {port}...')
                 launch_log.visible = True
+                copy_log_btn.visible = True
                 launch_log.clear()
                 last_log_len = 0
                 for _ in range(100):
@@ -130,8 +163,8 @@ def content():
                     launch_status.set_text(f'Port {port}: {status}')
                     healthy = await run.io_bound(vllm_service.check_health, port)
                     if healthy:
-                        launch_status.set_text(f'Server ready on port {port}')
-                        ui.notify(f'Server ready on port {port}', type='positive')
+                        launch_status.set_text(f'Server ready at {hostname}:{port}')
+                        ui.notify(f'Server ready at {hostname}:{port}', type='positive')
                         if record_check.value:
                             metrics_service.start_recording(port, model)
                             ui.notify('Metrics recording started', type='info')
@@ -150,20 +183,11 @@ def content():
         stop_btn.on_click(stop_selected)
         launch_btn.on_click(launch)
 
-        ui.separator()
-
-        ui.label('Open WebUI').classes('text-subtitle1 font-bold')
-        with ui.row().classes('gap-2 items-center'):
-            webui_launch_btn = ui.button('Launch Open WebUI', icon='open_in_new').props('color=accent')
-            webui_stop_btn = ui.button('Stop', icon='stop').props('color=negative flat')
-            webui_stop_btn.visible = False
-            webui_status = ui.label('').classes('text-sm')
-
         async def launch_webui():
             global _webui_proc
             if _webui_proc and _webui_proc.poll() is None:
                 ui.notify('Open WebUI is already running', type='info')
-                ui.navigate.to(f'http://localhost:{WEBUI_PORT}', new_tab=True)
+                ui.navigate.to(f'http://{config.APP_HOSTNAME}:{WEBUI_PORT}', new_tab=True)
                 return
             env_python = os.path.join(WEBUI_ENV, 'bin', 'python')
             if not os.path.exists(env_python):
@@ -175,7 +199,7 @@ def content():
             _webui_proc = subprocess.Popen(
                 [webui_bin, 'serve', '--port', str(WEBUI_PORT)],
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                env={**os.environ, 'OPENAI_API_BASE_URLS': 'http://localhost:8001/v1'},
+                env={**os.environ, 'OPENAI_API_BASE_URLS': 'http://localhost:8001/v1', 'WEBUI_SHOW_UPDATE_NOTIFICATION': 'false'},
             )
             for _ in range(30):
                 await asyncio.sleep(2)
@@ -191,10 +215,11 @@ def content():
                         break
                 except Exception:
                     pass
-            webui_status.set_text(f'Running on port {WEBUI_PORT}')
+            url = f'http://{config.APP_HOSTNAME}:{WEBUI_PORT}'
+            webui_status.set_text(f'Running at {url}')
             webui_stop_btn.visible = True
             webui_launch_btn.props(remove='disable')
-            ui.navigate.to(f'http://localhost:{WEBUI_PORT}', new_tab=True)
+            ui.navigate.to(url, new_tab=True)
 
         def stop_webui():
             global _webui_proc

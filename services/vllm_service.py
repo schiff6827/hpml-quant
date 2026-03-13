@@ -26,7 +26,7 @@ def launch_server(model, port=None, gpu_mem_util=None, dtype=None, quantization=
         "--gpu-memory-utilization", str(gpu_mem_util),
         "--dtype", dtype,
         "--download-dir", config.MODEL_CACHE_DIR,
-        "--disable-log-requests",
+        "--no-enable-log-requests",
         "--uvicorn-log-level", "warning",
     ]
     if quantization:
@@ -60,15 +60,29 @@ def stop_server(port):
     if not info:
         return False
     proc = info["proc"]
-    if proc.poll() is None:
+    if isinstance(proc, subprocess.Popen) and proc.poll() is None:
         proc.send_signal(signal.SIGTERM)
         try:
             proc.wait(timeout=15)
         except subprocess.TimeoutExpired:
             proc.kill()
-    info["log_file"].close()
+    elif isinstance(proc, _StubProcess):
+        _kill_port(port)
+    if info.get("log_file"):
+        info["log_file"].close()
     del _running[port]
     return True
+
+
+def _kill_port(port):
+    """Kill whatever process is listening on a port."""
+    try:
+        result = subprocess.run(["fuser", f"{port}/tcp"], capture_output=True, text=True)
+        pids = result.stdout.strip().split()
+        for pid in pids:
+            os.kill(int(pid.strip()), signal.SIGTERM)
+    except Exception:
+        pass
 
 
 def is_alive(port):
@@ -141,8 +155,12 @@ def get_latest_status(port, process_dead=False):
 def list_running():
     dead = []
     for port, info in _running.items():
-        if info["proc"].poll() is not None:
-            info["log_file"].close()
+        proc = info["proc"]
+        if isinstance(proc, subprocess.Popen) and proc.poll() is not None:
+            if info.get("log_file"):
+                info["log_file"].close()
+            dead.append(port)
+        elif isinstance(proc, _StubProcess) and not check_health(port):
             dead.append(port)
     for port in dead:
         del _running[port]
@@ -158,6 +176,38 @@ def get_server_info(port):
     if not info:
         return None
     return {k: v for k, v in info.items() if k not in ("proc", "log_file", "log_path")}
+
+
+def reconnect_orphans():
+    """Detect vLLM servers started by previous GUI sessions and reconnect."""
+    for port in range(config.VLLM_PORT_START, config.VLLM_PORT_START + 20):
+        if port in _running:
+            continue
+        if not check_health(port):
+            continue
+        try:
+            r = requests.get(f"http://localhost:{port}/v1/models", timeout=3)
+            if r.status_code == 200:
+                data = r.json()
+                model = data.get("data", [{}])[0].get("id", "unknown")
+                _running[port] = {
+                    "proc": _StubProcess(),
+                    "model": model,
+                    "port": port,
+                    "gpu_mem_util": "?",
+                    "dtype": "?",
+                    "quantization": None,
+                    "log_path": f"/tmp/vllm_{port}.log",
+                    "log_file": None,
+                }
+        except Exception:
+            pass
+
+
+class _StubProcess:
+    """Stub for reconnected processes where we don't have the real Popen object."""
+    def poll(self):
+        return None
 
 
 def _next_free_port():

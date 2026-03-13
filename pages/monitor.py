@@ -65,6 +65,24 @@ def content():
                 'animation': False,
             }).classes('w-1/2 h-64')
 
+        with ui.row().classes('w-full gap-4'):
+            gpu_chart = ui.echart({
+                'title': {'text': 'GPU Utilization / Temp / Power', 'textStyle': {'fontSize': 13}},
+                'tooltip': {'trigger': 'axis'},
+                'legend': {'data': ['Utilization %', 'Temp C', 'Power W'], 'bottom': 0},
+                'xAxis': {'type': 'category', 'data': []},
+                'yAxis': [
+                    {'type': 'value', 'min': 0, 'max': 100, 'name': '% / C', 'position': 'left'},
+                    {'type': 'value', 'name': 'W', 'position': 'right'},
+                ],
+                'series': [
+                    {'name': 'Utilization %', 'type': 'line', 'data': [], 'smooth': True, 'showSymbol': False, 'yAxisIndex': 0},
+                    {'name': 'Temp C', 'type': 'line', 'data': [], 'smooth': True, 'showSymbol': False, 'yAxisIndex': 0},
+                    {'name': 'Power W', 'type': 'line', 'data': [], 'smooth': True, 'showSymbol': False, 'yAxisIndex': 1},
+                ],
+                'animation': False,
+            }).classes('w-1/2 h-64')
+
         # Numeric stats
         ui.label('Latency & Counters').classes('text-subtitle2 font-bold')
         with ui.row().classes('gap-4'):
@@ -91,13 +109,18 @@ def content():
     tps_data = deque(maxlen=MAX_POINTS)
     running_data = deque(maxlen=MAX_POINTS)
     waiting_data = deque(maxlen=MAX_POINTS)
+    gpu_util_data = deque(maxlen=MAX_POINTS)
+    gpu_temp_data = deque(maxlen=MAX_POINTS)
+    gpu_power_data = deque(maxlen=MAX_POINTS)
 
     async def refresh_server_list():
         running = vllm_service.list_running()
         opts = {port: f":{info['port']} — {info['model']}" for port, info in running.items()}
         server_select.options = opts
         server_select.update()
-        if opts and not server_select.value:
+        if len(opts) == 1:
+            server_select.value = next(iter(opts.keys()))
+        elif opts and not server_select.value:
             server_select.value = next(iter(opts.keys()))
 
     async def poll_metrics():
@@ -122,6 +145,16 @@ def content():
 
         now = time.strftime("%H:%M:%S")
         timestamps.append(now)
+
+        # GPU chart
+        gpu_util_data.append(gpu.get("gpu_util_pct", 0) if gpu else 0)
+        gpu_temp_data.append(gpu.get("gpu_temp_c", 0) if gpu else 0)
+        gpu_power_data.append(gpu.get("gpu_power_w", 0) if gpu else 0)
+        gpu_chart.options['xAxis']['data'] = list(timestamps)
+        gpu_chart.options['series'][0]['data'] = list(gpu_util_data)
+        gpu_chart.options['series'][1]['data'] = list(gpu_temp_data)
+        gpu_chart.options['series'][2]['data'] = list(gpu_power_data)
+        gpu_chart.update()
         kv_data.append(round(vllm.get("kv_cache_pct", 0), 1))
         prefix_data.append(round(vllm.get("prefix_cache_hit_rate", 0), 1))
         tps_data.append(round(vllm.get("gen_tokens_per_sec", 0), 1))
@@ -148,8 +181,12 @@ def content():
         preempt_label.set_text(f"{int(vllm.get('preemptions', 0)):,}")
         tokens_label.set_text(f"{int(vllm.get('gen_tokens_total', 0)):,}")
 
-    refresh_btn.on_click(refresh_server_list)
-    ui.timer(0.1, refresh_server_list, once=True)
-    ui.timer(2.0, poll_metrics)
+    async def refresh_all():
+        await refresh_server_list()
+        await poll_metrics()
 
-    return refresh_server_list
+    refresh_btn.on_click(refresh_all)
+    ui.timer(0.1, refresh_all, once=True)
+    ui.timer(0.5, poll_metrics)
+
+    return refresh_all

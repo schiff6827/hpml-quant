@@ -96,9 +96,15 @@ def get_cached_model_ids():
         return set()
 
 
-def search_models(query="", provider="", limit=None):
+def get_disk_space():
+    """Return free/total disk space for the model cache directory in GB."""
+    import shutil
+    u = shutil.disk_usage(config.MODEL_CACHE_DIR)
+    return {"free_gb": u.free / 1e9, "total_gb": u.total / 1e9, "used_gb": u.used / 1e9}
+
+
+def search_models(query="", provider="", limit=None, sort_by="downloads"):
     limit = limit or config.DEFAULT_SEARCH_LIMIT
-    # "All" means no provider filter
     if provider == "All":
         provider = ""
     cached_ids = get_cached_model_ids()
@@ -106,7 +112,7 @@ def search_models(query="", provider="", limit=None):
     models = api.list_models(
         search=query or None,
         author=provider or None,
-        sort="downloads",
+        sort=sort_by,
         direction=-1,
         limit=limit,
         expand=["downloadsAllTime", "trendingScore", "safetensors", "gated",

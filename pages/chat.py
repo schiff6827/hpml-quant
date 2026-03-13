@@ -32,7 +32,9 @@ def content():
         opts = {port: f":{info['port']} — {info['model']}" for port, info in running.items()}
         server_select.options = opts
         server_select.update()
-        if opts and not server_select.value:
+        if len(opts) == 1:
+            server_select.value = next(iter(opts.keys()))
+        elif opts and not server_select.value:
             server_select.value = next(iter(opts.keys()))
 
     def clear_chat():

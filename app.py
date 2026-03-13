@@ -57,6 +57,10 @@ def settings_page():
 
 
 if __name__ == '__main__':
+    from services import vllm_service
+    vllm_service.reconnect_orphans()
+    print(f'\n  HPML Model Manager: http://{config.APP_HOSTNAME}:{config.APP_PORT}\n')
+
     ui.run(
         host=config.APP_HOST,
         port=config.APP_PORT,

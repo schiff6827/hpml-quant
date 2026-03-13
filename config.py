@@ -6,6 +6,7 @@ os.makedirs(MODEL_CACHE_DIR, exist_ok=True)
 
 APP_HOST = "0.0.0.0"
 APP_PORT = 8080
+APP_HOSTNAME = "precision-wsl"
 STORAGE_SECRET = "hpml-model-manager-secret"
 
 VLLM_PORT_START = 8001
