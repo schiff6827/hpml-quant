@@ -287,11 +287,20 @@ def content():
         except OSError:
             return b''
 
+    def _client_alive():
+        try:
+            bench_log.client.check_existence()
+            return True
+        except Exception:
+            return False
+
     async def _stream_proc(proc):
         """Stream subprocess output to log and progress bar."""
         fd = proc.stdout.fileno()
         buf = ''
         while proc.poll() is None:
+            if not _client_alive():
+                return
             raw = await run.io_bound(_read_chunk, fd)
             if not raw:
                 await asyncio.sleep(0.1)
@@ -305,6 +314,8 @@ def content():
                     bench_log.push(stripped)
                     _update_progress(stripped)
             await asyncio.sleep(0)
+        if not _client_alive():
+            return
         # Drain remaining
         while True:
             raw = await run.io_bound(_read_chunk, fd)
@@ -395,11 +406,13 @@ def content():
             progress_label.set_text('100%')
             run_status.set_text('Done')
         except Exception as e:
-            run_status.set_text(f'Error: {e}')
-            ui.notify(f'Error: {e}', type='negative')
+            if _client_alive():
+                run_status.set_text(f'Error: {e}')
+                ui.notify(f'Error: {e}', type='negative')
         finally:
-            _set_running(False)
-            refresh_saved_results()
+            if _client_alive():
+                _set_running(False)
+                refresh_saved_results()
 
     def on_stop():
         benchmark_service.stop_benchmark()

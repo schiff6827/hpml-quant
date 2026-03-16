@@ -129,11 +129,8 @@ def content():
             ui.notify(f"Stopped server on port {row['port']}", type='positive')
             await refresh_servers()
 
-        async def launch():
+        async def _do_launch(trust_remote):
             model = model_select.value
-            if not model:
-                ui.notify('Select a model first', type='warning')
-                return
             launch_btn.disable()
             launch_status.set_text('Starting vLLM server...')
             launch_log.clear()
@@ -141,7 +138,7 @@ def content():
             copy_log_btn.visible = False
             token = app.storage.general.get('hf_token', '')
             try:
-                extra = ['--trust-remote-code'] if trust_remote_check.value else None
+                extra = ['--trust-remote-code'] if trust_remote else None
                 use_kv_gb = cache_mode.value == 'KV Cache (GB)'
                 port = vllm_service.launch_server(
                     model=model,
@@ -159,9 +156,18 @@ def content():
                 launch_log.visible = True
                 copy_log_btn.visible = True
                 launch_log.clear()
+                def _client_alive():
+                    try:
+                        launch_log.client.check_existence()
+                        return True
+                    except Exception:
+                        return False
+
                 last_log_len = 0
                 for _ in range(100):
                     await asyncio.sleep(3)
+                    if not _client_alive():
+                        break
                     log_lines = await run.io_bound(vllm_service.get_log_by_path, log_path, 500)
                     if len(log_lines) > last_log_len:
                         for line in log_lines[last_log_len:]:
@@ -187,14 +193,38 @@ def content():
                             ui.notify('Metrics recording started', type='info')
                         break
                 else:
-                    launch_status.set_text(f'Server on port {port} may still be loading...')
-                    ui.notify('Server is taking long to start.', type='warning')
-                await refresh_servers()
+                    if _client_alive():
+                        launch_status.set_text(f'Server on port {port} may still be loading...')
+                        ui.notify('Server is taking long to start.', type='warning')
+                if _client_alive():
+                    await refresh_servers()
             except Exception as e:
-                launch_status.set_text(f'Error: {e}')
-                ui.notify(f'Failed: {e}', type='negative')
+                if _client_alive():
+                    launch_status.set_text(f'Error: {e}')
+                    ui.notify(f'Failed: {e}', type='negative')
             finally:
-                launch_btn.enable()
+                if _client_alive():
+                    launch_btn.enable()
+
+        async def launch():
+            model = model_select.value
+            if not model:
+                ui.notify('Select a model first', type='warning')
+                return
+            if not trust_remote_check.value and await run.io_bound(hf_service.needs_trust_remote_code, model):
+                with ui.dialog() as dlg, ui.card():
+                    ui.label(f'"{model}" requires custom remote code to load.').classes('text-body1')
+                    ui.label('Enable trust remote code and continue?').classes('text-body2')
+                    with ui.row().classes('justify-end w-full gap-2'):
+                        ui.button('Cancel', on_click=dlg.close).props('flat')
+                        def accept():
+                            trust_remote_check.value = True
+                            dlg.close()
+                        ui.button('Continue', on_click=accept).props('color=primary')
+                await dlg
+                if not trust_remote_check.value:
+                    return
+            await _do_launch(trust_remote_check.value)
 
         refresh_btn.on_click(refresh_all)
         stop_btn.on_click(stop_selected)

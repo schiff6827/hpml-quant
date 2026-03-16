@@ -4,6 +4,7 @@ from datetime import datetime
 from pathlib import Path
 import re
 import os
+import json
 import shutil
 import time
 import threading
@@ -224,6 +225,21 @@ def download_model(repo_id, token=None, progress=None):
 
 
 # -- Cache operations --
+
+def needs_trust_remote_code(repo_id):
+    """Check if a model requires --trust-remote-code by looking for auto_map in config.json."""
+    import glob
+    safe = repo_id.replace('/', '--')
+    pattern = os.path.join(config.MODEL_CACHE_DIR, f'models--{safe}', 'snapshots', '*', 'config.json')
+    for cfg_path in glob.glob(pattern):
+        try:
+            with open(cfg_path) as f:
+                cfg = json.load(f)
+            return bool(cfg.get('auto_map'))
+        except Exception:
+            pass
+    return False
+
 
 def list_cached_models():
     try:
