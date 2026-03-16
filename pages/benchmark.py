@@ -239,20 +239,12 @@ def content():
 
     def _update_progress(line):
         """Parse tqdm-style progress from a line and update the progress bar."""
-        # Match patterns like "67%|..." or " 67%|" or "100%|"
+        # Match tqdm patterns like "67%|██..." or " 67%|"
         m = re.search(r'(\d+)%\|', line)
         if m:
             pct = int(m.group(1))
             progress_bar.value = pct / 100.0
             progress_label.set_text(f'{pct}%')
-            return
-        # Also match "Running ... X/Y" style
-        m = re.search(r'(\d+)/(\d+)', line)
-        if m:
-            done, total = int(m.group(1)), int(m.group(2))
-            if total > 0:
-                progress_bar.value = done / total
-                progress_label.set_text(f'{done}/{total}')
 
     def _fmt(val):
         if val is None:

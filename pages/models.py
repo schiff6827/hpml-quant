@@ -260,12 +260,18 @@ def search_panel():
             dl_status.set_text(progress_state["status"])
             try:
                 await run.io_bound(hf_service.download_model, row['id'], token, progress_state)
-                ui.notify(f"Downloaded {row['id']}", type='positive')
+                try:
+                    ui.notify(f"Downloaded {row['id']}", type='positive')
+                except RuntimeError:
+                    pass
                 for r in all_rows['data']:
                     if r['id'] == row['id']:
                         r['downloaded'] = True
             except Exception as e:
-                ui.notify(f"Failed {row['id']}: {e}", type='negative')
+                try:
+                    ui.notify(f"Failed {row['id']}: {e}", type='negative')
+                except RuntimeError:
+                    pass
 
         apply_sort()
         disk_label.set_text(_disk_space_text())

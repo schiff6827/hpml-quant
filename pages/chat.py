@@ -68,7 +68,7 @@ def content():
         response_html = None
         with chat_container:
             with ui.chat_message(name='Assistant', sent=False) as msg:
-                response_html = ui.html('')
+                response_html = ui.html('<span style="color: #999; font-style: italic">Thinking...</span>')
 
         client = AsyncOpenAI(base_url=f"http://localhost:{port}/v1", api_key="not-needed")
 
