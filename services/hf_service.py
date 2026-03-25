@@ -226,10 +226,100 @@ def download_model(repo_id, token=None, progress=None):
 
 # -- Cache operations --
 
-def needs_trust_remote_code(repo_id):
+def get_quantization_status(model_id_or_path):
+    """Check if a model is already quantized. Returns the quant method string or None."""
+    try:
+        if os.path.isdir(model_id_or_path):
+            cfg_path = os.path.join(model_id_or_path, 'config.json')
+        else:
+            import glob
+            safe = model_id_or_path.replace('/', '--')
+            pattern = os.path.join(config.MODEL_CACHE_DIR, f'models--{safe}', 'snapshots', '*', 'config.json')
+            matches = glob.glob(pattern)
+            if not matches:
+                return None
+            cfg_path = matches[0]
+        with open(cfg_path) as f:
+            cfg = json.load(f)
+        qc = cfg.get('quantization_config')
+        if qc:
+            return qc.get('quant_method', 'quantized')
+        return None
+    except Exception:
+        return None
+
+
+def get_model_modules(model_id_or_path):
+    """Get module class names (for targets) and instance names (for ignore) from a model.
+    Returns counts and param sizes for display."""
+    try:
+        import torch
+        from transformers import AutoConfig, AutoModelForCausalLM
+        from collections import Counter
+        cache_dir = config.MODEL_CACHE_DIR if not os.path.isdir(model_id_or_path) else None
+        cfg = AutoConfig.from_pretrained(model_id_or_path, cache_dir=cache_dir)
+        with torch.device('meta'):
+            model = AutoModelForCausalLM.from_config(cfg)
+        # Classes with counts and param totals
+        class_counts = Counter()
+        class_params = Counter()
+        for name, mod in model.named_modules():
+            cname = type(mod).__name__
+            class_counts[cname] += 1
+            class_params[cname] += sum(p.numel() for p in mod.parameters(recurse=False))
+        classes = []
+        for cname in class_counts:
+            p = class_params[cname]
+            if p == 0:
+                continue
+            count = class_counts[cname]
+            if p >= 1e9:
+                label = f'{cname} ({count}x, {p/1e9:.1f}B params)'
+            elif p >= 1e6:
+                label = f'{cname} ({count}x, {p/1e6:.0f}M params)'
+            else:
+                label = f'{cname} ({count}x, {p/1e3:.0f}K params)'
+            classes.append({'name': cname, 'label': label, 'count': count, 'params': p})
+        classes.sort(key=lambda c: c['params'], reverse=True)
+        # Ignore candidates: named modules with params at depth <= 2
+        ignore = []
+        for name, mod in model.named_modules():
+            if not name or name.count('.') > 2:
+                continue
+            total_p = sum(p.numel() for p in mod.parameters())
+            if total_p == 0:
+                continue
+            cname = type(mod).__name__
+            if total_p >= 1e9:
+                label = f'{name} ({cname}, {total_p/1e9:.1f}B params)'
+            elif total_p >= 1e6:
+                label = f'{name} ({cname}, {total_p/1e6:.0f}M params)'
+            else:
+                label = f'{name} ({cname}, {total_p/1e3:.0f}K params)'
+            ignore.append({'name': name, 'label': label, 'params': total_p})
+        ignore.sort(key=lambda c: c['params'], reverse=True)
+        return {'classes': classes, 'ignore': ignore}
+    except Exception:
+        return {
+            'classes': [{'name': 'Linear', 'label': 'Linear', 'count': 0, 'params': 0}],
+            'ignore': [{'name': 'lm_head', 'label': 'lm_head', 'count': 0, 'params': 0}],
+        }
+
+
+def needs_trust_remote_code(model_id_or_path):
     """Check if a model requires --trust-remote-code by looking for auto_map in config.json."""
+    if os.path.isdir(model_id_or_path):
+        cfg_path = os.path.join(model_id_or_path, 'config.json')
+        if os.path.exists(cfg_path):
+            try:
+                with open(cfg_path) as f:
+                    cfg = json.load(f)
+                return bool(cfg.get('auto_map'))
+            except Exception:
+                pass
+        return False
     import glob
-    safe = repo_id.replace('/', '--')
+    safe = model_id_or_path.replace('/', '--')
     pattern = os.path.join(config.MODEL_CACHE_DIR, f'models--{safe}', 'snapshots', '*', 'config.json')
     for cfg_path in glob.glob(pattern):
         try:
@@ -239,6 +329,42 @@ def needs_trust_remote_code(repo_id):
         except Exception:
             pass
     return False
+
+
+def list_local_models():
+    local_dir = Path(config.LOCAL_MODELS_DIR)
+    if not local_dir.exists():
+        return []
+    results = []
+    for d in sorted(local_dir.iterdir()):
+        if not d.is_dir():
+            continue
+        has_config = (d / 'config.json').exists()
+        has_safetensors = any(d.glob('*.safetensors'))
+        if not has_config and not has_safetensors:
+            continue
+        size_bytes = sum(f.stat().st_size for f in d.rglob('*') if f.is_file())
+        meta = {}
+        meta_path = d / '.model_meta.json'
+        if meta_path.exists():
+            try:
+                with open(meta_path) as f:
+                    meta = json.load(f)
+            except Exception:
+                pass
+        last_mod = max((f.stat().st_mtime for f in d.rglob('*') if f.is_file()), default=0)
+        last_mod_str = datetime.fromtimestamp(last_mod).strftime("%Y-%m-%d %H:%M") if last_mod else ""
+        results.append({
+            "id": d.name,
+            "source": "local",
+            "path": str(d),
+            "size_gb": f"{size_bytes / 1e9:.1f} GB",
+            "size_bytes": size_bytes,
+            "revisions": "-",
+            "last_modified": last_mod_str,
+            "meta": meta,
+        })
+    return results
 
 
 def list_cached_models():
@@ -259,12 +385,22 @@ def list_cached_models():
             last_mod = datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M")
         results.append({
             "id": repo.repo_id,
+            "source": "hf",
+            "path": None,
             "size_gb": f"{repo.size_on_disk / 1e9:.1f} GB",
             "size_bytes": repo.size_on_disk,
             "revisions": len(repo.revisions),
             "last_modified": last_mod,
         })
+    results.extend(list_local_models())
     return results
+
+
+def delete_local_model(name):
+    model_dir = Path(config.LOCAL_MODELS_DIR) / name
+    if model_dir.exists():
+        shutil.rmtree(model_dir)
+    return True
 
 
 def delete_cached_model(repo_id):

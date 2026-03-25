@@ -5,6 +5,7 @@ import pages.servers
 import pages.monitor
 import pages.chat
 import pages.benchmark
+import pages.quantize
 import pages.settings
 
 
@@ -23,6 +24,7 @@ def index():
             monitor_tab = ui.tab('Monitor')
             chat_tab = ui.tab('Chat')
             benchmark_tab = ui.tab('Benchmark')
+            quantize_tab = ui.tab('Quantize')
 
         with ui.tab_panels(tabs, value=search_tab).classes('w-full'):
             with ui.tab_panel(search_tab):
@@ -37,6 +39,8 @@ def index():
                 chat_refresh = pages.chat.content()
             with ui.tab_panel(benchmark_tab):
                 benchmark_refresh = pages.benchmark.content()
+            with ui.tab_panel(quantize_tab):
+                quantize_refresh = pages.quantize.content()
 
         def on_tab_change(e):
             if e.value == cached_tab:
@@ -49,6 +53,8 @@ def index():
                 background_tasks.create(chat_refresh())
             elif e.value == benchmark_tab:
                 background_tasks.create(benchmark_refresh())
+            elif e.value == quantize_tab:
+                background_tasks.create(quantize_refresh())
 
         tabs.on_value_change(on_tab_change)
 

@@ -305,6 +305,7 @@ def cached_panel():
         cached_grid = ui.table(
             columns=[
                 {'name': 'id', 'label': 'Model', 'field': 'id', 'align': 'left', 'sortable': True},
+                {'name': 'source', 'label': 'Source', 'field': 'source', 'sortable': True},
                 {'name': 'size_gb', 'label': 'Size on Disk', 'field': 'size_gb', 'sortable': True},
                 {'name': 'revisions', 'label': 'Revisions', 'field': 'revisions'},
                 {'name': 'last_modified', 'label': 'Last Modified', 'field': 'last_modified', 'sortable': True},
@@ -332,7 +333,10 @@ def cached_panel():
                     ui.button('Cancel', on_click=lambda: confirm.submit(False)).props('flat')
             result = await confirm
             if result:
-                await run.io_bound(hf_service.delete_cached_model, row['id'])
+                if row.get('source') == 'local':
+                    await run.io_bound(hf_service.delete_local_model, row['id'])
+                else:
+                    await run.io_bound(hf_service.delete_cached_model, row['id'])
                 ui.notify(f"Deleted {row['id']}", type='positive')
                 await refresh()
 

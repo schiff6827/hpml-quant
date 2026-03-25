@@ -107,8 +107,13 @@ def content():
             server_grid.rows = rows
             server_grid.update()
 
+        _model_info = {}
+
         async def refresh_models():
             cached = await run.io_bound(hf_service.list_cached_models)
+            _model_info.clear()
+            for m in cached:
+                _model_info[m['id']] = m
             model_ids = [m['id'] for m in cached]
             model_select.options = model_ids
             if len(model_ids) == 1:
@@ -131,6 +136,9 @@ def content():
 
         async def _do_launch(trust_remote):
             model = model_select.value
+            info = _model_info.get(model, {})
+            if info.get('source') == 'local':
+                model = info['path']
             launch_btn.disable()
             launch_status.set_text('Starting vLLM server...')
             launch_log.clear()
@@ -211,7 +219,9 @@ def content():
             if not model:
                 ui.notify('Select a model first', type='warning')
                 return
-            if not trust_remote_check.value and await run.io_bound(hf_service.needs_trust_remote_code, model):
+            info = _model_info.get(model, {})
+            check_target = info.get('path', model) if info.get('source') == 'local' else model
+            if not trust_remote_check.value and await run.io_bound(hf_service.needs_trust_remote_code, check_target):
                 with ui.dialog() as dlg, ui.card():
                     ui.label(f'"{model}" requires custom remote code to load.').classes('text-body1')
                     ui.label('Enable trust remote code and continue?').classes('text-body2')
