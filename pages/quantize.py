@@ -516,6 +516,13 @@ def content():
         except Exception:
             return False
 
+    def _push_line(line):
+        try:
+            quant_log.push(line)
+            _update_progress(line)
+        except Exception:
+            pass
+
     async def _stream_proc(proc):
         fd = proc.stdout.fileno()
         buf = ''
@@ -532,8 +539,7 @@ def content():
             for part in parts[:-1]:
                 stripped = part.strip()
                 if stripped:
-                    quant_log.push(stripped)
-                    _update_progress(stripped)
+                    _push_line(stripped)
             await asyncio.sleep(0)
         if not _client_alive():
             return
@@ -545,8 +551,7 @@ def content():
         for part in re.split(r'[\r\n]', buf):
             stripped = part.strip()
             if stripped:
-                quant_log.push(stripped)
-                _update_progress(stripped)
+                _push_line(stripped)
 
     def _get_quant_params():
         method = quant_method.value
