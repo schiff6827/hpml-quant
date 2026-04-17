@@ -1,11 +1,63 @@
 import subprocess
 import signal
 import os
+import sys
 import json
 import glob
 from datetime import datetime
 
 BENCHMARKS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'benchmarks')
+SCRIPTS_DIR = os.path.join(BENCHMARKS_DIR, 'scripts')
+
+
+def _safe_script_name(name):
+    return ''.join(c for c in name if c.isalnum() or c in '-_.')
+
+
+def list_scripts():
+    if not os.path.isdir(SCRIPTS_DIR):
+        return []
+    out = []
+    for fpath in sorted(glob.glob(os.path.join(SCRIPTS_DIR, '*.json'))):
+        try:
+            data = json.loads(open(fpath).read())
+            out.append({'name': data.get('name', os.path.splitext(os.path.basename(fpath))[0]),
+                        'path': fpath})
+        except Exception:
+            pass
+    return out
+
+
+def save_script(name, config):
+    os.makedirs(SCRIPTS_DIR, exist_ok=True)
+    safe = _safe_script_name(name) or 'script'
+    path = os.path.join(SCRIPTS_DIR, f'{safe}.json')
+    data = dict(config)
+    data['name'] = name
+    with open(path, 'w') as f:
+        json.dump(data, f, indent=2)
+    return path
+
+
+def load_script(name_or_path):
+    if os.path.isabs(name_or_path) and os.path.exists(name_or_path):
+        path = name_or_path
+    else:
+        path = os.path.join(SCRIPTS_DIR, f'{_safe_script_name(name_or_path)}.json')
+    if not os.path.exists(path):
+        return None
+    return json.loads(open(path).read())
+
+
+def delete_script(name_or_path):
+    if os.path.isabs(name_or_path) and os.path.exists(name_or_path):
+        path = name_or_path
+    else:
+        path = os.path.join(SCRIPTS_DIR, f'{_safe_script_name(name_or_path)}.json')
+    if os.path.exists(path):
+        os.remove(path)
+        return True
+    return False
 
 _active_proc = None
 
@@ -54,6 +106,49 @@ def run_perf_benchmark(port, model, dataset, num_prompts, request_rate,
     return proc
 
 
+_CTX_SWEEP_SCRIPT = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'scripts', 'run_context_sweep.py')
+
+
+def run_context_sweep(port, model, result_dir, run_name, upper_bound, step):
+    """Launch a context-length sweep as a subprocess that streams probe results."""
+    global _active_proc
+    os.makedirs(result_dir, exist_ok=True)
+    cmd = [
+        sys.executable, _CTX_SWEEP_SCRIPT,
+        '--port', str(port),
+        '--model', model,
+        '--upper-bound', str(int(upper_bound)),
+        '--step', str(int(step)),
+        '--result-dir', result_dir,
+        '--run-name', run_name,
+    ]
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    _active_proc = proc
+    return proc
+
+
+def parse_context_sweep_result(result_dir, run_name):
+    os.makedirs(BENCHMARKS_DIR, exist_ok=True)
+    jsons = sorted(glob.glob(os.path.join(result_dir, 'context_sweep_*.json')))
+    if not jsons:
+        return None
+    raw = json.loads(open(jsons[-1]).read())
+    parsed = {
+        'type': 'context_sweep',
+        'run_name': run_name,
+        'timestamp': datetime.now().isoformat(),
+        'max_context_tokens': raw.get('max_context_tokens'),
+        'probes': raw.get('probes', []),
+        'raw': raw,
+    }
+    save_path = os.path.join(BENCHMARKS_DIR,
+                             f'{run_name}_context_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json')
+    with open(save_path, 'w') as f:
+        json.dump(parsed, f, indent=2)
+    parsed['save_path'] = save_path
+    return parsed
+
+
 def run_quality_benchmark(port, model, tasks, num_fewshot, num_concurrent,
                           limit, result_dir, run_name):
     global _active_proc
@@ -94,12 +189,23 @@ def parse_perf_result(result_dir, run_name):
     if not jsons:
         return None
     raw = json.loads(open(jsons[-1]).read())
+    # Derive prefill throughput: total prompt tokens / total prefill time.
+    # Prefill time per request ≈ TTFT, so sum_prefill ≈ mean_ttft_ms/1000 * completed.
+    prefill_tps = None
+    total_input = raw.get('total_input_tokens')
+    mean_ttft_ms = raw.get('mean_ttft_ms')
+    completed = raw.get('completed') or raw.get('num_prompts')
+    if total_input and mean_ttft_ms and completed:
+        total_ttft_sec = (mean_ttft_ms / 1000.0) * completed
+        if total_ttft_sec > 0:
+            prefill_tps = total_input / total_ttft_sec
     parsed = {
         'type': 'perf',
         'run_name': run_name,
         'timestamp': datetime.now().isoformat(),
         'request_throughput': raw.get('request_throughput'),
         'output_throughput': raw.get('output_throughput'),
+        'prefill_throughput': prefill_tps,
         'metrics': {},
         'raw': raw,
     }
@@ -162,6 +268,76 @@ def parse_quality_result(result_dir, run_name):
     return parsed
 
 
+def build_pareto_dataset(quality_metric_preference=None):
+    """Pair perf and quality results by run_name; return rows for the Pareto chart.
+
+    quality_metric_preference: optional task key (e.g. 'mmlu'). If None, pick the
+    first task present on each quality result.
+    """
+    if not os.path.isdir(BENCHMARKS_DIR):
+        return []
+    perf_by_run = {}
+    qual_by_run = {}
+    for fpath in glob.glob(os.path.join(BENCHMARKS_DIR, '*.json')):
+        try:
+            data = json.loads(open(fpath).read())
+        except Exception:
+            continue
+        run = data.get('run_name')
+        if not run:
+            continue
+        if data.get('type') == 'perf':
+            if run not in perf_by_run or data.get('timestamp', '') > perf_by_run[run].get('timestamp', ''):
+                perf_by_run[run] = data
+        elif data.get('type') == 'quality':
+            if run not in qual_by_run or data.get('timestamp', '') > qual_by_run[run].get('timestamp', ''):
+                qual_by_run[run] = data
+
+    rows = []
+    for run, perf in perf_by_run.items():
+        qual = qual_by_run.get(run)
+        if not qual:
+            continue
+        tasks = qual.get('tasks', [])
+        if not tasks:
+            continue
+        task_entry = None
+        if quality_metric_preference:
+            for t in tasks:
+                if t.get('task') == quality_metric_preference:
+                    task_entry = t
+                    break
+        if task_entry is None:
+            task_entry = tasks[0]
+        q_val = task_entry.get('acc_norm', task_entry.get('acc', task_entry.get('exact_match')))
+        rows.append({
+            'run_name': run,
+            'throughput_tps': perf.get('output_throughput'),
+            'prefill_tps': perf.get('prefill_throughput'),
+            'quality_score': q_val,
+            'quality_task': task_entry.get('task'),
+        })
+    return rows
+
+
+def list_quality_tasks_seen():
+    """Return all unique task names across saved quality results (for y-axis chooser)."""
+    if not os.path.isdir(BENCHMARKS_DIR):
+        return []
+    tasks = set()
+    for fpath in glob.glob(os.path.join(BENCHMARKS_DIR, '*.json')):
+        try:
+            data = json.loads(open(fpath).read())
+        except Exception:
+            continue
+        if data.get('type') != 'quality':
+            continue
+        for t in data.get('tasks', []):
+            if t.get('task'):
+                tasks.add(t['task'])
+    return sorted(tasks)
+
+
 def list_saved_results():
     if not os.path.isdir(BENCHMARKS_DIR):
         return []
@@ -206,6 +382,11 @@ def compare_results(path1, path2):
             'metric': 'Output Throughput (tok/s)',
             'a': r1.get('output_throughput'),
             'b': r2.get('output_throughput'),
+        })
+        comparison['rows'].append({
+            'metric': 'Prefill Throughput (tok/s)',
+            'a': r1.get('prefill_throughput'),
+            'b': r2.get('prefill_throughput'),
         })
         for metric in ['ttft', 'tpot', 'itl', 'e2el']:
             for p in ['mean', 'p50', 'p99']:

@@ -15,6 +15,14 @@ def content():
             refresh_btn = ui.button('', icon='refresh').props('flat dense')
             run_name_input = ui.input('Run name', placeholder='e.g. Qwen3-0.6B-BF16').classes('w-64')
 
+        # --- Saved scripts ---
+        with ui.row().classes('items-center gap-2 w-full'):
+            script_select = ui.select([], label='Script').classes('w-64')
+            script_load_btn = ui.button('Load', icon='folder_open').props('flat dense')
+            script_name_input = ui.input('Save as', placeholder='script name').classes('w-48')
+            script_save_btn = ui.button('Save', icon='save').props('flat dense')
+            script_delete_btn = ui.button('Delete', icon='delete').props('flat dense color=negative')
+
         # --- Preset buttons ---
         ui.label('Presets').classes('text-subtitle2 font-bold mt-2')
         with ui.row().classes('gap-2'):
@@ -22,9 +30,10 @@ def content():
             preset_full_perf = ui.button('Full Perf').props('outline')
             preset_quick_qual = ui.button('Quick Quality').props('outline')
             preset_full_qual = ui.button('Full Quality').props('outline')
+            preset_max_ctx = ui.button('Max Context').props('outline')
             preset_custom = ui.button('Custom').props('outline')
         preset_btns = [preset_quick_perf, preset_full_perf, preset_quick_qual,
-                       preset_full_qual, preset_custom]
+                       preset_full_qual, preset_max_ctx, preset_custom]
 
         def _highlight_preset(active):
             for btn in preset_btns:
@@ -73,6 +82,14 @@ def content():
                 qual_fields.visible = False
                 qual_enable.on_value_change(lambda e: setattr(qual_fields, 'visible', e.value))
 
+            with ui.card().classes('w-full mt-2'):
+                ctx_enable = ui.checkbox('Max Context Sweep', value=False).classes('text-subtitle2 font-bold')
+                with ui.row().classes('gap-4 items-end') as ctx_fields:
+                    ctx_upper_input = ui.number('Upper bound', value=131072, min=1024, step=1024).classes('w-36')
+                    ctx_step_input = ui.number('Step', value=4096, min=256, step=256).classes('w-32')
+                ctx_fields.visible = False
+                ctx_enable.on_value_change(lambda e: setattr(ctx_fields, 'visible', e.value))
+
         # --- Run controls ---
         with ui.row().classes('gap-2 items-center mt-2'):
             run_btn = ui.button('Run Benchmark', icon='play_arrow').props('color=positive')
@@ -113,6 +130,20 @@ def content():
         ).classes('w-full')
         qual_table.visible = False
 
+        ctx_headline = ui.label('').classes('text-h6')
+        ctx_headline.visible = False
+        ctx_table = ui.table(
+            columns=[
+                {'name': 'n', 'label': 'Prompt tokens', 'field': 'n', 'align': 'right'},
+                {'name': 'success', 'label': 'Success', 'field': 'success', 'align': 'center'},
+                {'name': 'ttft_ms', 'label': 'TTFT (ms)', 'field': 'ttft_ms', 'align': 'right'},
+                {'name': 'kv_cache_pct_at_end', 'label': 'KV %', 'field': 'kv_cache_pct_at_end', 'align': 'right'},
+                {'name': 'error', 'label': 'Error', 'field': 'error', 'align': 'left'},
+            ],
+            rows=[],
+        ).classes('w-full')
+        ctx_table.visible = False
+
         # --- Previous results ---
         ui.separator()
         ui.label('Previous Results').classes('text-subtitle2 font-bold')
@@ -139,6 +170,27 @@ def content():
             rows=[],
         ).classes('w-full')
         prev_qual_table.visible = False
+
+        # --- Pareto frontier ---
+        ui.separator()
+        pareto_exp = ui.expansion('Pareto Frontier (quality vs throughput)', icon='scatter_plot').classes('w-full')
+        with pareto_exp:
+            with ui.row().classes('items-end gap-2 w-full'):
+                pareto_task_select = ui.select([], label='Quality task (y-axis)').classes('w-48')
+                pareto_refresh_btn = ui.button('Refresh', icon='refresh').props('flat dense')
+            pareto_chart = ui.echart({
+                'title': {'text': 'Quality vs Throughput', 'textStyle': {'fontSize': 13}},
+                'tooltip': {'trigger': 'item'},
+                'xAxis': {'type': 'value', 'name': 'Output tokens/sec'},
+                'yAxis': {'type': 'value', 'name': 'Quality', 'min': 0, 'max': 1},
+                'series': [{
+                    'type': 'scatter',
+                    'symbolSize': 16,
+                    'data': [],
+                    'label': {'show': True, 'position': 'right', 'formatter': '{@[2]}'},
+                }],
+                'animation': False,
+            }).classes('w-full h-80')
 
         # --- Compare ---
         ui.separator()
@@ -227,6 +279,129 @@ def content():
         num_concurrent_input.value = 16
         limit_input.value = 0
 
+    def apply_preset_max_ctx():
+        _highlight_preset(preset_max_ctx)
+        perf_enable.value = False
+        qual_enable.value = False
+        ctx_enable.value = True
+        ctx_upper_input.value = 131072
+        ctx_step_input.value = 4096
+
+    def _capture_script_state():
+        return {
+            'perf': {
+                'enabled': bool(perf_enable.value),
+                'dataset': dataset_select.value,
+                'num_prompts': int(num_prompts_input.value or 0),
+                'request_rate': str(request_rate_input.value),
+                'max_concurrency': int(max_concurrency_input.value or 0),
+                'random_input_len': int(random_input_len.value or 0),
+                'random_output_len': int(random_output_len.value or 0),
+            },
+            'quality': {
+                'enabled': bool(qual_enable.value),
+                'tasks': [t for t, cb in task_checks.items() if cb.value],
+                'num_fewshot': int(num_fewshot_input.value or 0),
+                'num_concurrent': int(num_concurrent_input.value or 0),
+                'limit': int(limit_input.value or 0),
+            },
+            'context_sweep': {
+                'enabled': bool(ctx_enable.value),
+                'upper_bound': int(ctx_upper_input.value or 0),
+                'step': int(ctx_step_input.value or 0),
+            },
+        }
+
+    def _apply_script_state(cfg):
+        perf = cfg.get('perf', {})
+        perf_enable.value = bool(perf.get('enabled', False))
+        if 'dataset' in perf:
+            dataset_select.value = perf['dataset']
+        if 'num_prompts' in perf:
+            num_prompts_input.value = perf['num_prompts']
+        if 'request_rate' in perf:
+            request_rate_input.value = perf['request_rate']
+        if 'max_concurrency' in perf:
+            max_concurrency_input.value = perf['max_concurrency']
+        if 'random_input_len' in perf:
+            random_input_len.value = perf['random_input_len']
+        if 'random_output_len' in perf:
+            random_output_len.value = perf['random_output_len']
+        toggle_random_fields()
+        qual = cfg.get('quality', {})
+        qual_enable.value = bool(qual.get('enabled', False))
+        wanted_tasks = set(qual.get('tasks', []))
+        for t, cb in task_checks.items():
+            cb.value = (t in wanted_tasks)
+        if 'num_fewshot' in qual:
+            num_fewshot_input.value = qual['num_fewshot']
+        if 'num_concurrent' in qual:
+            num_concurrent_input.value = qual['num_concurrent']
+        if 'limit' in qual:
+            limit_input.value = qual['limit']
+        ctx = cfg.get('context_sweep', {})
+        ctx_enable.value = bool(ctx.get('enabled', False))
+        if 'upper_bound' in ctx:
+            ctx_upper_input.value = ctx['upper_bound']
+        if 'step' in ctx:
+            ctx_step_input.value = ctx['step']
+
+    def refresh_scripts():
+        items = benchmark_service.list_scripts()
+        opts = {it['path']: it['name'] for it in items}
+        script_select.options = opts
+        script_select.update()
+
+    def on_script_save():
+        name = (script_name_input.value or run_name_input.value or '').strip()
+        if not name:
+            ui.notify('Enter a script name', type='warning')
+            return
+        benchmark_service.save_script(name, _capture_script_state())
+        ui.notify(f'Saved script: {name}', type='positive')
+        refresh_scripts()
+
+    def on_script_load():
+        path = script_select.value
+        if not path:
+            ui.notify('Select a script first', type='warning')
+            return
+        cfg = benchmark_service.load_script(path)
+        if not cfg:
+            ui.notify('Script not found', type='negative')
+            return
+        _apply_script_state(cfg)
+        script_name_input.value = cfg.get('name', '')
+        ui.notify(f'Loaded script: {cfg.get("name", "?")}', type='info')
+
+    def refresh_pareto():
+        tasks = benchmark_service.list_quality_tasks_seen()
+        pareto_task_select.options = tasks
+        if tasks and pareto_task_select.value not in tasks:
+            pareto_task_select.value = tasks[0]
+        pareto_task_select.update()
+        metric = pareto_task_select.value if pareto_task_select.value in tasks else None
+        rows = benchmark_service.build_pareto_dataset(metric)
+        points = []
+        for r in rows:
+            x = r.get('throughput_tps')
+            y = r.get('quality_score')
+            if x is None or y is None:
+                continue
+            points.append([x, y, r.get('run_name', '')])
+        pareto_chart.options['series'][0]['data'] = points
+        pareto_chart.options['title']['text'] = f"Quality ({metric or 'first available'}) vs Throughput"
+        pareto_chart.update()
+
+    def on_script_delete():
+        path = script_select.value
+        if not path:
+            ui.notify('Select a script first', type='warning')
+            return
+        benchmark_service.delete_script(path)
+        ui.notify('Script deleted', type='info')
+        refresh_scripts()
+
     def _set_running(is_running):
         run_btn.set_enabled(not is_running)
         stop_btn.visible = is_running
@@ -257,6 +432,7 @@ def content():
         rows = []
         rows.append({'metric': 'Request Throughput (req/s)', 'value': _fmt(parsed.get('request_throughput'))})
         rows.append({'metric': 'Output Throughput (tok/s)', 'value': _fmt(parsed.get('output_throughput'))})
+        rows.append({'metric': 'Prefill Throughput (tok/s)', 'value': _fmt(parsed.get('prefill_throughput'))})
         for metric in ['ttft', 'tpot', 'itl', 'e2el']:
             mdata = parsed.get('metrics', {}).get(metric, {})
             for p in ['mean', 'p50', 'p75', 'p90', 'p95', 'p99']:
@@ -265,6 +441,23 @@ def content():
         table.rows = rows
         table.update()
         table.visible = True
+
+    def _show_ctx_result(parsed, table, headline):
+        rows = []
+        for p in parsed.get('probes', []):
+            rows.append({
+                'n': p.get('n'),
+                'success': '✓' if p.get('success') else '✗',
+                'ttft_ms': _fmt(p.get('ttft_ms')),
+                'kv_cache_pct_at_end': _fmt(p.get('kv_cache_pct_at_end')),
+                'error': (p.get('error') or '')[:80],
+            })
+        table.rows = rows
+        table.update()
+        table.visible = True
+        max_ctx = parsed.get('max_context_tokens')
+        headline.set_text(f'Max context: {max_ctx:,} tokens' if max_ctx else 'Max context: --')
+        headline.visible = True
 
     def _show_qual_result(parsed, table):
         rows = []
@@ -331,7 +524,8 @@ def content():
     async def run_benchmark():
         do_perf = perf_enable.value
         do_qual = qual_enable.value
-        if not do_perf and not do_qual:
+        do_ctx = ctx_enable.value
+        if not do_perf and not do_qual and not do_ctx:
             ui.notify('Enable at least one benchmark type', type='warning')
             return
         port = server_select.value
@@ -378,6 +572,28 @@ def content():
                 else:
                     ui.notify(f'Perf benchmark failed (exit code {proc.returncode})', type='negative')
 
+            if do_ctx:
+                run_status.set_text('Running context-length sweep...')
+                progress_bar.value = 0
+                progress_label.set_text('')
+                result_dir = tempfile.mkdtemp(prefix='bench_ctx_')
+                proc = await run.io_bound(
+                    benchmark_service.run_context_sweep,
+                    port, model, result_dir, rname,
+                    int(ctx_upper_input.value),
+                    int(ctx_step_input.value),
+                )
+                await _stream_proc(proc)
+                if proc.returncode == 0:
+                    parsed = await run.io_bound(benchmark_service.parse_context_sweep_result, result_dir, rname)
+                    if parsed:
+                        _show_ctx_result(parsed, ctx_table, ctx_headline)
+                        ui.notify('Context sweep complete', type='positive')
+                    else:
+                        ui.notify('Sweep finished but no result JSON found', type='warning')
+                else:
+                    ui.notify(f'Context sweep failed (exit code {proc.returncode})', type='negative')
+
             if do_qual:
                 run_status.set_text('Running quality benchmark...')
                 progress_bar.value = 0
@@ -413,6 +629,7 @@ def content():
             if _client_alive():
                 _set_running(False)
                 refresh_saved_results()
+                refresh_pareto()
 
     def on_stop():
         benchmark_service.stop_benchmark()
@@ -432,6 +649,8 @@ def content():
             _show_perf_result(data, prev_perf_table)
         elif data.get('type') == 'quality':
             _show_qual_result(data, prev_qual_table)
+        elif data.get('type') == 'context_sweep':
+            _show_ctx_result(data, ctx_table, ctx_headline)
 
     def on_compare():
         pa = cmp_a.value
@@ -470,6 +689,7 @@ def content():
     preset_full_perf.on_click(apply_preset_full_perf)
     preset_quick_qual.on_click(apply_preset_quick_qual)
     preset_full_qual.on_click(apply_preset_full_qual)
+    preset_max_ctx.on_click(apply_preset_max_ctx)
     def apply_preset_custom():
         _highlight_preset(preset_custom)
         advanced.open()
@@ -480,7 +700,15 @@ def content():
     refresh_results_btn.on_click(refresh_saved_results)
     cmp_btn.on_click(on_compare)
 
+    script_save_btn.on_click(on_script_save)
+    script_load_btn.on_click(on_script_load)
+    script_delete_btn.on_click(on_script_delete)
+    pareto_refresh_btn.on_click(refresh_pareto)
+    pareto_task_select.on_value_change(lambda _: refresh_pareto())
+
     ui.timer(2.0, refresh_servers)
     ui.timer(0.1, refresh_saved_results, once=True)
+    ui.timer(0.1, refresh_scripts, once=True)
+    ui.timer(0.5, refresh_pareto, once=True)
 
     return refresh_servers
