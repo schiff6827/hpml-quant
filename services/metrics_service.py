@@ -7,6 +7,11 @@ import os
 from datetime import datetime
 from pathlib import Path
 
+try:
+    import psutil
+except ImportError:
+    psutil = None
+
 METRICS_DIR = Path("metrics")
 
 _recorders = {}
@@ -33,6 +38,51 @@ def fetch_gpu_metrics():
         return {}
 
 
+def fetch_cpu_metrics(port=None):
+    """Get CPU memory metrics for a vLLM process tree plus host-level memory.
+
+    If psutil is unavailable or the port is unknown, returns host metrics only
+    (or empty dict on total failure).
+    """
+    metrics = {}
+    if psutil is None:
+        return metrics
+    try:
+        vm = psutil.virtual_memory()
+        metrics["host_mem_used_mb"] = (vm.total - vm.available) / (1024 * 1024)
+        metrics["host_mem_total_mb"] = vm.total / (1024 * 1024)
+    except Exception:
+        pass
+
+    if port is None:
+        return metrics
+    try:
+        from services import vllm_service
+        info = vllm_service._running.get(port)
+        if not info:
+            return metrics
+        proc = info.get("proc")
+        pid = getattr(proc, "pid", None)
+        if not pid:
+            return metrics
+        root = psutil.Process(pid)
+        procs = [root] + root.children(recursive=True)
+        rss = 0
+        vms = 0
+        for p in procs:
+            try:
+                mi = p.memory_info()
+                rss += mi.rss
+                vms += mi.vms
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+        metrics["cpu_mem_rss_mb"] = rss / (1024 * 1024)
+        metrics["cpu_mem_vms_mb"] = vms / (1024 * 1024)
+    except (psutil.NoSuchProcess, psutil.AccessDenied, Exception):
+        pass
+    return metrics
+
+
 def fetch_vllm_metrics(port):
     """Fetch and parse Prometheus metrics from a vLLM server."""
     try:
@@ -57,8 +107,10 @@ def fetch_vllm_metrics(port):
 
         name = name_labels.split("{")[0]
 
-        if name == "vllm:kv_cache_usage_perc":
+        if name == "vllm:kv_cache_usage_perc" or name == "vllm:gpu_cache_usage_perc":
             metrics["kv_cache_pct"] = val * 100
+        elif name == "vllm:num_tokens_running":
+            metrics["tokens_in_flight"] = val
         elif name == "vllm:num_requests_running":
             metrics["requests_running"] = val
         elif name == "vllm:num_requests_waiting":
@@ -110,6 +162,26 @@ def fetch_vllm_metrics(port):
     e2e_count = metrics.get("e2e_count", 0)
     metrics["e2e_avg_ms"] = (metrics.get("e2e_sum", 0) / e2e_count * 1000) if e2e_count > 0 else 0
 
+    # Memory derivations: KV-used in absolute GiB and ratio vs weights.
+    try:
+        from services import vllm_service
+        info = vllm_service._running.get(port) or {}
+    except Exception:
+        info = {}
+    weight_gib = info.get("weight_mem_gib", 0) or 0
+    kv_capacity_gib = info.get("kv_cache_capacity_gib", 0) or 0
+    metrics["weight_mem_gib"] = weight_gib
+    metrics["kv_cache_capacity_gib"] = kv_capacity_gib
+    kv_pct = metrics.get("kv_cache_pct", 0)
+    kv_used_gib = kv_pct / 100.0 * kv_capacity_gib if kv_capacity_gib else 0
+    metrics["kv_mem_used_gib"] = kv_used_gib
+    metrics["kv_to_weight_ratio"] = (kv_used_gib / weight_gib) if weight_gib else 0
+    tokens_live = metrics.get("tokens_in_flight", 0) or 0
+    if tokens_live > 0 and kv_used_gib > 0:
+        metrics["kv_bytes_per_token"] = kv_used_gib * (1024 ** 3) / tokens_live
+    else:
+        metrics["kv_bytes_per_token"] = 0
+
     return metrics
 
 
@@ -119,6 +191,10 @@ CSV_COLUMNS = [
     "requests_waiting", "gen_tokens_total", "prompt_tokens_total",
     "preemptions", "prefix_cache_hit_rate", "ttft_avg_ms", "itl_avg_ms",
     "e2e_avg_ms",
+    "cpu_mem_rss_mb", "cpu_mem_rss_peak_mb", "cpu_mem_vms_mb",
+    "host_mem_used_mb", "host_mem_total_mb",
+    "weight_mem_gib", "kv_cache_capacity_gib", "kv_mem_used_gib",
+    "kv_to_weight_ratio", "kv_bytes_per_token", "tokens_in_flight",
 ]
 
 
@@ -132,6 +208,7 @@ def start_recording(port, model_name):
     csv_path = METRICS_DIR / f"{safe_name}_{ts}.csv"
 
     stop_event = threading.Event()
+    peak_state = {"rss_peak_mb": 0.0}
 
     def record_loop():
         with open(csv_path, "w", newline="") as f:
@@ -140,16 +217,32 @@ def start_recording(port, model_name):
             while not stop_event.is_set():
                 gpu = fetch_gpu_metrics()
                 vllm = fetch_vllm_metrics(port)
+                cpu = fetch_cpu_metrics(port)
+                rss = cpu.get("cpu_mem_rss_mb", 0)
+                if rss > peak_state["rss_peak_mb"]:
+                    peak_state["rss_peak_mb"] = rss
+                cpu["cpu_mem_rss_peak_mb"] = peak_state["rss_peak_mb"]
                 row = {"timestamp": datetime.now().isoformat()}
                 for col in CSV_COLUMNS[1:]:
-                    row[col] = gpu.get(col, vllm.get(col, 0))
+                    row[col] = gpu.get(col, vllm.get(col, cpu.get(col, 0)))
                 writer.writerow(row)
                 f.flush()
                 stop_event.wait(2)
 
     thread = threading.Thread(target=record_loop, daemon=True)
     thread.start()
-    _recorders[port] = {"thread": thread, "stop": stop_event, "path": str(csv_path)}
+    _recorders[port] = {
+        "thread": thread, "stop": stop_event, "path": str(csv_path),
+        "peak_state": peak_state,
+    }
+
+
+def get_peak_rss_mb(port):
+    """Return current peak CPU RSS in MB for a recording, or 0 if not recording."""
+    rec = _recorders.get(port)
+    if not rec:
+        return 0.0
+    return rec.get("peak_state", {}).get("rss_peak_mb", 0.0)
 
 
 def stop_recording(port):

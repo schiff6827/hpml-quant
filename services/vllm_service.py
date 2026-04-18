@@ -2,6 +2,7 @@ import subprocess
 import signal
 import sys
 import os
+import re
 import getpass
 import requests
 import config
@@ -10,7 +11,10 @@ import config
 _running = {}
 
 
-def launch_server(model, port=None, gpu_mem_util=None, dtype=None, quantization=None, extra_args=None, token=None, kv_cache_gb=None):
+NSYS_DEFAULT_DIR = "/tmp/vllm_nsys"
+
+
+def launch_server(model, port=None, gpu_mem_util=None, dtype=None, quantization=None, extra_args=None, token=None, kv_cache_gb=None, nsys_profile=False, nsys_output_dir=None):
     if port is None:
         port = _next_free_port()
     if port in _running:
@@ -38,6 +42,21 @@ def launch_server(model, port=None, gpu_mem_util=None, dtype=None, quantization=
     if extra_args:
         cmd += extra_args
 
+    nsys_report = None
+    if nsys_profile:
+        out_dir = nsys_output_dir or NSYS_DEFAULT_DIR
+        os.makedirs(out_dir, exist_ok=True)
+        safe_model = re.sub(r"[^A-Za-z0-9_.-]", "_", model)
+        ts = subprocess.check_output(["date", "+%Y%m%d_%H%M%S"]).decode().strip()
+        nsys_report = os.path.join(out_dir, f"{safe_model}_{port}_{ts}.nsys-rep")
+        cmd = [
+            "nsys", "profile",
+            "-t", "cuda,nvtx,cudnn,cublas",
+            "-o", nsys_report,
+            "--force-overwrite=true",
+            "--stop-on-exit=true",
+        ] + cmd
+
     env = {**os.environ, "HF_HUB_CACHE": config.MODEL_CACHE_DIR}
     if token:
         env["HF_TOKEN"] = token
@@ -55,6 +74,7 @@ def launch_server(model, port=None, gpu_mem_util=None, dtype=None, quantization=
         "quantization": quantization,
         "log_path": log_path,
         "log_file": log_file,
+        "nsys_report": nsys_report,
     }
     return port
 
@@ -100,9 +120,46 @@ def is_alive(port):
 def check_health(port):
     try:
         r = requests.get(f"http://localhost:{port}/health", timeout=3)
-        return r.status_code == 200
+        if r.status_code != 200:
+            return False
     except requests.exceptions.RequestException:
         return False
+    _refresh_memory_stats(port)
+    return True
+
+
+_WEIGHT_RE = re.compile(r"Model loading took\s+([\d.]+)\s*Gi?B", re.IGNORECASE)
+_KV_RE = re.compile(r"(Available KV cache memory|KV cache size)[^\d]*([\d.]+)\s*Gi?B", re.IGNORECASE)
+_INIT_RE = re.compile(r"init engine.*took\s+([\d.]+)\s*seconds", re.IGNORECASE)
+
+
+def _refresh_memory_stats(port):
+    """Parse vLLM startup log for weight-mem and KV-capacity once per server."""
+    info = _running.get(port)
+    if not info:
+        return
+    if info.get("weight_mem_gib") and info.get("kv_cache_capacity_gib"):
+        return
+    log_path = info.get("log_path")
+    if not log_path or not os.path.exists(log_path):
+        return
+    try:
+        with open(log_path, "r") as f:
+            text = f.read()
+    except Exception:
+        return
+    if "weight_mem_gib" not in info:
+        m = _WEIGHT_RE.search(text)
+        if m:
+            info["weight_mem_gib"] = float(m.group(1))
+    if "kv_cache_capacity_gib" not in info:
+        m = _KV_RE.search(text)
+        if m:
+            info["kv_cache_capacity_gib"] = float(m.group(2))
+    if "engine_init_seconds" not in info:
+        m = _INIT_RE.search(text)
+        if m:
+            info["engine_init_seconds"] = float(m.group(1))
 
 
 def get_log_by_path(log_path, lines=10):

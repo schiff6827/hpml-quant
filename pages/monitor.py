@@ -32,6 +32,20 @@ def content():
                 ui.label('Power').classes('text-caption')
                 gpu_power_label = ui.label('--W').classes('text-h6')
 
+        # CPU memory gauges
+        ui.label('CPU').classes('text-subtitle2 font-bold')
+        with ui.row().classes('gap-4 w-full'):
+            with ui.card().classes('p-3'):
+                ui.label('RSS (current)').classes('text-caption')
+                cpu_rss_label = ui.label('-- MB').classes('text-h6')
+            with ui.card().classes('p-3'):
+                ui.label('RSS (peak)').classes('text-caption')
+                cpu_rss_peak_label = ui.label('-- MB').classes('text-h6')
+            with ui.card().classes('p-3'):
+                ui.label('Host Memory').classes('text-caption')
+                host_mem_label = ui.label('-- / -- GB').classes('text-h6')
+                host_mem_bar = ui.linear_progress(value=0).props('instant-feedback').classes('w-48')
+
         # Charts
         ui.label('Inference Metrics').classes('text-subtitle2 font-bold')
         with ui.row().classes('w-full gap-4'):
@@ -83,6 +97,19 @@ def content():
                 'animation': False,
             }).classes('w-1/2 h-64')
 
+            mem_chart = ui.echart({
+                'title': {'text': 'Memory: Weights vs KV', 'textStyle': {'fontSize': 13}},
+                'tooltip': {'trigger': 'axis'},
+                'legend': {'data': ['Weights GiB', 'KV Used GiB'], 'bottom': 0},
+                'xAxis': {'type': 'category', 'data': []},
+                'yAxis': {'type': 'value', 'name': 'GiB'},
+                'series': [
+                    {'name': 'Weights GiB', 'type': 'line', 'data': [], 'smooth': False, 'showSymbol': False, 'lineStyle': {'type': 'dashed'}},
+                    {'name': 'KV Used GiB', 'type': 'line', 'data': [], 'smooth': True, 'showSymbol': False, 'areaStyle': {}},
+                ],
+                'animation': False,
+            }).classes('w-1/2 h-64')
+
         # Numeric stats
         ui.label('Latency & Counters').classes('text-subtitle2 font-bold')
         with ui.row().classes('gap-4'):
@@ -101,6 +128,12 @@ def content():
             with ui.card().classes('p-3'):
                 ui.label('Tokens Gen').classes('text-caption')
                 tokens_label = ui.label('0').classes('text-h6')
+            with ui.card().classes('p-3'):
+                ui.label('KV / Weight').classes('text-caption')
+                kv_ratio_label = ui.label('--').classes('text-h6')
+            with ui.card().classes('p-3'):
+                ui.label('KV bytes/token').classes('text-caption')
+                kv_bpt_label = ui.label('--').classes('text-h6')
 
     # Chart data buffers
     timestamps = deque(maxlen=MAX_POINTS)
@@ -112,6 +145,8 @@ def content():
     gpu_util_data = deque(maxlen=MAX_POINTS)
     gpu_temp_data = deque(maxlen=MAX_POINTS)
     gpu_power_data = deque(maxlen=MAX_POINTS)
+    weight_gib_data = deque(maxlen=MAX_POINTS)
+    kv_used_gib_data = deque(maxlen=MAX_POINTS)
 
     async def refresh_server_list():
         running = vllm_service.list_running()
@@ -138,6 +173,18 @@ def content():
             gpu_util_bar.set_value(gpu["gpu_util_pct"] / 100)
             gpu_temp_label.set_text(f"{gpu['gpu_temp_c']:.0f}C")
             gpu_power_label.set_text(f"{gpu['gpu_power_w']:.0f}W")
+
+        cpu = await run.io_bound(metrics_service.fetch_cpu_metrics, port)
+        if cpu:
+            rss = cpu.get("cpu_mem_rss_mb", 0)
+            peak = max(metrics_service.get_peak_rss_mb(port), rss)
+            cpu_rss_label.set_text(f"{rss:,.0f} MB" if rss else "--")
+            cpu_rss_peak_label.set_text(f"{peak:,.0f} MB" if peak else "--")
+            host_used = cpu.get("host_mem_used_mb", 0)
+            host_total = cpu.get("host_mem_total_mb", 0)
+            if host_total:
+                host_mem_label.set_text(f"{host_used/1024:.1f} / {host_total/1024:.1f} GB")
+                host_mem_bar.set_value(host_used / host_total)
 
         vllm = await run.io_bound(metrics_service.fetch_vllm_metrics, port)
         if not vllm:
@@ -180,6 +227,27 @@ def content():
         e2e_label.set_text(f"{e2e:.0f} ms" if e2e > 0 else "--")
         preempt_label.set_text(f"{int(vllm.get('preemptions', 0)):,}")
         tokens_label.set_text(f"{int(vllm.get('gen_tokens_total', 0)):,}")
+
+        weight_gib = vllm.get("weight_mem_gib", 0) or 0
+        kv_used_gib = vllm.get("kv_mem_used_gib", 0) or 0
+        weight_gib_data.append(round(weight_gib, 2))
+        kv_used_gib_data.append(round(kv_used_gib, 2))
+        mem_chart.options['xAxis']['data'] = list(timestamps)
+        mem_chart.options['series'][0]['data'] = list(weight_gib_data)
+        mem_chart.options['series'][1]['data'] = list(kv_used_gib_data)
+        mem_chart.update()
+
+        ratio = vllm.get("kv_to_weight_ratio", 0)
+        kv_ratio_label.set_text(f"{ratio:.2f}x" if ratio else "--")
+        bpt = vllm.get("kv_bytes_per_token", 0)
+        if bpt >= 1024 * 1024:
+            kv_bpt_label.set_text(f"{bpt/(1024*1024):.1f} MB")
+        elif bpt >= 1024:
+            kv_bpt_label.set_text(f"{bpt/1024:.1f} KB")
+        elif bpt > 0:
+            kv_bpt_label.set_text(f"{bpt:.0f} B")
+        else:
+            kv_bpt_label.set_text("--")
 
     async def refresh_all():
         await refresh_server_list()

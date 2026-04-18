@@ -24,6 +24,7 @@ def content():
                 {'name': 'dtype', 'label': 'DType', 'field': 'dtype'},
                 {'name': 'quantization', 'label': 'Quantization', 'field': 'quantization'},
                 {'name': 'health', 'label': 'Health', 'field': 'health'},
+                {'name': 'nsys', 'label': 'Nsight', 'field': 'nsys', 'align': 'left'},
             ],
             rows=[],
             row_key='port',
@@ -74,6 +75,7 @@ def content():
             with ui.row().classes('gap-4'):
                 trust_remote_check = ui.checkbox('Trust remote code')
                 record_check = ui.checkbox('Record metrics to CSV')
+                nsys_check = ui.checkbox('Enable Nsight profiling (nsys)')
             with ui.row().classes('gap-2 items-center'):
                 launch_btn = ui.button('Launch Server', icon='play_arrow').props('color=positive')
                 webui_launch_btn = ui.button('Launch Open WebUI', icon='open_in_new').props('color=accent')
@@ -99,10 +101,12 @@ def content():
             rows = []
             for port, info in running.items():
                 healthy = await run.io_bound(vllm_service.check_health, port)
+                report = info.get('nsys_report')
                 rows.append({
                     **info,
                     'endpoint': f'{hostname}:{port}',
                     'health': 'Healthy' if healthy else 'Starting...',
+                    'nsys': os.path.basename(report) if report else '—',
                 })
             server_grid.rows = rows
             server_grid.update()
@@ -157,6 +161,7 @@ def content():
                     extra_args=extra,
                     token=token or None,
                     kv_cache_gb=int(kv_cache_input.value) if use_kv_gb else None,
+                    nsys_profile=nsys_check.value,
                 )
                 info = vllm_service.get_server_info(port)
                 log_path = info.get('log_path') if info else f'/tmp/vllm_{port}.log'
