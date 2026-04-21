@@ -98,6 +98,14 @@ def content():
             model_select = ui.select([], label='Model (downloaded)', with_input=True).classes('w-96')
             model_dtype_label = ui.label('').classes('text-sm')
 
+        # ── Engine Selector ──
+        ui.label('Engine').classes('text-subtitle1 font-bold mt-2')
+        with ui.row().classes('items-center gap-1'):
+            engine_radio = ui.radio(['llmcompressor', 'bitsandbytes'], value='llmcompressor').props('inline')
+            _info('llmcompressor: GPTQ / AWQ / FP8 / AutoRound with optional preprocessing and calibration. '
+                  'bitsandbytes: NF4/FP4 4-bit or INT8 quantization; no calibration needed, runs in seconds. '
+                  'Note: bnb does not use Blackwell FP8 tensor cores — FP8 via llmcompressor is faster on this GPU.')
+
         # ── Section 2: Preprocessing ──
         preprocess_exp = ui.expansion('Preprocessing (Optional)', icon='tune').classes('w-full')
         with preprocess_exp:
@@ -173,8 +181,9 @@ def content():
                 sp_enable.on_value_change(lambda e: setattr(sp_fields, 'visible', e.value))
 
         # ── Section 3: Quantization Method ──
-        ui.label('Quantization Method').classes('text-subtitle1 font-bold mt-2')
-        with ui.row().classes('items-center gap-1'):
+        method_header = ui.label('Quantization Method').classes('text-subtitle1 font-bold mt-2')
+        method_row = ui.row().classes('items-center gap-1')
+        with method_row:
             quant_method = ui.radio(['GPTQ', 'AWQ', 'FP8', 'AutoRound'], value='GPTQ').props('inline')
             _info('GPTQ: Calibration-based, widely supported, good INT4 quality. '
                   'AWQ: Activation-aware, often slightly better quality than GPTQ at same bits. '
@@ -309,6 +318,22 @@ def content():
         quant_method.on_value_change(lambda _: toggle_method())
         toggle_method()
 
+        def _toggle_engine():
+            is_llmc = engine_radio.value == 'llmcompressor'
+            preprocess_exp.visible = is_llmc
+            method_header.visible = is_llmc
+            method_row.visible = is_llmc
+            cal_exp.visible = is_llmc
+            compression_row.visible = is_llmc
+            bnb_container.visible = not is_llmc
+            if is_llmc:
+                toggle_method()
+            else:
+                for card in method_cards.values():
+                    card.visible = False
+
+        engine_radio.on_value_change(lambda _: (_toggle_engine(), _update_output_name(), _update_size_estimate()))
+
         # ── Section 4: Calibration ──
         cal_exp = ui.expansion('Calibration Settings', icon='dataset').classes('w-full')
         with cal_exp:
@@ -346,9 +371,60 @@ def content():
                 cal_dataset_select.on_value_change(_on_dataset_select)
                 _on_dataset_select(None)  # set initial split
 
+        # ── BnB Panel (shown only when engine=bitsandbytes) ──
+        bnb_container = ui.column().classes('w-full gap-2')
+        with bnb_container:
+            with ui.card().classes('w-full'):
+                ui.label('BitsAndBytes Configuration').classes('text-subtitle2 font-bold')
+                with ui.row().classes('items-center gap-1'):
+                    bnb_mode = ui.radio(['4-bit', '8-bit'], value='4-bit').props('inline')
+                    _info('4-bit: ~25% size, moderate quality loss. 8-bit: ~50% size, minimal quality loss.')
+
+                bnb_4bit_fields = ui.column().classes('w-full gap-2')
+                with bnb_4bit_fields:
+                    with ui.row().classes('gap-4 items-center flex-wrap'):
+                        bnb_quant_type = ui.select(
+                            {'nf4': 'NF4 (recommended)', 'fp4': 'FP4'},
+                            value='nf4', label='Quant type'
+                        ).classes('w-48')
+                        ui.label('4-bit format').classes('text-xs text-grey self-center')
+                        _info('NF4: normal float 4 — better for LLM weight distributions. '
+                              'FP4: 4-bit float — vLLM default but usually worse quality.')
+                    with ui.row().classes('gap-4 items-center flex-wrap'):
+                        bnb_compute_dtype = ui.select(
+                            {'bfloat16': 'bfloat16 (recommended)', 'float16': 'float16', 'float32': 'float32'},
+                            value='bfloat16', label='Compute dtype'
+                        ).classes('w-56')
+                        ui.label('Matmul precision').classes('text-xs text-grey self-center')
+                        _info('Compute precision for matmuls. bfloat16 is fastest on Blackwell. '
+                              'float32 is vLLM\'s default but much slower.')
+                    with ui.row().classes('items-center gap-1'):
+                        bnb_double_quant = ui.checkbox('Double quantization', value=True)
+                        ui.label('Quantize the quantization constants').classes('text-xs text-grey self-center')
+                        _info('Saves ~0.4 bits/param with negligible quality impact. Recommended.')
+
+                bnb_8bit_fields = ui.column().classes('w-full gap-2')
+                with bnb_8bit_fields:
+                    with ui.row().classes('gap-4 items-center flex-wrap'):
+                        bnb_int8_threshold = ui.number('Int8 threshold', value=6.0, min=0.0, step=0.5).classes('w-40')
+                        ui.label('Outlier threshold for mixed-precision decomposition').classes('text-xs text-grey self-center')
+                        _info('Activations above this magnitude are kept in fp16. 6.0 is the standard default.')
+                bnb_8bit_fields.visible = False
+
+                def _toggle_bnb_mode():
+                    is_4bit = bnb_mode.value == '4-bit'
+                    bnb_4bit_fields.visible = is_4bit
+                    bnb_8bit_fields.visible = not is_4bit
+                bnb_mode.on_value_change(lambda _: (_toggle_bnb_mode(), _update_output_name(), _update_size_estimate()))
+                bnb_quant_type.on_value_change(lambda _: (_update_output_name(), _update_size_estimate()))
+                bnb_double_quant.on_value_change(lambda _: _update_size_estimate())
+
+        bnb_container.visible = False
+
         # ── Section 5: Output ──
         ui.label('Output').classes('text-subtitle1 font-bold mt-2')
-        with ui.row().classes('gap-4 items-center flex-wrap w-full'):
+        compression_row = ui.row().classes('gap-4 items-center flex-wrap w-full')
+        with compression_row:
             compression_select = ui.select(COMPRESSION_FORMATS, value='pack-quantized', label='Compression format').classes('w-48')
             ui.label('Output file format').classes('text-xs text-grey self-center')
             _info('pack-quantized: best for INT4. float-quantized: best for FP8. '
@@ -361,10 +437,19 @@ def content():
             model = model_select.value
             if not model:
                 return
-            method = quant_method.value
-            scheme_map = {'GPTQ': gptq_scheme, 'AWQ': awq_scheme, 'FP8': fp8_scheme, 'AutoRound': ar_scheme}
-            scheme = scheme_map.get(method, gptq_scheme).value or ''
-            suggested = quantization_service.suggest_output_name(model, method, scheme)
+            if engine_radio.value == 'bitsandbytes':
+                if bnb_mode.value == '4-bit':
+                    scheme = 'NF4' if bnb_quant_type.value == 'nf4' else 'FP4'
+                    if bnb_double_quant.value:
+                        scheme += '-DQ'
+                else:
+                    scheme = 'INT8'
+                suggested = quantization_service.suggest_output_name(model, 'BnB', scheme)
+            else:
+                method = quant_method.value
+                scheme_map = {'GPTQ': gptq_scheme, 'AWQ': awq_scheme, 'FP8': fp8_scheme, 'AutoRound': ar_scheme}
+                scheme = scheme_map.get(method, gptq_scheme).value or ''
+                suggested = quantization_service.suggest_output_name(model, method, scheme)
             output_name.value = suggested
             output_dir_label.set_text(os.path.join(config.LOCAL_MODELS_DIR, suggested))
 
@@ -376,10 +461,18 @@ def content():
                 size_label.set_text('')
                 return
             orig_gb = orig_bytes / 1e9
-            method = quant_method.value
-            scheme_map = {'GPTQ': gptq_scheme, 'AWQ': awq_scheme, 'FP8': fp8_scheme, 'AutoRound': ar_scheme}
-            scheme = scheme_map.get(method, gptq_scheme).value or ''
-            bits = SCHEME_BITS.get(scheme, 16)
+            if engine_radio.value == 'bitsandbytes':
+                if bnb_mode.value == '4-bit':
+                    bits = 4
+                    if bnb_double_quant.value:
+                        bits -= 0.4
+                else:
+                    bits = 8
+            else:
+                method = quant_method.value
+                scheme_map = {'GPTQ': gptq_scheme, 'AWQ': awq_scheme, 'FP8': fp8_scheme, 'AutoRound': ar_scheme}
+                scheme = scheme_map.get(method, gptq_scheme).value or ''
+                bits = SCHEME_BITS.get(scheme, 16)
             # Estimate: original is typically 16-bit (2 bytes/param), quantized is bits/8 bytes/param
             est_bytes = orig_bytes * bits / 16
             est_gb = est_bytes / 1e9
@@ -641,23 +734,39 @@ def content():
             if not result:
                 return
 
-        cfg = quantization_service.build_config(
-            model=model,
-            model_id=model_id,
-            smoothquant=_get_smoothquant_config(),
-            sparsegpt=_get_sparsegpt_config(),
-            quant_method=quant_method.value.lower(),
-            quant_params=_get_quant_params(),
-            calibration={
-                'dataset': cal_dataset_custom.value.strip() or cal_dataset_select.value,
-                'split': cal_split.value.strip() or 'train',
-                'num_calibration_samples': int(cal_samples.value),
-                'max_seq_length': int(cal_seq_len.value),
-                'batch_size': int(cal_batch.value),
-            },
-            output_name=name,
-            compression_format=compression_select.value,
-        )
+        if engine_radio.value == 'bitsandbytes':
+            mode_4bit = bnb_mode.value == '4-bit'
+            cfg = quantization_service.build_bnb_config(
+                model=model,
+                model_id=model_id,
+                bnb_params={
+                    'load_in_4bit': mode_4bit,
+                    'load_in_8bit': not mode_4bit,
+                    'bnb_4bit_quant_type': bnb_quant_type.value,
+                    'bnb_4bit_compute_dtype': bnb_compute_dtype.value,
+                    'bnb_4bit_use_double_quant': bnb_double_quant.value,
+                    'llm_int8_threshold': float(bnb_int8_threshold.value),
+                },
+                output_name=name,
+            )
+        else:
+            cfg = quantization_service.build_config(
+                model=model,
+                model_id=model_id,
+                smoothquant=_get_smoothquant_config(),
+                sparsegpt=_get_sparsegpt_config(),
+                quant_method=quant_method.value.lower(),
+                quant_params=_get_quant_params(),
+                calibration={
+                    'dataset': cal_dataset_custom.value.strip() or cal_dataset_select.value,
+                    'split': cal_split.value.strip() or 'train',
+                    'num_calibration_samples': int(cal_samples.value),
+                    'max_seq_length': int(cal_seq_len.value),
+                    'batch_size': int(cal_batch.value),
+                },
+                output_name=name,
+                compression_format=compression_select.value,
+            )
 
         tmp = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
         json.dump(cfg, tmp, indent=2)
