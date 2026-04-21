@@ -10,7 +10,7 @@ import config
 _running = {}
 
 
-def launch_server(model, port=None, gpu_mem_util=None, dtype=None, quantization=None, extra_args=None, token=None, kv_cache_gb=None):
+def launch_server(model, port=None, gpu_mem_util=None, dtype=None, quantization=None, extra_args=None, token=None, kv_cache_gb=None, cpu_offload_gb=None):
     if port is None:
         port = _next_free_port()
     if port in _running:
@@ -35,6 +35,8 @@ def launch_server(model, port=None, gpu_mem_util=None, dtype=None, quantization=
         cmd += ["--gpu-memory-utilization", str(gpu_mem_util)]
     if quantization:
         cmd += ["--quantization", quantization]
+    if cpu_offload_gb:
+        cmd += ["--cpu-offload-gb", str(cpu_offload_gb), "--enforce-eager"]
     if extra_args:
         cmd += extra_args
 

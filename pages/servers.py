@@ -71,6 +71,13 @@ def content():
                     value='',
                     label='Quantization',
                 ).classes('w-36')
+                cpu_offload_input = ui.number('CPU offload (GB)', value=0, min=0, max=180, step=1).classes('w-36')
+                with cpu_offload_input:
+                    ui.tooltip('Offload model weights to system RAM when they exceed VRAM. '
+                               '0 disables. For Qwen2.5-72B bf16 on 96GB VRAM, try ~60. '
+                               'Inference will be much slower due to PCIe bottleneck, but enables unquantized large models. '
+                               'Automatically enables --enforce-eager (no torch.compile) because the UVA offloader '
+                               'is incompatible with dynamo tracing.')
             with ui.row().classes('gap-4'):
                 trust_remote_check = ui.checkbox('Trust remote code')
                 record_check = ui.checkbox('Record metrics to CSV')
@@ -157,6 +164,7 @@ def content():
                     extra_args=extra,
                     token=token or None,
                     kv_cache_gb=int(kv_cache_input.value) if use_kv_gb else None,
+                    cpu_offload_gb=int(cpu_offload_input.value) or None,
                 )
                 info = vllm_service.get_server_info(port)
                 log_path = info.get('log_path') if info else f'/tmp/vllm_{port}.log'
