@@ -73,5 +73,13 @@
     "p90_e2el_ms": 1054.1591971064918,
     "p95_e2el_ms": 1054.5900728466222,
     "p99_e2el_ms": 1057.533294504974
+  },
+  "model_meta": {
+    "model_id": "Qwen/Qwen2.5-0.5B",
+    "quantization": "NONE",
+    "parameters": 500000000,
+    "size_bytes": 0,
+    "dtype": null,
+    "weight_mem_gib": 5.2
   }
 }

@@ -73,5 +73,13 @@
     "p90_e2el_ms": 4330.540643108543,
     "p95_e2el_ms": 4332.476077612955,
     "p99_e2el_ms": 4334.706292193732
+  },
+  "model_meta": {
+    "model_id": "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+    "quantization": "NONE",
+    "parameters": 1500000000,
+    "size_bytes": 0,
+    "dtype": null,
+    "weight_mem_gib": 5.2
   }
 }

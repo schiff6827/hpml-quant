@@ -73,5 +73,13 @@
     "p90_e2el_ms": 38132.18596472289,
     "p95_e2el_ms": 43206.40651478316,
     "p99_e2el_ms": 47669.25963874732
+  },
+  "model_meta": {
+    "model_id": "Qwen/Qwen3-32B",
+    "quantization": "NONE",
+    "parameters": 32000000000,
+    "size_bytes": 0,
+    "dtype": null,
+    "weight_mem_gib": 5.2
   }
 }

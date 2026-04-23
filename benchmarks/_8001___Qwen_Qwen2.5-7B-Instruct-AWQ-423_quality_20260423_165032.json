@@ -1,0 +1,4475 @@
+{
+  "type": "quality",
+  "run_name": ":8001 \u2014 Qwen/Qwen2.5-7B-Instruct-AWQ-423",
+  "timestamp": "2026-04-23T16:50:32.090951",
+  "tasks": [
+    {
+      "task": "mmlu",
+      "acc": 0.7334425295541945
+    },
+    {
+      "task": "mmlu_humanities",
+      "acc": 0.6733262486716259
+    },
+    {
+      "task": "mmlu_formal_logic",
+      "acc": 0.5793650793650794
+    },
+    {
+      "task": "mmlu_high_school_european_history",
+      "acc": 0.8484848484848485
+    },
+    {
+      "task": "mmlu_high_school_us_history",
+      "acc": 0.8676470588235294
+    },
+    {
+      "task": "mmlu_high_school_world_history",
+      "acc": 0.8607594936708861
+    },
+    {
+      "task": "mmlu_international_law",
+      "acc": 0.8429752066115702
+    },
+    {
+      "task": "mmlu_jurisprudence",
+      "acc": 0.8148148148148148
+    },
+    {
+      "task": "mmlu_logical_fallacies",
+      "acc": 0.7914110429447853
+    },
+    {
+      "task": "mmlu_moral_disputes",
+      "acc": 0.7832369942196532
+    },
+    {
+      "task": "mmlu_moral_scenarios",
+      "acc": 0.6089385474860335
+    },
+    {
+      "task": "mmlu_philosophy",
+      "acc": 0.7781350482315113
+    },
+    {
+      "task": "mmlu_prehistory",
+      "acc": 0.845679012345679
+    },
+    {
+      "task": "mmlu_professional_law",
+      "acc": 0.5039113428943938
+    },
+    {
+      "task": "mmlu_world_religions",
+      "acc": 0.8771929824561403
+    },
+    {
+      "task": "mmlu_other",
+      "acc": 0.7656903765690377
+    },
+    {
+      "task": "mmlu_business_ethics",
+      "acc": 0.79
+    },
+    {
+      "task": "mmlu_clinical_knowledge",
+      "acc": 0.7773584905660378
+    },
+    {
+      "task": "mmlu_college_medicine",
+      "acc": 0.7283236994219653
+    },
+    {
+      "task": "mmlu_global_facts",
+      "acc": 0.44
+    },
+    {
+      "task": "mmlu_human_aging",
+      "acc": 0.7309417040358744
+    },
+    {
+      "task": "mmlu_management",
+      "acc": 0.8543689320388349
+    },
+    {
+      "task": "mmlu_marketing",
+      "acc": 0.9316239316239316
+    },
+    {
+      "task": "mmlu_medical_genetics",
+      "acc": 0.83
+    },
+    {
+      "task": "mmlu_miscellaneous",
+      "acc": 0.8467432950191571
+    },
+    {
+      "task": "mmlu_nutrition",
+      "acc": 0.8006535947712419
+    },
+    {
+      "task": "mmlu_professional_accounting",
+      "acc": 0.5815602836879432
+    },
+    {
+      "task": "mmlu_professional_medicine",
+      "acc": 0.7720588235294118
+    },
+    {
+      "task": "mmlu_virology",
+      "acc": 0.5421686746987951
+    },
+    {
+      "task": "mmlu_social_sciences",
+      "acc": 0.8332791680207995
+    },
+    {
+      "task": "mmlu_econometrics",
+      "acc": 0.6491228070175439
+    },
+    {
+      "task": "mmlu_high_school_geography",
+      "acc": 0.9141414141414141
+    },
+    {
+      "task": "mmlu_high_school_government_and_politics",
+      "acc": 0.917098445595855
+    },
+    {
+      "task": "mmlu_high_school_macroeconomics",
+      "acc": 0.7846153846153846
+    },
+    {
+      "task": "mmlu_high_school_microeconomics",
+      "acc": 0.8865546218487395
+    },
+    {
+      "task": "mmlu_high_school_psychology",
+      "acc": 0.9027522935779817
+    },
+    {
+      "task": "mmlu_human_sexuality",
+      "acc": 0.7938931297709924
+    },
+    {
+      "task": "mmlu_professional_psychology",
+      "acc": 0.7728758169934641
+    },
+    {
+      "task": "mmlu_public_relations",
+      "acc": 0.7363636363636363
+    },
+    {
+      "task": "mmlu_security_studies",
+      "acc": 0.8040816326530612
+    },
+    {
+      "task": "mmlu_sociology",
+      "acc": 0.8756218905472637
+    },
+    {
+      "task": "mmlu_us_foreign_policy",
+      "acc": 0.92
+    },
+    {
+      "task": "mmlu_stem",
+      "acc": 0.693942277196321
+    },
+    {
+      "task": "mmlu_abstract_algebra",
+      "acc": 0.56
+    },
+    {
+      "task": "mmlu_anatomy",
+      "acc": 0.7037037037037037
+    },
+    {
+      "task": "mmlu_astronomy",
+      "acc": 0.8552631578947368
+    },
+    {
+      "task": "mmlu_college_biology",
+      "acc": 0.8472222222222222
+    },
+    {
+      "task": "mmlu_college_chemistry",
+      "acc": 0.53
+    },
+    {
+      "task": "mmlu_college_computer_science",
+      "acc": 0.64
+    },
+    {
+      "task": "mmlu_college_mathematics",
+      "acc": 0.51
+    },
+    {
+      "task": "mmlu_college_physics",
+      "acc": 0.5098039215686274
+    },
+    {
+      "task": "mmlu_computer_security",
+      "acc": 0.8
+    },
+    {
+      "task": "mmlu_conceptual_physics",
+      "acc": 0.7319148936170212
+    },
+    {
+      "task": "mmlu_electrical_engineering",
+      "acc": 0.7448275862068966
+    },
+    {
+      "task": "mmlu_elementary_mathematics",
+      "acc": 0.7142857142857143
+    },
+    {
+      "task": "mmlu_high_school_biology",
+      "acc": 0.8612903225806452
+    },
+    {
+      "task": "mmlu_high_school_chemistry",
+      "acc": 0.6600985221674877
+    },
+    {
+      "task": "mmlu_high_school_computer_science",
+      "acc": 0.86
+    },
+    {
+      "task": "mmlu_high_school_mathematics",
+      "acc": 0.5592592592592592
+    },
+    {
+      "task": "mmlu_high_school_physics",
+      "acc": 0.5496688741721855
+    },
+    {
+      "task": "mmlu_high_school_statistics",
+      "acc": 0.7222222222222222
+    },
+    {
+      "task": "mmlu_machine_learning",
+      "acc": 0.5178571428571429
+    }
+  ],
+  "raw": {
+    "results": {
+      "mmlu": {
+        "acc,none": 0.7334425295541945,
+        "acc_stderr,none": 0.003557378096100189,
+        "alias": "mmlu"
+      },
+      "mmlu_humanities": {
+        "acc,none": 0.6733262486716259,
+        "acc_stderr,none": 0.0065000342861805714,
+        "alias": " - humanities"
+      },
+      "mmlu_formal_logic": {
+        "alias": "  - formal_logic",
+        "acc,none": 0.5793650793650794,
+        "acc_stderr,none": 0.04415438226743745
+      },
+      "mmlu_high_school_european_history": {
+        "alias": "  - high_school_european_history",
+        "acc,none": 0.8484848484848485,
+        "acc_stderr,none": 0.02799807379878165
+      },
+      "mmlu_high_school_us_history": {
+        "alias": "  - high_school_us_history",
+        "acc,none": 0.8676470588235294,
+        "acc_stderr,none": 0.02378429752091886
+      },
+      "mmlu_high_school_world_history": {
+        "alias": "  - high_school_world_history",
+        "acc,none": 0.8607594936708861,
+        "acc_stderr,none": 0.02253552635269271
+      },
+      "mmlu_international_law": {
+        "alias": "  - international_law",
+        "acc,none": 0.8429752066115702,
+        "acc_stderr,none": 0.03321244842547128
+      },
+      "mmlu_jurisprudence": {
+        "alias": "  - jurisprudence",
+        "acc,none": 0.8148148148148148,
+        "acc_stderr,none": 0.03755265865037183
+      },
+      "mmlu_logical_fallacies": {
+        "alias": "  - logical_fallacies",
+        "acc,none": 0.7914110429447853,
+        "acc_stderr,none": 0.03192193448934724
+      },
+      "mmlu_moral_disputes": {
+        "alias": "  - moral_disputes",
+        "acc,none": 0.7832369942196532,
+        "acc_stderr,none": 0.02218347766841285
+      },
+      "mmlu_moral_scenarios": {
+        "alias": "  - moral_scenarios",
+        "acc,none": 0.6089385474860335,
+        "acc_stderr,none": 0.01632076376380838
+      },
+      "mmlu_philosophy": {
+        "alias": "  - philosophy",
+        "acc,none": 0.7781350482315113,
+        "acc_stderr,none": 0.023598858292863043
+      },
+      "mmlu_prehistory": {
+        "alias": "  - prehistory",
+        "acc,none": 0.845679012345679,
+        "acc_stderr,none": 0.020100830999851008
+      },
+      "mmlu_professional_law": {
+        "alias": "  - professional_law",
+        "acc,none": 0.5039113428943938,
+        "acc_stderr,none": 0.0127698453664412
+      },
+      "mmlu_world_religions": {
+        "alias": "  - world_religions",
+        "acc,none": 0.8771929824561403,
+        "acc_stderr,none": 0.025172984350155723
+      },
+      "mmlu_other": {
+        "acc,none": 0.7656903765690377,
+        "acc_stderr,none": 0.007320485359814746,
+        "alias": " - other"
+      },
+      "mmlu_business_ethics": {
+        "alias": "  - business_ethics",
+        "acc,none": 0.79,
+        "acc_stderr,none": 0.040936018074033256
+      },
+      "mmlu_clinical_knowledge": {
+        "alias": "  - clinical_knowledge",
+        "acc,none": 0.7773584905660378,
+        "acc_stderr,none": 0.025604233470899105
+      },
+      "mmlu_college_medicine": {
+        "alias": "  - college_medicine",
+        "acc,none": 0.7283236994219653,
+        "acc_stderr,none": 0.0339175032232166
+      },
+      "mmlu_global_facts": {
+        "alias": "  - global_facts",
+        "acc,none": 0.44,
+        "acc_stderr,none": 0.04988876515698589
+      },
+      "mmlu_human_aging": {
+        "alias": "  - human_aging",
+        "acc,none": 0.7309417040358744,
+        "acc_stderr,none": 0.029763779406874972
+      },
+      "mmlu_management": {
+        "alias": "  - management",
+        "acc,none": 0.8543689320388349,
+        "acc_stderr,none": 0.03492606476623791
+      },
+      "mmlu_marketing": {
+        "alias": "  - marketing",
+        "acc,none": 0.9316239316239316,
+        "acc_stderr,none": 0.016534627684311354
+      },
+      "mmlu_medical_genetics": {
+        "alias": "  - medical_genetics",
+        "acc,none": 0.83,
+        "acc_stderr,none": 0.0377525168068637
+      },
+      "mmlu_miscellaneous": {
+        "alias": "  - miscellaneous",
+        "acc,none": 0.8467432950191571,
+        "acc_stderr,none": 0.012881968968303275
+      },
+      "mmlu_nutrition": {
+        "alias": "  - nutrition",
+        "acc,none": 0.8006535947712419,
+        "acc_stderr,none": 0.02287581699346407
+      },
+      "mmlu_professional_accounting": {
+        "alias": "  - professional_accounting",
+        "acc,none": 0.5815602836879432,
+        "acc_stderr,none": 0.02942799403941999
+      },
+      "mmlu_professional_medicine": {
+        "alias": "  - professional_medicine",
+        "acc,none": 0.7720588235294118,
+        "acc_stderr,none": 0.025483081468029804
+      },
+      "mmlu_virology": {
+        "alias": "  - virology",
+        "acc,none": 0.5421686746987951,
+        "acc_stderr,none": 0.038786267710023595
+      },
+      "mmlu_social_sciences": {
+        "acc,none": 0.8332791680207995,
+        "acc_stderr,none": 0.0066089963833652,
+        "alias": " - social sciences"
+      },
+      "mmlu_econometrics": {
+        "alias": "  - econometrics",
+        "acc,none": 0.6491228070175439,
+        "acc_stderr,none": 0.04489539350270698
+      },
+      "mmlu_high_school_geography": {
+        "alias": "  - high_school_geography",
+        "acc,none": 0.9141414141414141,
+        "acc_stderr,none": 0.019960225563172885
+      },
+      "mmlu_high_school_government_and_politics": {
+        "alias": "  - high_school_government_and_politics",
+        "acc,none": 0.917098445595855,
+        "acc_stderr,none": 0.01989934131572178
+      },
+      "mmlu_high_school_macroeconomics": {
+        "alias": "  - high_school_macroeconomics",
+        "acc,none": 0.7846153846153846,
+        "acc_stderr,none": 0.020843034557462878
+      },
+      "mmlu_high_school_microeconomics": {
+        "alias": "  - high_school_microeconomics",
+        "acc,none": 0.8865546218487395,
+        "acc_stderr,none": 0.020600225750204832
+      },
+      "mmlu_high_school_psychology": {
+        "alias": "  - high_school_psychology",
+        "acc,none": 0.9027522935779817,
+        "acc_stderr,none": 0.012703533408540385
+      },
+      "mmlu_human_sexuality": {
+        "alias": "  - human_sexuality",
+        "acc,none": 0.7938931297709924,
+        "acc_stderr,none": 0.03547771004159463
+      },
+      "mmlu_professional_psychology": {
+        "alias": "  - professional_psychology",
+        "acc,none": 0.7728758169934641,
+        "acc_stderr,none": 0.016949853279212376
+      },
+      "mmlu_public_relations": {
+        "alias": "  - public_relations",
+        "acc,none": 0.7363636363636363,
+        "acc_stderr,none": 0.04220224692971987
+      },
+      "mmlu_security_studies": {
+        "alias": "  - security_studies",
+        "acc,none": 0.8040816326530612,
+        "acc_stderr,none": 0.025409301953225678
+      },
+      "mmlu_sociology": {
+        "alias": "  - sociology",
+        "acc,none": 0.8756218905472637,
+        "acc_stderr,none": 0.023335401790166327
+      },
+      "mmlu_us_foreign_policy": {
+        "alias": "  - us_foreign_policy",
+        "acc,none": 0.92,
+        "acc_stderr,none": 0.027265992434429086
+      },
+      "mmlu_stem": {
+        "acc,none": 0.693942277196321,
+        "acc_stderr,none": 0.007955082169766783,
+        "alias": " - stem"
+      },
+      "mmlu_abstract_algebra": {
+        "alias": "  - abstract_algebra",
+        "acc,none": 0.56,
+        "acc_stderr,none": 0.04988876515698589
+      },
+      "mmlu_anatomy": {
+        "alias": "  - anatomy",
+        "acc,none": 0.7037037037037037,
+        "acc_stderr,none": 0.039446241625011175
+      },
+      "mmlu_astronomy": {
+        "alias": "  - astronomy",
+        "acc,none": 0.8552631578947368,
+        "acc_stderr,none": 0.028631951845930405
+      },
+      "mmlu_college_biology": {
+        "alias": "  - college_biology",
+        "acc,none": 0.8472222222222222,
+        "acc_stderr,none": 0.03008574324856565
+      },
+      "mmlu_college_chemistry": {
+        "alias": "  - college_chemistry",
+        "acc,none": 0.53,
+        "acc_stderr,none": 0.050161355804659205
+      },
+      "mmlu_college_computer_science": {
+        "alias": "  - college_computer_science",
+        "acc,none": 0.64,
+        "acc_stderr,none": 0.04824181513244218
+      },
+      "mmlu_college_mathematics": {
+        "alias": "  - college_mathematics",
+        "acc,none": 0.51,
+        "acc_stderr,none": 0.05024183937956912
+      },
+      "mmlu_college_physics": {
+        "alias": "  - college_physics",
+        "acc,none": 0.5098039215686274,
+        "acc_stderr,none": 0.04974229460422817
+      },
+      "mmlu_computer_security": {
+        "alias": "  - computer_security",
+        "acc,none": 0.8,
+        "acc_stderr,none": 0.04020151261036845
+      },
+      "mmlu_conceptual_physics": {
+        "alias": "  - conceptual_physics",
+        "acc,none": 0.7319148936170212,
+        "acc_stderr,none": 0.028957342788342347
+      },
+      "mmlu_electrical_engineering": {
+        "alias": "  - electrical_engineering",
+        "acc,none": 0.7448275862068966,
+        "acc_stderr,none": 0.03632984052707842
+      },
+      "mmlu_elementary_mathematics": {
+        "alias": "  - elementary_mathematics",
+        "acc,none": 0.7142857142857143,
+        "acc_stderr,none": 0.023266512213730578
+      },
+      "mmlu_high_school_biology": {
+        "alias": "  - high_school_biology",
+        "acc,none": 0.8612903225806452,
+        "acc_stderr,none": 0.01966296132141402
+      },
+      "mmlu_high_school_chemistry": {
+        "alias": "  - high_school_chemistry",
+        "acc,none": 0.6600985221674877,
+        "acc_stderr,none": 0.033327690684107895
+      },
+      "mmlu_high_school_computer_science": {
+        "alias": "  - high_school_computer_science",
+        "acc,none": 0.86,
+        "acc_stderr,none": 0.034873508801977704
+      },
+      "mmlu_high_school_mathematics": {
+        "alias": "  - high_school_mathematics",
+        "acc,none": 0.5592592592592592,
+        "acc_stderr,none": 0.030270671157284063
+      },
+      "mmlu_high_school_physics": {
+        "alias": "  - high_school_physics",
+        "acc,none": 0.5496688741721855,
+        "acc_stderr,none": 0.04062290018683775
+      },
+      "mmlu_high_school_statistics": {
+        "alias": "  - high_school_statistics",
+        "acc,none": 0.7222222222222222,
+        "acc_stderr,none": 0.0305467452649532
+      },
+      "mmlu_machine_learning": {
+        "alias": "  - machine_learning",
+        "acc,none": 0.5178571428571429,
+        "acc_stderr,none": 0.047427623612430116
+      }
+    },
+    "groups": {
+      "mmlu": {
+        "acc,none": 0.7334425295541945,
+        "acc_stderr,none": 0.003557378096100189,
+        "alias": "mmlu"
+      },
+      "mmlu_humanities": {
+        "acc,none": 0.6733262486716259,
+        "acc_stderr,none": 0.0065000342861805714,
+        "alias": " - humanities"
+      },
+      "mmlu_other": {
+        "acc,none": 0.7656903765690377,
+        "acc_stderr,none": 0.007320485359814746,
+        "alias": " - other"
+      },
+      "mmlu_social_sciences": {
+        "acc,none": 0.8332791680207995,
+        "acc_stderr,none": 0.0066089963833652,
+        "alias": " - social sciences"
+      },
+      "mmlu_stem": {
+        "acc,none": 0.693942277196321,
+        "acc_stderr,none": 0.007955082169766783,
+        "alias": " - stem"
+      }
+    },
+    "group_subtasks": {
+      "mmlu_humanities": [
+        "mmlu_formal_logic",
+        "mmlu_high_school_european_history",
+        "mmlu_high_school_us_history",
+        "mmlu_high_school_world_history",
+        "mmlu_international_law",
+        "mmlu_jurisprudence",
+        "mmlu_logical_fallacies",
+        "mmlu_moral_disputes",
+        "mmlu_moral_scenarios",
+        "mmlu_philosophy",
+        "mmlu_prehistory",
+        "mmlu_professional_law",
+        "mmlu_world_religions"
+      ],
+      "mmlu_social_sciences": [
+        "mmlu_econometrics",
+        "mmlu_high_school_geography",
+        "mmlu_high_school_government_and_politics",
+        "mmlu_high_school_macroeconomics",
+        "mmlu_high_school_microeconomics",
+        "mmlu_high_school_psychology",
+        "mmlu_human_sexuality",
+        "mmlu_professional_psychology",
+        "mmlu_public_relations",
+        "mmlu_security_studies",
+        "mmlu_sociology",
+        "mmlu_us_foreign_policy"
+      ],
+      "mmlu_other": [
+        "mmlu_business_ethics",
+        "mmlu_clinical_knowledge",
+        "mmlu_college_medicine",
+        "mmlu_global_facts",
+        "mmlu_human_aging",
+        "mmlu_management",
+        "mmlu_marketing",
+        "mmlu_medical_genetics",
+        "mmlu_miscellaneous",
+        "mmlu_nutrition",
+        "mmlu_professional_accounting",
+        "mmlu_professional_medicine",
+        "mmlu_virology"
+      ],
+      "mmlu_stem": [
+        "mmlu_abstract_algebra",
+        "mmlu_anatomy",
+        "mmlu_astronomy",
+        "mmlu_college_biology",
+        "mmlu_college_chemistry",
+        "mmlu_college_computer_science",
+        "mmlu_college_mathematics",
+        "mmlu_college_physics",
+        "mmlu_computer_security",
+        "mmlu_conceptual_physics",
+        "mmlu_electrical_engineering",
+        "mmlu_elementary_mathematics",
+        "mmlu_high_school_biology",
+        "mmlu_high_school_chemistry",
+        "mmlu_high_school_computer_science",
+        "mmlu_high_school_mathematics",
+        "mmlu_high_school_physics",
+        "mmlu_high_school_statistics",
+        "mmlu_machine_learning"
+      ],
+      "mmlu": [
+        "mmlu_stem",
+        "mmlu_other",
+        "mmlu_social_sciences",
+        "mmlu_humanities"
+      ]
+    },
+    "configs": {
+      "mmlu_abstract_algebra": {
+        "task": "mmlu_abstract_algebra",
+        "task_alias": "abstract_algebra",
+        "tag": "mmlu_stem_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "abstract_algebra",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about abstract algebra.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_anatomy": {
+        "task": "mmlu_anatomy",
+        "task_alias": "anatomy",
+        "tag": "mmlu_stem_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "anatomy",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about anatomy.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_astronomy": {
+        "task": "mmlu_astronomy",
+        "task_alias": "astronomy",
+        "tag": "mmlu_stem_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "astronomy",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about astronomy.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_business_ethics": {
+        "task": "mmlu_business_ethics",
+        "task_alias": "business_ethics",
+        "tag": "mmlu_other_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "business_ethics",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about business ethics.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_clinical_knowledge": {
+        "task": "mmlu_clinical_knowledge",
+        "task_alias": "clinical_knowledge",
+        "tag": "mmlu_other_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "clinical_knowledge",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about clinical knowledge.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_college_biology": {
+        "task": "mmlu_college_biology",
+        "task_alias": "college_biology",
+        "tag": "mmlu_stem_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "college_biology",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about college biology.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_college_chemistry": {
+        "task": "mmlu_college_chemistry",
+        "task_alias": "college_chemistry",
+        "tag": "mmlu_stem_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "college_chemistry",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about college chemistry.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_college_computer_science": {
+        "task": "mmlu_college_computer_science",
+        "task_alias": "college_computer_science",
+        "tag": "mmlu_stem_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "college_computer_science",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about college computer science.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_college_mathematics": {
+        "task": "mmlu_college_mathematics",
+        "task_alias": "college_mathematics",
+        "tag": "mmlu_stem_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "college_mathematics",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about college mathematics.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_college_medicine": {
+        "task": "mmlu_college_medicine",
+        "task_alias": "college_medicine",
+        "tag": "mmlu_other_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "college_medicine",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about college medicine.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_college_physics": {
+        "task": "mmlu_college_physics",
+        "task_alias": "college_physics",
+        "tag": "mmlu_stem_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "college_physics",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about college physics.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_computer_security": {
+        "task": "mmlu_computer_security",
+        "task_alias": "computer_security",
+        "tag": "mmlu_stem_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "computer_security",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about computer security.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_conceptual_physics": {
+        "task": "mmlu_conceptual_physics",
+        "task_alias": "conceptual_physics",
+        "tag": "mmlu_stem_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "conceptual_physics",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about conceptual physics.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_econometrics": {
+        "task": "mmlu_econometrics",
+        "task_alias": "econometrics",
+        "tag": "mmlu_social_sciences_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "econometrics",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about econometrics.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_electrical_engineering": {
+        "task": "mmlu_electrical_engineering",
+        "task_alias": "electrical_engineering",
+        "tag": "mmlu_stem_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "electrical_engineering",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about electrical engineering.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_elementary_mathematics": {
+        "task": "mmlu_elementary_mathematics",
+        "task_alias": "elementary_mathematics",
+        "tag": "mmlu_stem_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "elementary_mathematics",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about elementary mathematics.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_formal_logic": {
+        "task": "mmlu_formal_logic",
+        "task_alias": "formal_logic",
+        "tag": "mmlu_humanities_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "formal_logic",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about formal logic.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_global_facts": {
+        "task": "mmlu_global_facts",
+        "task_alias": "global_facts",
+        "tag": "mmlu_other_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "global_facts",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about global facts.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_high_school_biology": {
+        "task": "mmlu_high_school_biology",
+        "task_alias": "high_school_biology",
+        "tag": "mmlu_stem_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "high_school_biology",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about high school biology.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_high_school_chemistry": {
+        "task": "mmlu_high_school_chemistry",
+        "task_alias": "high_school_chemistry",
+        "tag": "mmlu_stem_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "high_school_chemistry",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about high school chemistry.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_high_school_computer_science": {
+        "task": "mmlu_high_school_computer_science",
+        "task_alias": "high_school_computer_science",
+        "tag": "mmlu_stem_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "high_school_computer_science",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about high school computer science.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_high_school_european_history": {
+        "task": "mmlu_high_school_european_history",
+        "task_alias": "high_school_european_history",
+        "tag": "mmlu_humanities_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "high_school_european_history",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about high school european history.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_high_school_geography": {
+        "task": "mmlu_high_school_geography",
+        "task_alias": "high_school_geography",
+        "tag": "mmlu_social_sciences_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "high_school_geography",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about high school geography.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_high_school_government_and_politics": {
+        "task": "mmlu_high_school_government_and_politics",
+        "task_alias": "high_school_government_and_politics",
+        "tag": "mmlu_social_sciences_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "high_school_government_and_politics",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about high school government and politics.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_high_school_macroeconomics": {
+        "task": "mmlu_high_school_macroeconomics",
+        "task_alias": "high_school_macroeconomics",
+        "tag": "mmlu_social_sciences_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "high_school_macroeconomics",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about high school macroeconomics.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_high_school_mathematics": {
+        "task": "mmlu_high_school_mathematics",
+        "task_alias": "high_school_mathematics",
+        "tag": "mmlu_stem_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "high_school_mathematics",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about high school mathematics.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_high_school_microeconomics": {
+        "task": "mmlu_high_school_microeconomics",
+        "task_alias": "high_school_microeconomics",
+        "tag": "mmlu_social_sciences_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "high_school_microeconomics",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about high school microeconomics.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_high_school_physics": {
+        "task": "mmlu_high_school_physics",
+        "task_alias": "high_school_physics",
+        "tag": "mmlu_stem_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "high_school_physics",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about high school physics.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_high_school_psychology": {
+        "task": "mmlu_high_school_psychology",
+        "task_alias": "high_school_psychology",
+        "tag": "mmlu_social_sciences_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "high_school_psychology",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about high school psychology.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_high_school_statistics": {
+        "task": "mmlu_high_school_statistics",
+        "task_alias": "high_school_statistics",
+        "tag": "mmlu_stem_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "high_school_statistics",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about high school statistics.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_high_school_us_history": {
+        "task": "mmlu_high_school_us_history",
+        "task_alias": "high_school_us_history",
+        "tag": "mmlu_humanities_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "high_school_us_history",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about high school us history.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_high_school_world_history": {
+        "task": "mmlu_high_school_world_history",
+        "task_alias": "high_school_world_history",
+        "tag": "mmlu_humanities_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "high_school_world_history",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about high school world history.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_human_aging": {
+        "task": "mmlu_human_aging",
+        "task_alias": "human_aging",
+        "tag": "mmlu_other_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "human_aging",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about human aging.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_human_sexuality": {
+        "task": "mmlu_human_sexuality",
+        "task_alias": "human_sexuality",
+        "tag": "mmlu_social_sciences_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "human_sexuality",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about human sexuality.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_international_law": {
+        "task": "mmlu_international_law",
+        "task_alias": "international_law",
+        "tag": "mmlu_humanities_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "international_law",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about international law.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_jurisprudence": {
+        "task": "mmlu_jurisprudence",
+        "task_alias": "jurisprudence",
+        "tag": "mmlu_humanities_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "jurisprudence",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about jurisprudence.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_logical_fallacies": {
+        "task": "mmlu_logical_fallacies",
+        "task_alias": "logical_fallacies",
+        "tag": "mmlu_humanities_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "logical_fallacies",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about logical fallacies.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_machine_learning": {
+        "task": "mmlu_machine_learning",
+        "task_alias": "machine_learning",
+        "tag": "mmlu_stem_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "machine_learning",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about machine learning.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_management": {
+        "task": "mmlu_management",
+        "task_alias": "management",
+        "tag": "mmlu_other_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "management",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about management.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_marketing": {
+        "task": "mmlu_marketing",
+        "task_alias": "marketing",
+        "tag": "mmlu_other_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "marketing",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about marketing.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_medical_genetics": {
+        "task": "mmlu_medical_genetics",
+        "task_alias": "medical_genetics",
+        "tag": "mmlu_other_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "medical_genetics",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about medical genetics.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_miscellaneous": {
+        "task": "mmlu_miscellaneous",
+        "task_alias": "miscellaneous",
+        "tag": "mmlu_other_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "miscellaneous",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about miscellaneous.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_moral_disputes": {
+        "task": "mmlu_moral_disputes",
+        "task_alias": "moral_disputes",
+        "tag": "mmlu_humanities_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "moral_disputes",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about moral disputes.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_moral_scenarios": {
+        "task": "mmlu_moral_scenarios",
+        "task_alias": "moral_scenarios",
+        "tag": "mmlu_humanities_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "moral_scenarios",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about moral scenarios.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_nutrition": {
+        "task": "mmlu_nutrition",
+        "task_alias": "nutrition",
+        "tag": "mmlu_other_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "nutrition",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about nutrition.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_philosophy": {
+        "task": "mmlu_philosophy",
+        "task_alias": "philosophy",
+        "tag": "mmlu_humanities_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "philosophy",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about philosophy.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_prehistory": {
+        "task": "mmlu_prehistory",
+        "task_alias": "prehistory",
+        "tag": "mmlu_humanities_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "prehistory",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about prehistory.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_professional_accounting": {
+        "task": "mmlu_professional_accounting",
+        "task_alias": "professional_accounting",
+        "tag": "mmlu_other_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "professional_accounting",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about professional accounting.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_professional_law": {
+        "task": "mmlu_professional_law",
+        "task_alias": "professional_law",
+        "tag": "mmlu_humanities_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "professional_law",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about professional law.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_professional_medicine": {
+        "task": "mmlu_professional_medicine",
+        "task_alias": "professional_medicine",
+        "tag": "mmlu_other_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "professional_medicine",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about professional medicine.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_professional_psychology": {
+        "task": "mmlu_professional_psychology",
+        "task_alias": "professional_psychology",
+        "tag": "mmlu_social_sciences_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "professional_psychology",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about professional psychology.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_public_relations": {
+        "task": "mmlu_public_relations",
+        "task_alias": "public_relations",
+        "tag": "mmlu_social_sciences_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "public_relations",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about public relations.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_security_studies": {
+        "task": "mmlu_security_studies",
+        "task_alias": "security_studies",
+        "tag": "mmlu_social_sciences_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "security_studies",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about security studies.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_sociology": {
+        "task": "mmlu_sociology",
+        "task_alias": "sociology",
+        "tag": "mmlu_social_sciences_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "sociology",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about sociology.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_us_foreign_policy": {
+        "task": "mmlu_us_foreign_policy",
+        "task_alias": "us_foreign_policy",
+        "tag": "mmlu_social_sciences_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "us_foreign_policy",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about us foreign policy.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_virology": {
+        "task": "mmlu_virology",
+        "task_alias": "virology",
+        "tag": "mmlu_other_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "virology",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about virology.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      },
+      "mmlu_world_religions": {
+        "task": "mmlu_world_religions",
+        "task_alias": "world_religions",
+        "tag": "mmlu_humanities_tasks",
+        "dataset_path": "cais/mmlu",
+        "dataset_name": "world_religions",
+        "test_split": "test",
+        "fewshot_split": "dev",
+        "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+        "doc_to_target": "answer",
+        "unsafe_code": false,
+        "doc_to_choice": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "The following are multiple choice questions (with answers) about world religions.\n\n",
+        "target_delimiter": " ",
+        "fewshot_delimiter": "\n\n",
+        "fewshot_config": {
+          "sampler": "first_n",
+          "split": "dev",
+          "process_docs": null,
+          "fewshot_indices": null,
+          "samples": null,
+          "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+          "doc_to_choice": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "doc_to_target": "answer",
+          "gen_prefix": null,
+          "fewshot_delimiter": "\n\n",
+          "target_delimiter": " "
+        },
+        "num_fewshot": 5,
+        "metric_list": [
+          {
+            "metric": "acc",
+            "aggregation": "mean",
+            "higher_is_better": true
+          }
+        ],
+        "output_type": "multiple_choice",
+        "repeats": 1,
+        "should_decontaminate": false,
+        "metadata": {
+          "version": 1.0,
+          "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+          "base_url": "http://localhost:8001/v1/completions",
+          "num_concurrent": 16
+        }
+      }
+    },
+    "versions": {
+      "mmlu": 2,
+      "mmlu_abstract_algebra": 1.0,
+      "mmlu_anatomy": 1.0,
+      "mmlu_astronomy": 1.0,
+      "mmlu_business_ethics": 1.0,
+      "mmlu_clinical_knowledge": 1.0,
+      "mmlu_college_biology": 1.0,
+      "mmlu_college_chemistry": 1.0,
+      "mmlu_college_computer_science": 1.0,
+      "mmlu_college_mathematics": 1.0,
+      "mmlu_college_medicine": 1.0,
+      "mmlu_college_physics": 1.0,
+      "mmlu_computer_security": 1.0,
+      "mmlu_conceptual_physics": 1.0,
+      "mmlu_econometrics": 1.0,
+      "mmlu_electrical_engineering": 1.0,
+      "mmlu_elementary_mathematics": 1.0,
+      "mmlu_formal_logic": 1.0,
+      "mmlu_global_facts": 1.0,
+      "mmlu_high_school_biology": 1.0,
+      "mmlu_high_school_chemistry": 1.0,
+      "mmlu_high_school_computer_science": 1.0,
+      "mmlu_high_school_european_history": 1.0,
+      "mmlu_high_school_geography": 1.0,
+      "mmlu_high_school_government_and_politics": 1.0,
+      "mmlu_high_school_macroeconomics": 1.0,
+      "mmlu_high_school_mathematics": 1.0,
+      "mmlu_high_school_microeconomics": 1.0,
+      "mmlu_high_school_physics": 1.0,
+      "mmlu_high_school_psychology": 1.0,
+      "mmlu_high_school_statistics": 1.0,
+      "mmlu_high_school_us_history": 1.0,
+      "mmlu_high_school_world_history": 1.0,
+      "mmlu_human_aging": 1.0,
+      "mmlu_human_sexuality": 1.0,
+      "mmlu_humanities": 2,
+      "mmlu_international_law": 1.0,
+      "mmlu_jurisprudence": 1.0,
+      "mmlu_logical_fallacies": 1.0,
+      "mmlu_machine_learning": 1.0,
+      "mmlu_management": 1.0,
+      "mmlu_marketing": 1.0,
+      "mmlu_medical_genetics": 1.0,
+      "mmlu_miscellaneous": 1.0,
+      "mmlu_moral_disputes": 1.0,
+      "mmlu_moral_scenarios": 1.0,
+      "mmlu_nutrition": 1.0,
+      "mmlu_other": 2,
+      "mmlu_philosophy": 1.0,
+      "mmlu_prehistory": 1.0,
+      "mmlu_professional_accounting": 1.0,
+      "mmlu_professional_law": 1.0,
+      "mmlu_professional_medicine": 1.0,
+      "mmlu_professional_psychology": 1.0,
+      "mmlu_public_relations": 1.0,
+      "mmlu_security_studies": 1.0,
+      "mmlu_social_sciences": 2,
+      "mmlu_sociology": 1.0,
+      "mmlu_stem": 2,
+      "mmlu_us_foreign_policy": 1.0,
+      "mmlu_virology": 1.0,
+      "mmlu_world_religions": 1.0
+    },
+    "n-shot": {
+      "mmlu_abstract_algebra": 5,
+      "mmlu_anatomy": 5,
+      "mmlu_astronomy": 5,
+      "mmlu_business_ethics": 5,
+      "mmlu_clinical_knowledge": 5,
+      "mmlu_college_biology": 5,
+      "mmlu_college_chemistry": 5,
+      "mmlu_college_computer_science": 5,
+      "mmlu_college_mathematics": 5,
+      "mmlu_college_medicine": 5,
+      "mmlu_college_physics": 5,
+      "mmlu_computer_security": 5,
+      "mmlu_conceptual_physics": 5,
+      "mmlu_econometrics": 5,
+      "mmlu_electrical_engineering": 5,
+      "mmlu_elementary_mathematics": 5,
+      "mmlu_formal_logic": 5,
+      "mmlu_global_facts": 5,
+      "mmlu_high_school_biology": 5,
+      "mmlu_high_school_chemistry": 5,
+      "mmlu_high_school_computer_science": 5,
+      "mmlu_high_school_european_history": 5,
+      "mmlu_high_school_geography": 5,
+      "mmlu_high_school_government_and_politics": 5,
+      "mmlu_high_school_macroeconomics": 5,
+      "mmlu_high_school_mathematics": 5,
+      "mmlu_high_school_microeconomics": 5,
+      "mmlu_high_school_physics": 5,
+      "mmlu_high_school_psychology": 5,
+      "mmlu_high_school_statistics": 5,
+      "mmlu_high_school_us_history": 5,
+      "mmlu_high_school_world_history": 5,
+      "mmlu_human_aging": 5,
+      "mmlu_human_sexuality": 5,
+      "mmlu_international_law": 5,
+      "mmlu_jurisprudence": 5,
+      "mmlu_logical_fallacies": 5,
+      "mmlu_machine_learning": 5,
+      "mmlu_management": 5,
+      "mmlu_marketing": 5,
+      "mmlu_medical_genetics": 5,
+      "mmlu_miscellaneous": 5,
+      "mmlu_moral_disputes": 5,
+      "mmlu_moral_scenarios": 5,
+      "mmlu_nutrition": 5,
+      "mmlu_philosophy": 5,
+      "mmlu_prehistory": 5,
+      "mmlu_professional_accounting": 5,
+      "mmlu_professional_law": 5,
+      "mmlu_professional_medicine": 5,
+      "mmlu_professional_psychology": 5,
+      "mmlu_public_relations": 5,
+      "mmlu_security_studies": 5,
+      "mmlu_sociology": 5,
+      "mmlu_us_foreign_policy": 5,
+      "mmlu_virology": 5,
+      "mmlu_world_religions": 5
+    },
+    "higher_is_better": {
+      "mmlu": {
+        "acc": true
+      },
+      "mmlu_abstract_algebra": {
+        "acc": true
+      },
+      "mmlu_anatomy": {
+        "acc": true
+      },
+      "mmlu_astronomy": {
+        "acc": true
+      },
+      "mmlu_business_ethics": {
+        "acc": true
+      },
+      "mmlu_clinical_knowledge": {
+        "acc": true
+      },
+      "mmlu_college_biology": {
+        "acc": true
+      },
+      "mmlu_college_chemistry": {
+        "acc": true
+      },
+      "mmlu_college_computer_science": {
+        "acc": true
+      },
+      "mmlu_college_mathematics": {
+        "acc": true
+      },
+      "mmlu_college_medicine": {
+        "acc": true
+      },
+      "mmlu_college_physics": {
+        "acc": true
+      },
+      "mmlu_computer_security": {
+        "acc": true
+      },
+      "mmlu_conceptual_physics": {
+        "acc": true
+      },
+      "mmlu_econometrics": {
+        "acc": true
+      },
+      "mmlu_electrical_engineering": {
+        "acc": true
+      },
+      "mmlu_elementary_mathematics": {
+        "acc": true
+      },
+      "mmlu_formal_logic": {
+        "acc": true
+      },
+      "mmlu_global_facts": {
+        "acc": true
+      },
+      "mmlu_high_school_biology": {
+        "acc": true
+      },
+      "mmlu_high_school_chemistry": {
+        "acc": true
+      },
+      "mmlu_high_school_computer_science": {
+        "acc": true
+      },
+      "mmlu_high_school_european_history": {
+        "acc": true
+      },
+      "mmlu_high_school_geography": {
+        "acc": true
+      },
+      "mmlu_high_school_government_and_politics": {
+        "acc": true
+      },
+      "mmlu_high_school_macroeconomics": {
+        "acc": true
+      },
+      "mmlu_high_school_mathematics": {
+        "acc": true
+      },
+      "mmlu_high_school_microeconomics": {
+        "acc": true
+      },
+      "mmlu_high_school_physics": {
+        "acc": true
+      },
+      "mmlu_high_school_psychology": {
+        "acc": true
+      },
+      "mmlu_high_school_statistics": {
+        "acc": true
+      },
+      "mmlu_high_school_us_history": {
+        "acc": true
+      },
+      "mmlu_high_school_world_history": {
+        "acc": true
+      },
+      "mmlu_human_aging": {
+        "acc": true
+      },
+      "mmlu_human_sexuality": {
+        "acc": true
+      },
+      "mmlu_humanities": {
+        "acc": true
+      },
+      "mmlu_international_law": {
+        "acc": true
+      },
+      "mmlu_jurisprudence": {
+        "acc": true
+      },
+      "mmlu_logical_fallacies": {
+        "acc": true
+      },
+      "mmlu_machine_learning": {
+        "acc": true
+      },
+      "mmlu_management": {
+        "acc": true
+      },
+      "mmlu_marketing": {
+        "acc": true
+      },
+      "mmlu_medical_genetics": {
+        "acc": true
+      },
+      "mmlu_miscellaneous": {
+        "acc": true
+      },
+      "mmlu_moral_disputes": {
+        "acc": true
+      },
+      "mmlu_moral_scenarios": {
+        "acc": true
+      },
+      "mmlu_nutrition": {
+        "acc": true
+      },
+      "mmlu_other": {
+        "acc": true
+      },
+      "mmlu_philosophy": {
+        "acc": true
+      },
+      "mmlu_prehistory": {
+        "acc": true
+      },
+      "mmlu_professional_accounting": {
+        "acc": true
+      },
+      "mmlu_professional_law": {
+        "acc": true
+      },
+      "mmlu_professional_medicine": {
+        "acc": true
+      },
+      "mmlu_professional_psychology": {
+        "acc": true
+      },
+      "mmlu_public_relations": {
+        "acc": true
+      },
+      "mmlu_security_studies": {
+        "acc": true
+      },
+      "mmlu_social_sciences": {
+        "acc": true
+      },
+      "mmlu_sociology": {
+        "acc": true
+      },
+      "mmlu_stem": {
+        "acc": true
+      },
+      "mmlu_us_foreign_policy": {
+        "acc": true
+      },
+      "mmlu_virology": {
+        "acc": true
+      },
+      "mmlu_world_religions": {
+        "acc": true
+      }
+    },
+    "n-samples": {
+      "mmlu_abstract_algebra": {
+        "original": 100,
+        "effective": 100
+      },
+      "mmlu_anatomy": {
+        "original": 135,
+        "effective": 135
+      },
+      "mmlu_astronomy": {
+        "original": 152,
+        "effective": 152
+      },
+      "mmlu_college_biology": {
+        "original": 144,
+        "effective": 144
+      },
+      "mmlu_college_chemistry": {
+        "original": 100,
+        "effective": 100
+      },
+      "mmlu_college_computer_science": {
+        "original": 100,
+        "effective": 100
+      },
+      "mmlu_college_mathematics": {
+        "original": 100,
+        "effective": 100
+      },
+      "mmlu_college_physics": {
+        "original": 102,
+        "effective": 102
+      },
+      "mmlu_computer_security": {
+        "original": 100,
+        "effective": 100
+      },
+      "mmlu_conceptual_physics": {
+        "original": 235,
+        "effective": 235
+      },
+      "mmlu_electrical_engineering": {
+        "original": 145,
+        "effective": 145
+      },
+      "mmlu_elementary_mathematics": {
+        "original": 378,
+        "effective": 378
+      },
+      "mmlu_high_school_biology": {
+        "original": 310,
+        "effective": 310
+      },
+      "mmlu_high_school_chemistry": {
+        "original": 203,
+        "effective": 203
+      },
+      "mmlu_high_school_computer_science": {
+        "original": 100,
+        "effective": 100
+      },
+      "mmlu_high_school_mathematics": {
+        "original": 270,
+        "effective": 270
+      },
+      "mmlu_high_school_physics": {
+        "original": 151,
+        "effective": 151
+      },
+      "mmlu_high_school_statistics": {
+        "original": 216,
+        "effective": 216
+      },
+      "mmlu_machine_learning": {
+        "original": 112,
+        "effective": 112
+      },
+      "mmlu_business_ethics": {
+        "original": 100,
+        "effective": 100
+      },
+      "mmlu_clinical_knowledge": {
+        "original": 265,
+        "effective": 265
+      },
+      "mmlu_college_medicine": {
+        "original": 173,
+        "effective": 173
+      },
+      "mmlu_global_facts": {
+        "original": 100,
+        "effective": 100
+      },
+      "mmlu_human_aging": {
+        "original": 223,
+        "effective": 223
+      },
+      "mmlu_management": {
+        "original": 103,
+        "effective": 103
+      },
+      "mmlu_marketing": {
+        "original": 234,
+        "effective": 234
+      },
+      "mmlu_medical_genetics": {
+        "original": 100,
+        "effective": 100
+      },
+      "mmlu_miscellaneous": {
+        "original": 783,
+        "effective": 783
+      },
+      "mmlu_nutrition": {
+        "original": 306,
+        "effective": 306
+      },
+      "mmlu_professional_accounting": {
+        "original": 282,
+        "effective": 282
+      },
+      "mmlu_professional_medicine": {
+        "original": 272,
+        "effective": 272
+      },
+      "mmlu_virology": {
+        "original": 166,
+        "effective": 166
+      },
+      "mmlu_econometrics": {
+        "original": 114,
+        "effective": 114
+      },
+      "mmlu_high_school_geography": {
+        "original": 198,
+        "effective": 198
+      },
+      "mmlu_high_school_government_and_politics": {
+        "original": 193,
+        "effective": 193
+      },
+      "mmlu_high_school_macroeconomics": {
+        "original": 390,
+        "effective": 390
+      },
+      "mmlu_high_school_microeconomics": {
+        "original": 238,
+        "effective": 238
+      },
+      "mmlu_high_school_psychology": {
+        "original": 545,
+        "effective": 545
+      },
+      "mmlu_human_sexuality": {
+        "original": 131,
+        "effective": 131
+      },
+      "mmlu_professional_psychology": {
+        "original": 612,
+        "effective": 612
+      },
+      "mmlu_public_relations": {
+        "original": 110,
+        "effective": 110
+      },
+      "mmlu_security_studies": {
+        "original": 245,
+        "effective": 245
+      },
+      "mmlu_sociology": {
+        "original": 201,
+        "effective": 201
+      },
+      "mmlu_us_foreign_policy": {
+        "original": 100,
+        "effective": 100
+      },
+      "mmlu_formal_logic": {
+        "original": 126,
+        "effective": 126
+      },
+      "mmlu_high_school_european_history": {
+        "original": 165,
+        "effective": 165
+      },
+      "mmlu_high_school_us_history": {
+        "original": 204,
+        "effective": 204
+      },
+      "mmlu_high_school_world_history": {
+        "original": 237,
+        "effective": 237
+      },
+      "mmlu_international_law": {
+        "original": 121,
+        "effective": 121
+      },
+      "mmlu_jurisprudence": {
+        "original": 108,
+        "effective": 108
+      },
+      "mmlu_logical_fallacies": {
+        "original": 163,
+        "effective": 163
+      },
+      "mmlu_moral_disputes": {
+        "original": 346,
+        "effective": 346
+      },
+      "mmlu_moral_scenarios": {
+        "original": 895,
+        "effective": 895
+      },
+      "mmlu_philosophy": {
+        "original": 311,
+        "effective": 311
+      },
+      "mmlu_prehistory": {
+        "original": 324,
+        "effective": 324
+      },
+      "mmlu_professional_law": {
+        "original": 1534,
+        "effective": 1534
+      },
+      "mmlu_world_religions": {
+        "original": 171,
+        "effective": 171
+      }
+    },
+    "config": {
+      "model": "local-completions",
+      "model_args": {
+        "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+        "base_url": "http://localhost:8001/v1/completions",
+        "num_concurrent": 16
+      },
+      "batch_size": 1,
+      "batch_sizes": [],
+      "device": "cuda:0",
+      "use_cache": null,
+      "limit": null,
+      "bootstrap_iters": 100000,
+      "gen_kwargs": {},
+      "random_seed": 0,
+      "numpy_seed": 1234,
+      "torch_seed": 1234,
+      "fewshot_seed": 1234
+    },
+    "git_hash": "c3a088d",
+    "date": 1776974290.985994,
+    "pretty_env_info": "PyTorch version: 2.10.0+cu128\nIs debug build: False\nCUDA used to build PyTorch: 12.8\nROCM used to build PyTorch: N/A\n\nOS: Ubuntu 24.04.4 LTS (x86_64)\nGCC version: (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\nClang version: Could not collect\nCMake version: Could not collect\nLibc version: glibc-2.39\n\nPython version: 3.11.14 (main, Oct 21 2025, 18:31:21) [GCC 11.2.0] (64-bit runtime)\nPython platform: Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39\nIs CUDA available: True\nCUDA runtime version: 12.0.140\nCUDA_MODULE_LOADING set to: \nGPU models and configuration: GPU 0: NVIDIA RTX PRO 6000 Blackwell Max-Q Workstation Edition\nNvidia driver version: 582.16\ncuDNN version: Probably one of the following:\n/usr/lib/x86_64-linux-gnu/libcudnn.so.8.9.2\n/usr/lib/x86_64-linux-gnu/libcudnn_adv_infer.so.8.9.2\n/usr/lib/x86_64-linux-gnu/libcudnn_adv_train.so.8.9.2\n/usr/lib/x86_64-linux-gnu/libcudnn_cnn_infer.so.8.9.2\n/usr/lib/x86_64-linux-gnu/libcudnn_cnn_train.so.8.9.2\n/usr/lib/x86_64-linux-gnu/libcudnn_ops_infer.so.8.9.2\n/usr/lib/x86_64-linux-gnu/libcudnn_ops_train.so.8.9.2\nIs XPU available: False\nHIP runtime version: N/A\nMIOpen runtime version: N/A\nIs XNNPACK available: True\nCaching allocator config: N/A\n\nCPU:\nArchitecture:                         x86_64\nCPU op-mode(s):                       32-bit, 64-bit\nAddress sizes:                        46 bits physical, 48 bits virtual\nByte Order:                           Little Endian\nCPU(s):                               32\nOn-line CPU(s) list:                  0-31\nVendor ID:                            GenuineIntel\nModel name:                           Intel(R) Core(TM) i9-14900K\nCPU family:                           6\nModel:                                183\nThread(s) per core:                   2\nCore(s) per socket:                   16\nSocket(s):                            1\nStepping:                             1\nBogoMIPS:                             6374.17\nFlags:                                fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves avx_vnni vnmi umip waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize flush_l1d arch_capabilities\nVirtualization:                       VT-x\nHypervisor vendor:                    Microsoft\nVirtualization type:                  full\nL1d cache:                            768 KiB (16 instances)\nL1i cache:                            512 KiB (16 instances)\nL2 cache:                             32 MiB (16 instances)\nL3 cache:                             36 MiB (1 instance)\nNUMA node(s):                         1\nNUMA node0 CPU(s):                    0-31\nVulnerability Gather data sampling:   Not affected\nVulnerability Itlb multihit:          Not affected\nVulnerability L1tf:                   Not affected\nVulnerability Mds:                    Not affected\nVulnerability Meltdown:               Not affected\nVulnerability Mmio stale data:        Not affected\nVulnerability Reg file data sampling: Mitigation; Clear Register File\nVulnerability Retbleed:               Mitigation; Enhanced IBRS\nVulnerability Spec rstack overflow:   Not affected\nVulnerability Spec store bypass:      Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:             Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:             Mitigation; Enhanced / Automatic IBRS; IBPB conditional; RSB filling; PBRSB-eIBRS SW sequence; BHI BHI_DIS_S\nVulnerability Srbds:                  Not affected\nVulnerability Tsx async abort:        Not affected\n\nVersions of relevant libraries:\n[pip3] mypy_extensions==1.1.0\n[pip3] numpy==2.2.6\n[pip3] nvidia-cublas-cu12==12.8.4.1\n[pip3] nvidia-cuda-cupti-cu12==12.8.90\n[pip3] nvidia-cuda-nvrtc-cu12==12.8.93\n[pip3] nvidia-cuda-runtime-cu12==12.8.90\n[pip3] nvidia-cudnn-cu12==9.10.2.21\n[pip3] nvidia-cudnn-frontend==1.18.0\n[pip3] nvidia-cufft-cu12==11.3.3.83\n[pip3] nvidia-curand-cu12==10.3.9.90\n[pip3] nvidia-cusolver-cu12==11.7.3.90\n[pip3] nvidia-cusparse-cu12==12.5.8.93\n[pip3] nvidia-cusparselt-cu12==0.7.1\n[pip3] nvidia-nccl-cu12==2.27.5\n[pip3] nvidia-nvjitlink-cu12==12.8.93\n[pip3] nvidia-nvtx-cu12==12.8.90\n[pip3] nvtx==0.2.14\n[pip3] onnxruntime==1.24.1\n[pip3] rapidocr-onnxruntime==1.4.4\n[pip3] torch==2.10.0\n[pip3] torch_c_dlpack_ext==0.1.5\n[pip3] torchao==0.16.0\n[pip3] torchaudio==2.10.0\n[pip3] torchcodec==0.8.0\n[pip3] torchvision==0.25.0\n[pip3] triton==3.6.0\n[conda] Could not collect",
+    "transformers_version": "4.57.1",
+    "lm_eval_version": "0.4.11",
+    "upper_git_hash": null,
+    "tokenizer_pad_token": [
+      "<|endoftext|>",
+      "151643"
+    ],
+    "tokenizer_eos_token": [
+      "<|im_end|>",
+      "151645"
+    ],
+    "tokenizer_bos_token": [
+      null,
+      "None"
+    ],
+    "eot_token_id": 151645,
+    "max_length": 2047,
+    "task_hashes": {},
+    "model_source": "local-completions",
+    "model_name": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+    "model_name_sanitized": "Qwen__Qwen2.5-7B-Instruct-AWQ",
+    "system_instruction": null,
+    "system_instruction_sha": null,
+    "fewshot_as_multiturn": null,
+    "chat_template": null,
+    "chat_template_sha": null,
+    "total_evaluation_time_seconds": "3446.0197153990157"
+  },
+  "model_meta": {
+    "model_id": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+    "quantization": "AWQ",
+    "parameters": 5405933568,
+    "size_bytes": 5570829760,
+    "dtype": "float16",
+    "weight_mem_gib": 5.2
+  },
+  "profile_csv": "metrics/run_8001QwenQwen2.5-7B-Instruct-AWQ-423_20260423_155724.csv",
+  "profile_summary": {
+    "samples": 3049,
+    "peak_gpu_mem_mb": 23460.0,
+    "avg_gpu_mem_mb": 23354.373237126925,
+    "gpu_mem_total_mb": 97887.0,
+    "peak_gpu_util_pct": 100.0,
+    "avg_gpu_util_pct": 92.01715085754287,
+    "peak_gpu_temp_c": 87.0,
+    "peak_gpu_power_w": 304.21,
+    "avg_gpu_power_w": 280.17298130534647,
+    "peak_cpu_rss_mb": 6546.62890625,
+    "peak_kv_cache_pct": 26.254166310571748
+  }
+}

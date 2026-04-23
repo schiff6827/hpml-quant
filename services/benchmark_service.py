@@ -244,6 +244,14 @@ def _safe_script_name(name):
     return ''.join(c for c in name if c.isalnum() or c in '-_.')
 
 
+def _safe_filename_stem(name):
+    """Safe stem for result filenames: keep letters/digits/.-_, collapse everything
+    else (spaces, slashes, etc.) to underscores. Prevents path-separator surprises
+    like a run_name containing '/'."""
+    cleaned = ''.join(c if c.isalnum() or c in '-_.' else '_' for c in (name or '').strip())
+    return cleaned or 'unnamed'
+
+
 def list_scripts():
     if not os.path.isdir(SCRIPTS_DIR):
         return []
@@ -357,9 +365,23 @@ def run_context_sweep(port, model, result_dir, run_name, upper_bound, step):
     return proc
 
 
+def _wait_for_glob(pattern, timeout=5.0, interval=0.2):
+    """Retry a glob for up to `timeout` seconds. Handles fs flush races
+    (e.g. WSL2) where the file appears a moment after the subprocess exits."""
+    import time
+    deadline = time.time() + timeout
+    while True:
+        matches = sorted(glob.glob(pattern))
+        if matches:
+            return matches
+        if time.time() >= deadline:
+            return []
+        time.sleep(interval)
+
+
 def parse_context_sweep_result(result_dir, run_name, extras=None):
     os.makedirs(BENCHMARKS_DIR, exist_ok=True)
-    jsons = sorted(glob.glob(os.path.join(result_dir, 'context_sweep_*.json')))
+    jsons = _wait_for_glob(os.path.join(result_dir, 'context_sweep_*.json'))
     if not jsons:
         return None
     raw = json.loads(open(jsons[-1]).read())
@@ -374,7 +396,7 @@ def parse_context_sweep_result(result_dir, run_name, extras=None):
     if extras:
         parsed.update(extras)
     save_path = os.path.join(BENCHMARKS_DIR,
-                             f'{run_name}_context_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json')
+                             f'{_safe_filename_stem(run_name)}_context_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json')
     with open(save_path, 'w') as f:
         json.dump(parsed, f, indent=2)
     parsed['save_path'] = save_path
@@ -417,7 +439,7 @@ def is_running():
 
 def parse_perf_result(result_dir, run_name, extras=None):
     os.makedirs(BENCHMARKS_DIR, exist_ok=True)
-    jsons = sorted(glob.glob(os.path.join(result_dir, '*.json')))
+    jsons = _wait_for_glob(os.path.join(result_dir, '*.json'))
     if not jsons:
         return None
     raw = json.loads(open(jsons[-1]).read())
@@ -453,7 +475,7 @@ def parse_perf_result(result_dir, run_name, extras=None):
     if extras:
         parsed.update(extras)
     save_path = os.path.join(BENCHMARKS_DIR,
-                             f'{run_name}_perf_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json')
+                             f'{_safe_filename_stem(run_name)}_perf_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json')
     with open(save_path, 'w') as f:
         json.dump(parsed, f, indent=2)
     parsed['save_path'] = save_path
@@ -462,15 +484,22 @@ def parse_perf_result(result_dir, run_name, extras=None):
 
 def parse_quality_result(result_dir, run_name, extras=None):
     os.makedirs(BENCHMARKS_DIR, exist_ok=True)
-    # lm-eval saves results as results_<timestamp>.json in a model subdirectory
+    # lm-eval saves results as results_<timestamp>.json in a model subdirectory.
+    # Retry briefly to absorb fs flush races.
+    import time
+    deadline = time.time() + 5.0
     results_file = None
-    for root, dirs, files in os.walk(result_dir):
-        for fname in sorted(files, reverse=True):
-            if fname.startswith('results') and fname.endswith('.json'):
-                results_file = os.path.join(root, fname)
+    while True:
+        for root, dirs, files in os.walk(result_dir):
+            for fname in sorted(files, reverse=True):
+                if fname.startswith('results') and fname.endswith('.json'):
+                    results_file = os.path.join(root, fname)
+                    break
+            if results_file:
                 break
-        if results_file:
+        if results_file or time.time() >= deadline:
             break
+        time.sleep(0.2)
     if not results_file:
         return None
     raw = json.loads(open(results_file).read())
@@ -497,7 +526,7 @@ def parse_quality_result(result_dir, run_name, extras=None):
     if extras:
         parsed.update(extras)
     save_path = os.path.join(BENCHMARKS_DIR,
-                             f'{run_name}_quality_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json')
+                             f'{_safe_filename_stem(run_name)}_quality_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json')
     with open(save_path, 'w') as f:
         json.dump(parsed, f, indent=2)
     parsed['save_path'] = save_path
@@ -505,7 +534,11 @@ def parse_quality_result(result_dir, run_name, extras=None):
 
 
 def build_pareto_dataset(quality_metric_preference=None):
-    """Pair perf and quality results by run_name; return rows for the Pareto chart.
+    """Aggregate all saved perf and/or quality results into Pareto rows.
+
+    Each row represents one run_name. Rows include a quality score if there is
+    a matching quality result, and throughput if there is a matching perf result.
+    Rows without either are still returned so the UI can plot alternate axes.
 
     quality_metric_preference: optional task key (e.g. 'mmlu'). If None, pick the
     first task present on each quality result.
@@ -530,22 +563,26 @@ def build_pareto_dataset(quality_metric_preference=None):
                 qual_by_run[run] = data
 
     rows = []
-    for run, perf in perf_by_run.items():
-        qual = qual_by_run.get(run)
-        if not qual:
-            continue
-        tasks = qual.get('tasks', [])
-        if not tasks:
-            continue
-        task_entry = None
-        if quality_metric_preference:
-            for t in tasks:
-                if t.get('task') == quality_metric_preference:
-                    task_entry = t
-                    break
-        if task_entry is None:
-            task_entry = tasks[0]
-        q_val = task_entry.get('acc_norm', task_entry.get('acc', task_entry.get('exact_match')))
+    all_runs = sorted(set(perf_by_run) | set(qual_by_run))
+    for run in all_runs:
+        perf = perf_by_run.get(run) or {}
+        qual = qual_by_run.get(run) or {}
+
+        q_val = None
+        q_task = None
+        tasks = qual.get('tasks', []) if qual else []
+        if tasks:
+            task_entry = None
+            if quality_metric_preference:
+                for t in tasks:
+                    if t.get('task') == quality_metric_preference:
+                        task_entry = t
+                        break
+            if task_entry is None:
+                task_entry = tasks[0]
+            q_val = task_entry.get('acc_norm', task_entry.get('acc', task_entry.get('exact_match')))
+            q_task = task_entry.get('task')
+
         meta = perf.get('model_meta') or qual.get('model_meta') or {}
         prof = perf.get('profile_summary') or qual.get('profile_summary') or {}
         params = meta.get('parameters') or 0
@@ -554,10 +591,12 @@ def build_pareto_dataset(quality_metric_preference=None):
         avg_power_w = prof.get('avg_gpu_power_w') or 0
         rows.append({
             'run_name': run,
-            'throughput_tps': perf.get('output_throughput'),
-            'prefill_tps': perf.get('prefill_throughput'),
+            'has_perf': bool(perf),
+            'has_quality': bool(qual),
+            'throughput_tps': perf.get('output_throughput') if perf else None,
+            'prefill_tps': perf.get('prefill_throughput') if perf else None,
             'quality_score': q_val,
-            'quality_task': task_entry.get('task'),
+            'quality_task': q_task,
             'model_id': meta.get('model_id') or '',
             'quantization': (meta.get('quantization') or 'UNKNOWN').upper(),
             'parameters': params,
@@ -569,6 +608,24 @@ def build_pareto_dataset(quality_metric_preference=None):
             'dtype': meta.get('dtype') or '',
         })
     return rows
+
+
+def list_run_names_seen():
+    """Distinct run_names across all saved results — for the Pareto run picker."""
+    if not os.path.isdir(BENCHMARKS_DIR):
+        return []
+    names = set()
+    for fpath in glob.glob(os.path.join(BENCHMARKS_DIR, '*.json')):
+        try:
+            data = json.loads(open(fpath).read())
+        except Exception:
+            continue
+        if data.get('type') not in ('perf', 'quality', 'context_sweep'):
+            continue
+        run = data.get('run_name')
+        if run:
+            names.add(run)
+    return sorted(names)
 
 
 def list_quantizations_seen():

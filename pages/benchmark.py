@@ -248,26 +248,39 @@ def content():
         ui.separator()
         pareto_exp = ui.expansion('Pareto Frontier', icon='scatter_plot').classes('w-full')
         with pareto_exp:
+            _axis_options = {
+                'quality_score': 'Quality (task accuracy)',
+                'throughput_tps': 'Throughput (tok/s)',
+                'prefill_tps': 'Prefill throughput (tok/s)',
+                'parameters_b': 'Parameters (B)',
+                'size_gb': 'Model size (GB)',
+                'peak_vram_gb': 'Peak VRAM (GB)',
+                'avg_gpu_power_w': 'Avg GPU power (W)',
+            }
             with ui.row().classes('items-end gap-2 w-full flex-wrap'):
-                pareto_xaxis_select = ui.select(
-                    {'throughput_tps': 'Throughput (tok/s)',
-                     'parameters_b': 'Parameters (B)',
-                     'size_gb': 'Model size (GB)',
-                     'peak_vram_gb': 'Peak VRAM (GB)',
-                     'avg_gpu_power_w': 'Avg GPU power (W)'},
-                    value='throughput_tps', label='X axis',
+                pareto_yaxis_select = ui.select(
+                    _axis_options, value='quality_score', label='Y axis',
                 ).classes('w-48')
-                pareto_task_select = ui.select([], label='Quality task (y-axis)').classes('w-48')
+                pareto_xaxis_select = ui.select(
+                    _axis_options, value='throughput_tps', label='X axis',
+                ).classes('w-48')
+                pareto_task_select = ui.select([], label='Quality task').classes('w-40')
                 pareto_colorby_select = ui.select(
                     {'quantization': 'Quantization', 'model_family': 'Model family'},
                     value='quantization', label='Color by',
                 ).classes('w-40')
+            with ui.row().classes('items-end gap-2 w-full flex-wrap'):
+                pareto_run_filter = ui.select(
+                    [], label='Runs (empty = all)', multiple=True,
+                ).props('use-chips').classes('w-96')
                 pareto_quant_filter = ui.select(
                     [], label='Quant filter (empty = all)', multiple=True,
                 ).props('use-chips').classes('w-56')
                 pareto_refresh_btn = ui.button('Refresh', icon='refresh').props('flat dense')
+                pareto_backfill_btn = ui.button('Backfill metadata on old runs', icon='build').props('flat dense')
+            pareto_empty_label = ui.label('').classes('text-caption text-grey')
             pareto_chart = ui.echart({
-                'title': {'text': 'Quality vs Throughput', 'textStyle': {'fontSize': 13}},
+                'title': {'text': '', 'textStyle': {'fontSize': 13}},
                 'tooltip': {'trigger': 'item'},
                 'legend': {'bottom': 0},
                 'xAxis': {'type': 'value', 'name': 'Output tokens/sec'},
@@ -275,7 +288,6 @@ def content():
                 'series': [],
                 'animation': False,
             }).classes('w-full h-80')
-            pareto_backfill_btn = ui.button('Backfill metadata on old runs', icon='build').props('flat dense')
 
         # --- Compare ---
         ui.separator()
@@ -557,8 +569,10 @@ def content():
         script_name_input.value = cfg.get('name', '')
         ui.notify(f'Loaded script: {cfg.get("name", "?")}', type='info')
 
-    _x_axis_labels = {
+    _axis_labels = {
+        'quality_score': 'Quality',
         'throughput_tps': 'Output tokens/sec',
+        'prefill_tps': 'Prefill tokens/sec',
         'parameters_b': 'Parameters (B)',
         'size_gb': 'Model size (GB)',
         'peak_vram_gb': 'Peak VRAM (GB)',
@@ -572,28 +586,36 @@ def content():
             pareto_task_select.value = tasks[0]
         pareto_task_select.update()
         quants = benchmark_service.list_quantizations_seen()
-        current_filter = list(pareto_quant_filter.value or [])
+        current_q = list(pareto_quant_filter.value or [])
         pareto_quant_filter.options = quants
-        pareto_quant_filter.value = [q for q in current_filter if q in quants]
+        pareto_quant_filter.value = [q for q in current_q if q in quants]
         pareto_quant_filter.update()
+        run_names = benchmark_service.list_run_names_seen()
+        current_r = list(pareto_run_filter.value or [])
+        pareto_run_filter.options = run_names
+        pareto_run_filter.value = [r for r in current_r if r in run_names]
+        pareto_run_filter.update()
 
         metric = pareto_task_select.value if pareto_task_select.value in tasks else None
         x_key = pareto_xaxis_select.value or 'throughput_tps'
+        y_key = pareto_yaxis_select.value or 'quality_score'
         color_by = pareto_colorby_select.value or 'quantization'
         allow_quants = set(pareto_quant_filter.value or [])
+        allow_runs = set(pareto_run_filter.value or [])
 
         rows = benchmark_service.build_pareto_dataset(metric)
         groups = {}
+        skipped_empty_axis = 0
         for r in rows:
-            y = r.get('quality_score')
-            x = r.get(x_key)
-            if x is None or y is None:
+            if allow_runs and r.get('run_name') not in allow_runs:
                 continue
-            if not x:  # exclude zeros on axes where 0 is meaningless
-                if x_key in ('parameters_b', 'size_gb', 'peak_vram_gb', 'avg_gpu_power_w'):
-                    continue
             q = (r.get('quantization') or 'UNKNOWN').upper()
             if allow_quants and q not in allow_quants:
+                continue
+            x = r.get(x_key)
+            y = r.get(y_key)
+            if x is None or y is None:
+                skipped_empty_axis += 1
                 continue
             if color_by == 'model_family':
                 mid = r.get('model_id') or r.get('run_name') or ''
@@ -612,10 +634,31 @@ def content():
                 'label': {'show': True, 'position': 'right', 'formatter': '{@[2]}', 'fontSize': 10},
             })
         pareto_chart.options['series'] = series
-        pareto_chart.options['xAxis']['name'] = _x_axis_labels.get(x_key, x_key)
-        title_x = _x_axis_labels.get(x_key, x_key)
-        pareto_chart.options['title']['text'] = f"Quality ({metric or 'first'}) vs {title_x}"
+        x_label = _axis_labels.get(x_key, x_key)
+        y_label = _axis_labels.get(y_key, y_key)
+        pareto_chart.options['xAxis'] = {'type': 'value', 'name': x_label}
+        # Only force 0-1 range for quality axis.
+        if y_key == 'quality_score':
+            pareto_chart.options['yAxis'] = {'type': 'value', 'name': y_label, 'min': 0, 'max': 1}
+        else:
+            pareto_chart.options['yAxis'] = {'type': 'value', 'name': y_label}
+        pareto_chart.options['title']['text'] = f'{y_label} vs {x_label}'
         pareto_chart.update()
+
+        total_plotted = sum(len(pts) for pts in groups.values())
+        if total_plotted == 0:
+            hint = []
+            if y_key == 'quality_score' and not any(r.get('has_quality') for r in rows):
+                hint.append('no saved quality runs yet — try Y=Throughput')
+            if x_key in ('peak_vram_gb', 'avg_gpu_power_w') and not any(r.get(x_key) for r in rows):
+                hint.append('no profile data saved on any run for that axis')
+            if allow_runs and not rows:
+                hint.append('run filter excludes everything')
+            pareto_empty_label.set_text(
+                'No points to plot. ' + ('; '.join(hint) if hint else f'{skipped_empty_axis} rows missing the selected axis.')
+            )
+        else:
+            pareto_empty_label.set_text(f'{total_plotted} point(s) across {len(groups)} group(s).')
 
     def on_script_delete():
         path = script_select.value
@@ -771,92 +814,121 @@ def content():
         _set_running(True)
         bench_log.clear()
 
-        model_meta = await run.io_bound(benchmark_service.get_model_metadata, model, port)
-        csv_path = metrics_service.start_run_recording(port, rname)
+        try:
+            model_meta = await run.io_bound(benchmark_service.get_model_metadata, model, port)
+        except Exception as e:
+            bench_log.push(f'[warn] model metadata lookup failed: {e}')
+            model_meta = {'model_id': model}
+        try:
+            csv_path = metrics_service.start_run_recording(port, rname)
+        except Exception as e:
+            bench_log.push(f'[warn] profile recording failed to start: {e}')
+            csv_path = None
         _reset_profile_buffers(rname, csv_path)
-        profile_status.set_text(f'Recording — {rname}')
+        profile_status.set_text(f'Recording — {rname}' if csv_path else f'No profile — {rname}')
         profile_exp.open()
 
-        def _build_extras():
+        def _build_extras_safely():
+            try:
+                summary = benchmark_service.summarize_profile_csv(csv_path) if csv_path else {}
+            except Exception:
+                summary = {}
             return {
-                'model_meta': model_meta,
+                'model_meta': model_meta or {},
                 'profile_csv': csv_path,
-                'profile_summary': benchmark_service.summarize_profile_csv(csv_path),
+                'profile_summary': summary,
             }
+
+        async def _run_sub(label, builder_kwargs, launcher, parser, show_fn):
+            """Run one sub-benchmark in isolation so its failure can't skip the others."""
+            run_status.set_text(f'Running {label}...')
+            progress_bar.value = 0
+            progress_label.set_text('')
+            result_dir = tempfile.mkdtemp(prefix=builder_kwargs['prefix'])
+            try:
+                proc = await run.io_bound(launcher, result_dir)
+            except Exception as e:
+                ui.notify(f'{label}: could not launch ({e})', type='negative')
+                bench_log.push(f'[error] {label} launch: {e}')
+                return
+            try:
+                await _stream_proc(proc)
+            except Exception as e:
+                bench_log.push(f'[warn] {label} stream error: {e}')
+
+            if proc.returncode != 0:
+                ui.notify(f'{label} failed (exit code {proc.returncode})', type='negative')
+                return
+
+            try:
+                parsed = await run.io_bound(parser, result_dir, rname, _build_extras_safely())
+            except Exception as e:
+                ui.notify(f'{label}: parse error ({e})', type='negative')
+                bench_log.push(f'[error] {label} parse: {e}')
+                return
+            if not parsed:
+                ui.notify(f'{label} finished but no result JSON found in {result_dir}',
+                          type='warning')
+                bench_log.push(f'[warn] {label} result dir had no JSON: {result_dir}')
+                return
+            if show_fn:
+                try:
+                    show_fn(parsed)
+                except Exception as e:
+                    bench_log.push(f'[warn] {label} show error: {e}')
+            ui.notify(f'{label} complete', type='positive')
 
         try:
             if do_perf:
-                run_status.set_text('Running performance benchmark...')
-                result_dir = tempfile.mkdtemp(prefix='bench_perf_')
-                proc = await run.io_bound(
-                    benchmark_service.run_perf_benchmark,
-                    port, model, dataset_select.value,
-                    int(num_prompts_input.value),
-                    float(request_rate_input.value),
-                    int(max_concurrency_input.value),
-                    int(random_input_len.value),
-                    int(random_output_len.value),
-                    result_dir, rname,
+                def _launch_perf(result_dir):
+                    return benchmark_service.run_perf_benchmark(
+                        port, model, dataset_select.value,
+                        int(num_prompts_input.value),
+                        float(request_rate_input.value),
+                        int(max_concurrency_input.value),
+                        int(random_input_len.value),
+                        int(random_output_len.value),
+                        result_dir, rname,
+                    )
+                await _run_sub(
+                    'Performance benchmark',
+                    {'prefix': 'bench_perf_'},
+                    _launch_perf,
+                    benchmark_service.parse_perf_result,
+                    lambda parsed: _show_perf_result(parsed, perf_table),
                 )
-                await _stream_proc(proc)
-                if proc.returncode == 0:
-                    parsed = await run.io_bound(benchmark_service.parse_perf_result,
-                                                result_dir, rname, _build_extras())
-                    if parsed:
-                        _show_perf_result(parsed, perf_table)
-                        ui.notify('Performance benchmark complete', type='positive')
-                    else:
-                        ui.notify('Perf finished but no result JSON found', type='warning')
-                else:
-                    ui.notify(f'Perf benchmark failed (exit code {proc.returncode})', type='negative')
 
             if do_ctx:
-                run_status.set_text('Running context-length sweep...')
-                progress_bar.value = 0
-                progress_label.set_text('')
-                result_dir = tempfile.mkdtemp(prefix='bench_ctx_')
-                proc = await run.io_bound(
-                    benchmark_service.run_context_sweep,
-                    port, model, result_dir, rname,
-                    int(ctx_upper_input.value),
-                    int(ctx_step_input.value),
+                def _launch_ctx(result_dir):
+                    return benchmark_service.run_context_sweep(
+                        port, model, result_dir, rname,
+                        int(ctx_upper_input.value),
+                        int(ctx_step_input.value),
+                    )
+                await _run_sub(
+                    'Context sweep',
+                    {'prefix': 'bench_ctx_'},
+                    _launch_ctx,
+                    benchmark_service.parse_context_sweep_result,
+                    lambda parsed: _show_ctx_result(parsed, ctx_table, ctx_headline),
                 )
-                await _stream_proc(proc)
-                if proc.returncode == 0:
-                    parsed = await run.io_bound(benchmark_service.parse_context_sweep_result,
-                                                result_dir, rname, _build_extras())
-                    if parsed:
-                        _show_ctx_result(parsed, ctx_table, ctx_headline)
-                        ui.notify('Context sweep complete', type='positive')
-                    else:
-                        ui.notify('Sweep finished but no result JSON found', type='warning')
-                else:
-                    ui.notify(f'Context sweep failed (exit code {proc.returncode})', type='negative')
 
             if do_qual:
-                run_status.set_text('Running quality benchmark...')
-                progress_bar.value = 0
-                progress_label.set_text('')
-                result_dir = tempfile.mkdtemp(prefix='bench_qual_')
-                proc = await run.io_bound(
-                    benchmark_service.run_quality_benchmark,
-                    port, model, selected_tasks,
-                    int(num_fewshot_input.value),
-                    int(num_concurrent_input.value),
-                    int(limit_input.value),
-                    result_dir, rname,
+                def _launch_qual(result_dir):
+                    return benchmark_service.run_quality_benchmark(
+                        port, model, selected_tasks,
+                        int(num_fewshot_input.value),
+                        int(num_concurrent_input.value),
+                        int(limit_input.value),
+                        result_dir, rname,
+                    )
+                await _run_sub(
+                    'Quality benchmark',
+                    {'prefix': 'bench_qual_'},
+                    _launch_qual,
+                    benchmark_service.parse_quality_result,
+                    lambda parsed: _show_qual_result(parsed, qual_table),
                 )
-                await _stream_proc(proc)
-                if proc.returncode == 0:
-                    parsed = await run.io_bound(benchmark_service.parse_quality_result,
-                                                result_dir, rname, _build_extras())
-                    if parsed:
-                        _show_qual_result(parsed, qual_table)
-                        ui.notify('Quality benchmark complete', type='positive')
-                    else:
-                        ui.notify('Quality finished but no result JSON found', type='warning')
-                else:
-                    ui.notify(f'Quality benchmark failed (exit code {proc.returncode})', type='negative')
 
             progress_bar.value = 1.0
             progress_label.set_text('100%')
@@ -865,6 +937,7 @@ def content():
             if _client_alive():
                 run_status.set_text(f'Error: {e}')
                 ui.notify(f'Error: {e}', type='negative')
+                bench_log.push(f'[error] outer run_benchmark: {e}')
         finally:
             try:
                 metrics_service.stop_run_recording(rname)
@@ -964,8 +1037,10 @@ def content():
     pareto_refresh_btn.on_click(refresh_pareto)
     pareto_task_select.on_value_change(lambda _: refresh_pareto())
     pareto_xaxis_select.on_value_change(lambda _: refresh_pareto())
+    pareto_yaxis_select.on_value_change(lambda _: refresh_pareto())
     pareto_colorby_select.on_value_change(lambda _: refresh_pareto())
     pareto_quant_filter.on_value_change(lambda _: refresh_pareto())
+    pareto_run_filter.on_value_change(lambda _: refresh_pareto())
     pareto_backfill_btn.on_click(on_backfill_metadata)
 
     ui.timer(2.0, refresh_servers)
