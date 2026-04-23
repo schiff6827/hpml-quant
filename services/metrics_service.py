@@ -15,6 +15,7 @@ except ImportError:
 METRICS_DIR = Path("metrics")
 
 _recorders = {}
+_run_recorders = {}
 
 
 def fetch_gpu_metrics():
@@ -254,3 +255,96 @@ def stop_recording(port):
 
 def is_recording(port):
     return port in _recorders
+
+
+def _safe_filename(name):
+    return ''.join(c for c in name if c.isalnum() or c in '-_.') or 'run'
+
+
+def start_run_recording(port, run_name, interval=1.0):
+    """Record metrics for a single benchmark run. Keyed by run_name so it can
+    coexist with the Monitor tab's port-keyed recorder.
+
+    Returns the CSV path, or the existing path if already recording under
+    this run_name.
+    """
+    if run_name in _run_recorders:
+        return _run_recorders[run_name]["path"]
+    METRICS_DIR.mkdir(exist_ok=True)
+    safe = _safe_filename(run_name)
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    csv_path = METRICS_DIR / f"run_{safe}_{ts}.csv"
+
+    stop_event = threading.Event()
+    peak_state = {
+        "rss_peak_mb": 0.0,
+        "gpu_mem_peak_mb": 0.0,
+        "gpu_power_peak_w": 0.0,
+    }
+    latest = {}
+
+    def record_loop():
+        with open(csv_path, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=CSV_COLUMNS)
+            writer.writeheader()
+            while not stop_event.is_set():
+                gpu = fetch_gpu_metrics()
+                vllm = fetch_vllm_metrics(port)
+                cpu = fetch_cpu_metrics(port)
+                rss = cpu.get("cpu_mem_rss_mb", 0)
+                if rss > peak_state["rss_peak_mb"]:
+                    peak_state["rss_peak_mb"] = rss
+                cpu["cpu_mem_rss_peak_mb"] = peak_state["rss_peak_mb"]
+                gmu = gpu.get("gpu_mem_used_mb", 0) or 0
+                if gmu > peak_state["gpu_mem_peak_mb"]:
+                    peak_state["gpu_mem_peak_mb"] = gmu
+                gpw = gpu.get("gpu_power_w", 0) or 0
+                if gpw > peak_state["gpu_power_peak_w"]:
+                    peak_state["gpu_power_peak_w"] = gpw
+                row = {"timestamp": datetime.now().isoformat()}
+                for col in CSV_COLUMNS[1:]:
+                    row[col] = gpu.get(col, vllm.get(col, cpu.get(col, 0)))
+                writer.writerow(row)
+                f.flush()
+                latest.clear()
+                latest.update(row)
+                latest["gpu_mem_total_mb"] = gpu.get("gpu_mem_total_mb", 0)
+                stop_event.wait(interval)
+
+    thread = threading.Thread(target=record_loop, daemon=True)
+    thread.start()
+    _run_recorders[run_name] = {
+        "thread": thread, "stop": stop_event, "path": str(csv_path),
+        "peak_state": peak_state, "latest": latest, "port": port,
+        "started": time.time(),
+    }
+    return str(csv_path)
+
+
+def stop_run_recording(run_name):
+    """Stop a run-scoped recorder. Returns the CSV path, or None."""
+    rec = _run_recorders.pop(run_name, None)
+    if not rec:
+        return None
+    rec["stop"].set()
+    rec["thread"].join(timeout=5)
+    return rec["path"]
+
+
+def get_run_latest(run_name):
+    """Return the most recent sampled row for a running recorder, or None."""
+    rec = _run_recorders.get(run_name)
+    if not rec:
+        return None
+    return dict(rec.get("latest", {}))
+
+
+def get_run_peaks(run_name):
+    rec = _run_recorders.get(run_name)
+    if not rec:
+        return {}
+    return dict(rec.get("peak_state", {}))
+
+
+def is_run_recording(run_name):
+    return run_name in _run_recorders

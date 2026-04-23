@@ -2,8 +2,11 @@ import asyncio
 import re
 import tempfile
 import os
+from collections import deque
 from nicegui import ui, run
-from services import vllm_service, benchmark_service
+from services import vllm_service, benchmark_service, metrics_service
+
+_PROFILE_MAX_POINTS = 240
 
 
 def content():
@@ -171,26 +174,108 @@ def content():
         ).classes('w-full')
         prev_qual_table.visible = False
 
+        # --- Live Profiling ---
+        ui.separator()
+        profile_exp = ui.expansion('Profiling', icon='speed').classes('w-full')
+        with profile_exp:
+            with ui.row().classes('items-center gap-4 w-full'):
+                profile_status = ui.label('Idle').classes('text-sm text-grey')
+                profile_csv_label = ui.label('').classes('text-xs text-grey')
+            with ui.row().classes('gap-3 flex-wrap'):
+                with ui.card().classes('p-2'):
+                    ui.label('Peak VRAM').classes('text-caption')
+                    profile_peak_vram = ui.label('--').classes('text-subtitle1')
+                with ui.card().classes('p-2'):
+                    ui.label('Peak GPU util').classes('text-caption')
+                    profile_peak_util = ui.label('--').classes('text-subtitle1')
+                with ui.card().classes('p-2'):
+                    ui.label('Peak power').classes('text-caption')
+                    profile_peak_power = ui.label('--').classes('text-subtitle1')
+                with ui.card().classes('p-2'):
+                    ui.label('Peak CPU RSS').classes('text-caption')
+                    profile_peak_rss = ui.label('--').classes('text-subtitle1')
+            with ui.row().classes('w-full gap-2'):
+                profile_gpu_chart = ui.echart({
+                    'title': {'text': 'GPU util / temp / power', 'textStyle': {'fontSize': 13}},
+                    'tooltip': {'trigger': 'axis'},
+                    'legend': {'data': ['Util %', 'Temp C', 'Power W'], 'bottom': 0},
+                    'xAxis': {'type': 'category', 'data': []},
+                    'yAxis': [
+                        {'type': 'value', 'min': 0, 'max': 100, 'name': '% / C', 'position': 'left'},
+                        {'type': 'value', 'name': 'W', 'position': 'right'},
+                    ],
+                    'series': [
+                        {'name': 'Util %', 'type': 'line', 'data': [], 'smooth': True, 'showSymbol': False, 'yAxisIndex': 0},
+                        {'name': 'Temp C', 'type': 'line', 'data': [], 'smooth': True, 'showSymbol': False, 'yAxisIndex': 0},
+                        {'name': 'Power W', 'type': 'line', 'data': [], 'smooth': True, 'showSymbol': False, 'yAxisIndex': 1},
+                    ],
+                    'animation': False,
+                }).classes('w-1/2 h-64')
+                profile_mem_chart = ui.echart({
+                    'title': {'text': 'VRAM / KV cache', 'textStyle': {'fontSize': 13}},
+                    'tooltip': {'trigger': 'axis'},
+                    'legend': {'data': ['VRAM GB', 'KV %'], 'bottom': 0},
+                    'xAxis': {'type': 'category', 'data': []},
+                    'yAxis': [
+                        {'type': 'value', 'name': 'GB', 'position': 'left'},
+                        {'type': 'value', 'min': 0, 'max': 100, 'name': '%', 'position': 'right'},
+                    ],
+                    'series': [
+                        {'name': 'VRAM GB', 'type': 'line', 'data': [], 'smooth': True, 'showSymbol': False, 'areaStyle': {}, 'yAxisIndex': 0},
+                        {'name': 'KV %', 'type': 'line', 'data': [], 'smooth': True, 'showSymbol': False, 'yAxisIndex': 1},
+                    ],
+                    'animation': False,
+                }).classes('w-1/2 h-64')
+            with ui.row().classes('w-full gap-2'):
+                profile_tput_chart = ui.echart({
+                    'title': {'text': 'Throughput & requests', 'textStyle': {'fontSize': 13}},
+                    'tooltip': {'trigger': 'axis'},
+                    'legend': {'data': ['tok/s', 'Running', 'Waiting'], 'bottom': 0},
+                    'xAxis': {'type': 'category', 'data': []},
+                    'yAxis': [
+                        {'type': 'value', 'name': 'tok/s', 'position': 'left'},
+                        {'type': 'value', 'name': 'reqs', 'position': 'right'},
+                    ],
+                    'series': [
+                        {'name': 'tok/s', 'type': 'line', 'data': [], 'smooth': True, 'showSymbol': False, 'yAxisIndex': 0},
+                        {'name': 'Running', 'type': 'line', 'data': [], 'smooth': True, 'showSymbol': False, 'yAxisIndex': 1},
+                        {'name': 'Waiting', 'type': 'line', 'data': [], 'smooth': True, 'showSymbol': False, 'yAxisIndex': 1},
+                    ],
+                    'animation': False,
+                }).classes('w-full h-64')
+
         # --- Pareto frontier ---
         ui.separator()
-        pareto_exp = ui.expansion('Pareto Frontier (quality vs throughput)', icon='scatter_plot').classes('w-full')
+        pareto_exp = ui.expansion('Pareto Frontier', icon='scatter_plot').classes('w-full')
         with pareto_exp:
-            with ui.row().classes('items-end gap-2 w-full'):
+            with ui.row().classes('items-end gap-2 w-full flex-wrap'):
+                pareto_xaxis_select = ui.select(
+                    {'throughput_tps': 'Throughput (tok/s)',
+                     'parameters_b': 'Parameters (B)',
+                     'size_gb': 'Model size (GB)',
+                     'peak_vram_gb': 'Peak VRAM (GB)',
+                     'avg_gpu_power_w': 'Avg GPU power (W)'},
+                    value='throughput_tps', label='X axis',
+                ).classes('w-48')
                 pareto_task_select = ui.select([], label='Quality task (y-axis)').classes('w-48')
+                pareto_colorby_select = ui.select(
+                    {'quantization': 'Quantization', 'model_family': 'Model family'},
+                    value='quantization', label='Color by',
+                ).classes('w-40')
+                pareto_quant_filter = ui.select(
+                    [], label='Quant filter (empty = all)', multiple=True,
+                ).props('use-chips').classes('w-56')
                 pareto_refresh_btn = ui.button('Refresh', icon='refresh').props('flat dense')
             pareto_chart = ui.echart({
                 'title': {'text': 'Quality vs Throughput', 'textStyle': {'fontSize': 13}},
                 'tooltip': {'trigger': 'item'},
+                'legend': {'bottom': 0},
                 'xAxis': {'type': 'value', 'name': 'Output tokens/sec'},
                 'yAxis': {'type': 'value', 'name': 'Quality', 'min': 0, 'max': 1},
-                'series': [{
-                    'type': 'scatter',
-                    'symbolSize': 16,
-                    'data': [],
-                    'label': {'show': True, 'position': 'right', 'formatter': '{@[2]}'},
-                }],
+                'series': [],
                 'animation': False,
             }).classes('w-full h-80')
+            pareto_backfill_btn = ui.button('Backfill metadata on old runs', icon='build').props('flat dense')
 
         # --- Compare ---
         ui.separator()
@@ -214,6 +299,104 @@ def content():
     # ---- Callbacks ----
 
     _saved_results_cache = []
+    _profile_state = {
+        'run_name': None,
+        'csv_path': None,
+        'timestamps': deque(maxlen=_PROFILE_MAX_POINTS),
+        'util': deque(maxlen=_PROFILE_MAX_POINTS),
+        'temp': deque(maxlen=_PROFILE_MAX_POINTS),
+        'power': deque(maxlen=_PROFILE_MAX_POINTS),
+        'vram_gb': deque(maxlen=_PROFILE_MAX_POINTS),
+        'kv_pct': deque(maxlen=_PROFILE_MAX_POINTS),
+        'tps': deque(maxlen=_PROFILE_MAX_POINTS),
+        'running': deque(maxlen=_PROFILE_MAX_POINTS),
+        'waiting': deque(maxlen=_PROFILE_MAX_POINTS),
+    }
+
+    def _reset_profile_buffers(run_name, csv_path):
+        _profile_state['run_name'] = run_name
+        _profile_state['csv_path'] = csv_path
+        for k in ('timestamps', 'util', 'temp', 'power', 'vram_gb',
+                  'kv_pct', 'tps', 'running', 'waiting'):
+            _profile_state[k].clear()
+        profile_csv_label.set_text(f'CSV: {csv_path}' if csv_path else '')
+        profile_peak_vram.set_text('--')
+        profile_peak_util.set_text('--')
+        profile_peak_power.set_text('--')
+        profile_peak_rss.set_text('--')
+
+    def _apply_profile_charts():
+        xs = list(_profile_state['timestamps'])
+        profile_gpu_chart.options['xAxis']['data'] = xs
+        profile_gpu_chart.options['series'][0]['data'] = list(_profile_state['util'])
+        profile_gpu_chart.options['series'][1]['data'] = list(_profile_state['temp'])
+        profile_gpu_chart.options['series'][2]['data'] = list(_profile_state['power'])
+        profile_gpu_chart.update()
+        profile_mem_chart.options['xAxis']['data'] = xs
+        profile_mem_chart.options['series'][0]['data'] = list(_profile_state['vram_gb'])
+        profile_mem_chart.options['series'][1]['data'] = list(_profile_state['kv_pct'])
+        profile_mem_chart.update()
+        profile_tput_chart.options['xAxis']['data'] = xs
+        profile_tput_chart.options['series'][0]['data'] = list(_profile_state['tps'])
+        profile_tput_chart.options['series'][1]['data'] = list(_profile_state['running'])
+        profile_tput_chart.options['series'][2]['data'] = list(_profile_state['waiting'])
+        profile_tput_chart.update()
+
+    def poll_profile():
+        rname = _profile_state['run_name']
+        if not rname or not metrics_service.is_run_recording(rname):
+            return
+        latest = metrics_service.get_run_latest(rname)
+        if not latest:
+            return
+        ts = (latest.get('timestamp') or '')[-8:]
+        _profile_state['timestamps'].append(ts)
+        _profile_state['util'].append(round(float(latest.get('gpu_util_pct') or 0), 1))
+        _profile_state['temp'].append(round(float(latest.get('gpu_temp_c') or 0), 1))
+        _profile_state['power'].append(round(float(latest.get('gpu_power_w') or 0), 1))
+        vram_mb = float(latest.get('gpu_mem_used_mb') or 0)
+        _profile_state['vram_gb'].append(round(vram_mb / 1024.0, 2))
+        _profile_state['kv_pct'].append(round(float(latest.get('kv_cache_pct') or 0), 1))
+        # gen_tokens_per_sec is derived live in fetch_vllm_metrics but not stored
+        # in CSV — fall back to 0.
+        _profile_state['tps'].append(round(float(latest.get('gen_tokens_per_sec') or 0), 1))
+        _profile_state['running'].append(float(latest.get('requests_running') or 0))
+        _profile_state['waiting'].append(float(latest.get('requests_waiting') or 0))
+        _apply_profile_charts()
+        peaks = metrics_service.get_run_peaks(rname)
+        if peaks:
+            pv = peaks.get('gpu_mem_peak_mb') or 0
+            pp = peaks.get('gpu_power_peak_w') or 0
+            pr = peaks.get('rss_peak_mb') or 0
+            profile_peak_vram.set_text(f'{pv/1024:.1f} GB' if pv else '--')
+            profile_peak_util.set_text(f"{max(_profile_state['util'] or [0]):.0f}%")
+            profile_peak_power.set_text(f'{pp:.0f} W' if pp else '--')
+            profile_peak_rss.set_text(f'{pr:,.0f} MB' if pr else '--')
+
+    def _load_profile_from_csv(csv_path):
+        """Populate the profile charts from a completed CSV (post-run view)."""
+        if not csv_path or not os.path.exists(csv_path):
+            for k in ('timestamps', 'util', 'temp', 'power', 'vram_gb',
+                      'kv_pct', 'tps', 'running', 'waiting'):
+                _profile_state[k].clear()
+            _apply_profile_charts()
+            profile_csv_label.set_text('No profile CSV for this run')
+            return
+        data = benchmark_service.read_profile_csv(csv_path, max_points=_PROFILE_MAX_POINTS)
+        _profile_state['run_name'] = None  # stop live polling
+        _profile_state['csv_path'] = csv_path
+        _profile_state['timestamps'].clear(); _profile_state['timestamps'].extend(data.get('timestamps', []))
+        _profile_state['util'].clear(); _profile_state['util'].extend(data.get('gpu_util_pct', []))
+        _profile_state['temp'].clear(); _profile_state['temp'].extend(data.get('gpu_temp_c', []))
+        _profile_state['power'].clear(); _profile_state['power'].extend(data.get('gpu_power_w', []))
+        _profile_state['vram_gb'].clear()
+        _profile_state['vram_gb'].extend([round(x/1024.0, 2) for x in data.get('gpu_mem_mb', [])])
+        _profile_state['kv_pct'].clear(); _profile_state['kv_pct'].extend(data.get('kv_cache_pct', []))
+        _profile_state['tps'].clear(); _profile_state['tps'].extend(data.get('tokens_per_sec', []) or [0]*len(data.get('timestamps', [])))
+        _profile_state['running'].clear(); _profile_state['running'].extend(data.get('requests_running', []))
+        _profile_state['waiting'].clear(); _profile_state['waiting'].extend(data.get('requests_waiting', []))
+        profile_csv_label.set_text(f'CSV: {csv_path}')
+        _apply_profile_charts()
 
     async def refresh_servers():
         running = vllm_service.list_running()
@@ -374,23 +557,64 @@ def content():
         script_name_input.value = cfg.get('name', '')
         ui.notify(f'Loaded script: {cfg.get("name", "?")}', type='info')
 
+    _x_axis_labels = {
+        'throughput_tps': 'Output tokens/sec',
+        'parameters_b': 'Parameters (B)',
+        'size_gb': 'Model size (GB)',
+        'peak_vram_gb': 'Peak VRAM (GB)',
+        'avg_gpu_power_w': 'Avg GPU power (W)',
+    }
+
     def refresh_pareto():
         tasks = benchmark_service.list_quality_tasks_seen()
         pareto_task_select.options = tasks
         if tasks and pareto_task_select.value not in tasks:
             pareto_task_select.value = tasks[0]
         pareto_task_select.update()
+        quants = benchmark_service.list_quantizations_seen()
+        current_filter = list(pareto_quant_filter.value or [])
+        pareto_quant_filter.options = quants
+        pareto_quant_filter.value = [q for q in current_filter if q in quants]
+        pareto_quant_filter.update()
+
         metric = pareto_task_select.value if pareto_task_select.value in tasks else None
+        x_key = pareto_xaxis_select.value or 'throughput_tps'
+        color_by = pareto_colorby_select.value or 'quantization'
+        allow_quants = set(pareto_quant_filter.value or [])
+
         rows = benchmark_service.build_pareto_dataset(metric)
-        points = []
+        groups = {}
         for r in rows:
-            x = r.get('throughput_tps')
             y = r.get('quality_score')
+            x = r.get(x_key)
             if x is None or y is None:
                 continue
-            points.append([x, y, r.get('run_name', '')])
-        pareto_chart.options['series'][0]['data'] = points
-        pareto_chart.options['title']['text'] = f"Quality ({metric or 'first available'}) vs Throughput"
+            if not x:  # exclude zeros on axes where 0 is meaningless
+                if x_key in ('parameters_b', 'size_gb', 'peak_vram_gb', 'avg_gpu_power_w'):
+                    continue
+            q = (r.get('quantization') or 'UNKNOWN').upper()
+            if allow_quants and q not in allow_quants:
+                continue
+            if color_by == 'model_family':
+                mid = r.get('model_id') or r.get('run_name') or ''
+                group_key = (mid.split('/', 1)[0] if '/' in mid else mid) or 'unknown'
+            else:
+                group_key = q
+            groups.setdefault(group_key, []).append([x, y, r.get('run_name', '')])
+
+        series = []
+        for key, pts in sorted(groups.items()):
+            series.append({
+                'name': key,
+                'type': 'scatter',
+                'symbolSize': 14,
+                'data': pts,
+                'label': {'show': True, 'position': 'right', 'formatter': '{@[2]}', 'fontSize': 10},
+            })
+        pareto_chart.options['series'] = series
+        pareto_chart.options['xAxis']['name'] = _x_axis_labels.get(x_key, x_key)
+        title_x = _x_axis_labels.get(x_key, x_key)
+        pareto_chart.options['title']['text'] = f"Quality ({metric or 'first'}) vs {title_x}"
         pareto_chart.update()
 
     def on_script_delete():
@@ -547,6 +771,19 @@ def content():
         _set_running(True)
         bench_log.clear()
 
+        model_meta = await run.io_bound(benchmark_service.get_model_metadata, model, port)
+        csv_path = metrics_service.start_run_recording(port, rname)
+        _reset_profile_buffers(rname, csv_path)
+        profile_status.set_text(f'Recording — {rname}')
+        profile_exp.open()
+
+        def _build_extras():
+            return {
+                'model_meta': model_meta,
+                'profile_csv': csv_path,
+                'profile_summary': benchmark_service.summarize_profile_csv(csv_path),
+            }
+
         try:
             if do_perf:
                 run_status.set_text('Running performance benchmark...')
@@ -563,7 +800,8 @@ def content():
                 )
                 await _stream_proc(proc)
                 if proc.returncode == 0:
-                    parsed = await run.io_bound(benchmark_service.parse_perf_result, result_dir, rname)
+                    parsed = await run.io_bound(benchmark_service.parse_perf_result,
+                                                result_dir, rname, _build_extras())
                     if parsed:
                         _show_perf_result(parsed, perf_table)
                         ui.notify('Performance benchmark complete', type='positive')
@@ -585,7 +823,8 @@ def content():
                 )
                 await _stream_proc(proc)
                 if proc.returncode == 0:
-                    parsed = await run.io_bound(benchmark_service.parse_context_sweep_result, result_dir, rname)
+                    parsed = await run.io_bound(benchmark_service.parse_context_sweep_result,
+                                                result_dir, rname, _build_extras())
                     if parsed:
                         _show_ctx_result(parsed, ctx_table, ctx_headline)
                         ui.notify('Context sweep complete', type='positive')
@@ -609,7 +848,8 @@ def content():
                 )
                 await _stream_proc(proc)
                 if proc.returncode == 0:
-                    parsed = await run.io_bound(benchmark_service.parse_quality_result, result_dir, rname)
+                    parsed = await run.io_bound(benchmark_service.parse_quality_result,
+                                                result_dir, rname, _build_extras())
                     if parsed:
                         _show_qual_result(parsed, qual_table)
                         ui.notify('Quality benchmark complete', type='positive')
@@ -626,7 +866,12 @@ def content():
                 run_status.set_text(f'Error: {e}')
                 ui.notify(f'Error: {e}', type='negative')
         finally:
+            try:
+                metrics_service.stop_run_recording(rname)
+            except Exception:
+                pass
             if _client_alive():
+                profile_status.set_text('Idle (last run complete)')
                 _set_running(False)
                 refresh_saved_results()
                 refresh_pareto()
@@ -651,6 +896,13 @@ def content():
             _show_qual_result(data, prev_qual_table)
         elif data.get('type') == 'context_sweep':
             _show_ctx_result(data, ctx_table, ctx_headline)
+        csv_path = data.get('profile_csv')
+        if csv_path:
+            _load_profile_from_csv(csv_path)
+            profile_exp.open()
+            profile_status.set_text(f"Loaded profile for {data.get('run_name', '?')}")
+        else:
+            profile_status.set_text(f"No profile for {data.get('run_name', '?')}")
 
     def on_compare():
         pa = cmp_a.value
@@ -700,15 +952,26 @@ def content():
     refresh_results_btn.on_click(refresh_saved_results)
     cmp_btn.on_click(on_compare)
 
+    def on_backfill_metadata():
+        port = server_select.value
+        updated = benchmark_service.backfill_metadata(port_for_running_model=port)
+        ui.notify(f'Backfilled metadata on {updated} result file(s)', type='positive')
+        refresh_pareto()
+
     script_save_btn.on_click(on_script_save)
     script_load_btn.on_click(on_script_load)
     script_delete_btn.on_click(on_script_delete)
     pareto_refresh_btn.on_click(refresh_pareto)
     pareto_task_select.on_value_change(lambda _: refresh_pareto())
+    pareto_xaxis_select.on_value_change(lambda _: refresh_pareto())
+    pareto_colorby_select.on_value_change(lambda _: refresh_pareto())
+    pareto_quant_filter.on_value_change(lambda _: refresh_pareto())
+    pareto_backfill_btn.on_click(on_backfill_metadata)
 
     ui.timer(2.0, refresh_servers)
     ui.timer(0.1, refresh_saved_results, once=True)
     ui.timer(0.1, refresh_scripts, once=True)
     ui.timer(0.5, refresh_pareto, once=True)
+    ui.timer(1.0, poll_profile)
 
     return refresh_servers

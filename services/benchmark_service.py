@@ -2,12 +2,242 @@ import subprocess
 import signal
 import os
 import sys
+import re
+import csv
 import json
 import glob
 from datetime import datetime
 
 BENCHMARKS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'benchmarks')
 SCRIPTS_DIR = os.path.join(BENCHMARKS_DIR, 'scripts')
+
+_QUANT_PATTERNS = [
+    ('awq', 'AWQ'), ('gptq', 'GPTQ'), ('int4', 'INT4'), ('int8', 'INT8'),
+    ('w4a16', 'W4A16'), ('w8a8', 'W8A8'), ('w8a16', 'W8A16'),
+    ('fp8', 'FP8'), ('fp4', 'FP4'), ('bnb', 'BNB'), ('bitsandbytes', 'BNB'),
+    ('nf4', 'NF4'), ('marlin', 'MARLIN'), ('smoothquant', 'SMOOTHQUANT'),
+]
+
+_PARAM_NAME_RE = re.compile(r'[\-_/](\d+(?:\.\d+)?)\s*[xX]?\s*([BMTbmt])\b')
+
+
+def _infer_quant_from_name(name):
+    lower = (name or '').lower()
+    for needle, label in _QUANT_PATTERNS:
+        if needle in lower:
+            return label
+    return None
+
+
+def _params_from_name(name):
+    m = _PARAM_NAME_RE.search(name or '')
+    if not m:
+        return 0
+    num = float(m.group(1))
+    unit = m.group(2).upper()
+    if unit == 'B':
+        return int(num * 1e9)
+    if unit == 'M':
+        return int(num * 1e6)
+    if unit == 'T':
+        return int(num * 1e12)
+    return 0
+
+
+def _find_snapshot_dir(model_id):
+    """Return a local snapshot dir for a cached HF model, or None."""
+    if not model_id:
+        return None
+    if os.path.isdir(model_id):
+        return model_id
+    try:
+        import config
+        root = config.MODEL_CACHE_DIR
+    except Exception:
+        return None
+    safe = model_id.replace('/', '--')
+    pattern = os.path.join(root, f'models--{safe}', 'snapshots', '*')
+    snaps = sorted(glob.glob(pattern))
+    return snaps[-1] if snaps else None
+
+
+def _read_json(path):
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def _params_from_snapshot(snap_dir):
+    """Sum parameter counts from safetensors index, or estimate from config."""
+    if not snap_dir:
+        return 0
+    idx = _read_json(os.path.join(snap_dir, 'model.safetensors.index.json'))
+    if idx and isinstance(idx.get('metadata'), dict):
+        tp = idx['metadata'].get('total_parameters')
+        if isinstance(tp, (int, float)) and tp > 0:
+            return int(tp)
+    cfg = _read_json(os.path.join(snap_dir, 'config.json'))
+    if cfg:
+        h = cfg.get('hidden_size') or cfg.get('n_embd')
+        layers = cfg.get('num_hidden_layers') or cfg.get('n_layer')
+        vocab = cfg.get('vocab_size')
+        if h and layers and vocab:
+            return int(12 * h * h * layers + 2 * h * vocab)
+    return 0
+
+
+def _size_bytes_from_snapshot(snap_dir):
+    if not snap_dir:
+        return 0
+    total = 0
+    for root, _, files in os.walk(snap_dir):
+        for fn in files:
+            if fn.endswith(('.safetensors', '.bin', '.pt')):
+                try:
+                    total += os.path.getsize(os.path.join(root, fn))
+                except OSError:
+                    pass
+    return total
+
+
+def get_model_metadata(model_id, port=None):
+    """Best-effort quantization / parameters / size / dtype for a model.
+
+    Priority: running-server info (authoritative for quant/dtype) > HF config
+    on disk > inference from model id.
+    """
+    meta = {
+        'model_id': model_id,
+        'quantization': None,
+        'parameters': 0,
+        'size_bytes': 0,
+        'dtype': None,
+        'weight_mem_gib': None,
+    }
+
+    if port is not None:
+        try:
+            from services import vllm_service
+            info = vllm_service.get_server_info(port) or {}
+            if info.get('quantization'):
+                meta['quantization'] = str(info['quantization']).upper()
+            if info.get('dtype') and info['dtype'] != 'auto':
+                meta['dtype'] = info['dtype']
+            if info.get('weight_mem_gib'):
+                meta['weight_mem_gib'] = info['weight_mem_gib']
+        except Exception:
+            pass
+
+    snap = _find_snapshot_dir(model_id)
+    cfg = _read_json(os.path.join(snap, 'config.json')) if snap else None
+    if cfg:
+        qc = cfg.get('quantization_config')
+        if qc and not meta['quantization']:
+            qm = qc.get('quant_method') or qc.get('quant_type')
+            if qm:
+                meta['quantization'] = str(qm).upper()
+        if not meta['dtype']:
+            td = cfg.get('torch_dtype')
+            if td:
+                meta['dtype'] = str(td)
+
+    if not meta['quantization']:
+        inferred = _infer_quant_from_name(model_id)
+        meta['quantization'] = inferred or (meta['dtype'] and meta['dtype'].upper()) or 'NONE'
+
+    meta['parameters'] = _params_from_snapshot(snap) or _params_from_name(model_id)
+    meta['size_bytes'] = _size_bytes_from_snapshot(snap)
+    return meta
+
+
+def summarize_profile_csv(csv_path):
+    """Reduce a profile CSV to scalar peaks/averages for storage on a result."""
+    if not csv_path or not os.path.exists(csv_path):
+        return {}
+    gpu_mems, gpu_utils, gpu_temps, gpu_powers = [], [], [], []
+    rss_list, kv_list = [], []
+    gpu_mem_total = 0
+    try:
+        with open(csv_path, newline='') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                def _f(k):
+                    try:
+                        return float(row.get(k) or 0)
+                    except (TypeError, ValueError):
+                        return 0.0
+                gpu_mems.append(_f('gpu_mem_used_mb'))
+                gpu_utils.append(_f('gpu_util_pct'))
+                gpu_temps.append(_f('gpu_temp_c'))
+                gpu_powers.append(_f('gpu_power_w'))
+                rss_list.append(_f('cpu_mem_rss_mb'))
+                kv_list.append(_f('kv_cache_pct'))
+                gmt = _f('gpu_mem_total_mb')
+                if gmt:
+                    gpu_mem_total = gmt
+    except Exception:
+        return {}
+
+    def _avg(xs):
+        xs = [x for x in xs if x]
+        return sum(xs) / len(xs) if xs else 0
+
+    return {
+        'samples': len(gpu_mems),
+        'peak_gpu_mem_mb': max(gpu_mems, default=0),
+        'avg_gpu_mem_mb': _avg(gpu_mems),
+        'gpu_mem_total_mb': gpu_mem_total,
+        'peak_gpu_util_pct': max(gpu_utils, default=0),
+        'avg_gpu_util_pct': _avg(gpu_utils),
+        'peak_gpu_temp_c': max(gpu_temps, default=0),
+        'peak_gpu_power_w': max(gpu_powers, default=0),
+        'avg_gpu_power_w': _avg(gpu_powers),
+        'peak_cpu_rss_mb': max(rss_list, default=0),
+        'peak_kv_cache_pct': max(kv_list, default=0),
+    }
+
+
+def read_profile_csv(csv_path, max_points=600):
+    """Load a profile CSV as parallel lists for charting. Downsamples to max_points."""
+    if not csv_path or not os.path.exists(csv_path):
+        return {}
+    rows = []
+    try:
+        with open(csv_path, newline='') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                rows.append(row)
+    except Exception:
+        return {}
+    if not rows:
+        return {}
+    if len(rows) > max_points:
+        step = len(rows) // max_points
+        rows = rows[::step]
+
+    def _col(name, fn=float):
+        out = []
+        for r in rows:
+            try:
+                out.append(fn(r.get(name) or 0))
+            except (TypeError, ValueError):
+                out.append(0)
+        return out
+
+    return {
+        'timestamps': [r.get('timestamp', '')[-8:] for r in rows],
+        'gpu_mem_mb': _col('gpu_mem_used_mb'),
+        'gpu_util_pct': _col('gpu_util_pct'),
+        'gpu_temp_c': _col('gpu_temp_c'),
+        'gpu_power_w': _col('gpu_power_w'),
+        'kv_cache_pct': _col('kv_cache_pct'),
+        'tokens_per_sec': _col('gen_tokens_per_sec') if any(r.get('gen_tokens_per_sec') for r in rows) else [],
+        'requests_running': _col('requests_running'),
+        'requests_waiting': _col('requests_waiting'),
+        'cpu_rss_mb': _col('cpu_mem_rss_mb'),
+    }
 
 
 def _safe_script_name(name):
@@ -127,7 +357,7 @@ def run_context_sweep(port, model, result_dir, run_name, upper_bound, step):
     return proc
 
 
-def parse_context_sweep_result(result_dir, run_name):
+def parse_context_sweep_result(result_dir, run_name, extras=None):
     os.makedirs(BENCHMARKS_DIR, exist_ok=True)
     jsons = sorted(glob.glob(os.path.join(result_dir, 'context_sweep_*.json')))
     if not jsons:
@@ -141,6 +371,8 @@ def parse_context_sweep_result(result_dir, run_name):
         'probes': raw.get('probes', []),
         'raw': raw,
     }
+    if extras:
+        parsed.update(extras)
     save_path = os.path.join(BENCHMARKS_DIR,
                              f'{run_name}_context_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json')
     with open(save_path, 'w') as f:
@@ -183,7 +415,7 @@ def is_running():
     return _active_proc is not None and _active_proc.poll() is None
 
 
-def parse_perf_result(result_dir, run_name):
+def parse_perf_result(result_dir, run_name, extras=None):
     os.makedirs(BENCHMARKS_DIR, exist_ok=True)
     jsons = sorted(glob.glob(os.path.join(result_dir, '*.json')))
     if not jsons:
@@ -218,6 +450,8 @@ def parse_perf_result(result_dir, run_name):
         mean_key = f'mean_{metric}_ms'
         if mean_key in raw:
             parsed['metrics'][metric]['mean'] = raw[mean_key]
+    if extras:
+        parsed.update(extras)
     save_path = os.path.join(BENCHMARKS_DIR,
                              f'{run_name}_perf_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json')
     with open(save_path, 'w') as f:
@@ -226,7 +460,7 @@ def parse_perf_result(result_dir, run_name):
     return parsed
 
 
-def parse_quality_result(result_dir, run_name):
+def parse_quality_result(result_dir, run_name, extras=None):
     os.makedirs(BENCHMARKS_DIR, exist_ok=True)
     # lm-eval saves results as results_<timestamp>.json in a model subdirectory
     results_file = None
@@ -260,6 +494,8 @@ def parse_quality_result(result_dir, run_name):
                     entry[f'{metric_name}_stderr'] = task_data[stderr_key]
         if len(entry) > 1:
             parsed['tasks'].append(entry)
+    if extras:
+        parsed.update(extras)
     save_path = os.path.join(BENCHMARKS_DIR,
                              f'{run_name}_quality_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json')
     with open(save_path, 'w') as f:
@@ -310,14 +546,81 @@ def build_pareto_dataset(quality_metric_preference=None):
         if task_entry is None:
             task_entry = tasks[0]
         q_val = task_entry.get('acc_norm', task_entry.get('acc', task_entry.get('exact_match')))
+        meta = perf.get('model_meta') or qual.get('model_meta') or {}
+        prof = perf.get('profile_summary') or qual.get('profile_summary') or {}
+        params = meta.get('parameters') or 0
+        size_bytes = meta.get('size_bytes') or 0
+        peak_vram_mb = prof.get('peak_gpu_mem_mb') or 0
+        avg_power_w = prof.get('avg_gpu_power_w') or 0
         rows.append({
             'run_name': run,
             'throughput_tps': perf.get('output_throughput'),
             'prefill_tps': perf.get('prefill_throughput'),
             'quality_score': q_val,
             'quality_task': task_entry.get('task'),
+            'model_id': meta.get('model_id') or '',
+            'quantization': (meta.get('quantization') or 'UNKNOWN').upper(),
+            'parameters': params,
+            'parameters_b': (params / 1e9) if params else 0,
+            'size_bytes': size_bytes,
+            'size_gb': (size_bytes / 1e9) if size_bytes else 0,
+            'peak_vram_gb': (peak_vram_mb / 1024) if peak_vram_mb else 0,
+            'avg_gpu_power_w': avg_power_w,
+            'dtype': meta.get('dtype') or '',
         })
     return rows
+
+
+def list_quantizations_seen():
+    """Distinct quantization labels across all perf/quality results."""
+    if not os.path.isdir(BENCHMARKS_DIR):
+        return []
+    out = set()
+    for fpath in glob.glob(os.path.join(BENCHMARKS_DIR, '*.json')):
+        try:
+            data = json.loads(open(fpath).read())
+        except Exception:
+            continue
+        meta = data.get('model_meta') or {}
+        q = meta.get('quantization')
+        if q:
+            out.add(str(q).upper())
+    return sorted(out) or ['UNKNOWN']
+
+
+def backfill_metadata(port_for_running_model=None):
+    """Re-derive model_meta and profile_summary for existing benchmark JSONs
+    that lack them. Returns how many files were updated.
+    """
+    if not os.path.isdir(BENCHMARKS_DIR):
+        return 0
+    updated = 0
+    for fpath in glob.glob(os.path.join(BENCHMARKS_DIR, '*.json')):
+        try:
+            data = json.loads(open(fpath).read())
+        except Exception:
+            continue
+        if data.get('type') not in ('perf', 'quality', 'context_sweep'):
+            continue
+        changed = False
+        model_id = (data.get('raw') or {}).get('model_id') or data.get('model_id') or ''
+        if 'model_meta' not in data and model_id:
+            data['model_meta'] = get_model_metadata(model_id, port=port_for_running_model)
+            changed = True
+        csv_path = data.get('profile_csv')
+        if csv_path and 'profile_summary' not in data:
+            summary = summarize_profile_csv(csv_path)
+            if summary:
+                data['profile_summary'] = summary
+                changed = True
+        if changed:
+            try:
+                with open(fpath, 'w') as f:
+                    json.dump(data, f, indent=2)
+                updated += 1
+            except Exception:
+                pass
+    return updated
 
 
 def list_quality_tasks_seen():
