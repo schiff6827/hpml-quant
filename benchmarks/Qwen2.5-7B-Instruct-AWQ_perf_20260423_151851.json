@@ -1,0 +1,100 @@
+{
+  "type": "perf",
+  "run_name": "Qwen2.5-7B-Instruct-AWQ",
+  "timestamp": "2026-04-23T15:18:51.719065",
+  "request_throughput": 12.55417417034379,
+  "output_throughput": 2483.290975939024,
+  "prefill_throughput": 96.90654032734409,
+  "metrics": {
+    "ttft": {
+      "mean": 2243.326397430559
+    },
+    "tpot": {
+      "mean": 14.565654478243141
+    },
+    "itl": {
+      "mean": 13.838549330532535
+    },
+    "e2el": {
+      "mean": 4966.835847182781
+    }
+  },
+  "raw": {
+    "date": "20260423-145517",
+    "endpoint_type": "openai",
+    "backend": "openai",
+    "label": null,
+    "model_id": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+    "tokenizer_id": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+    "num_prompts": 1000,
+    "request_rate": "inf",
+    "burstiness": 1.0,
+    "max_concurrency": 64,
+    "duration": 79.65478146402165,
+    "completed": 1000,
+    "failed": 0,
+    "total_input_tokens": 217393,
+    "total_output_tokens": 197806,
+    "request_throughput": 12.55417417034379,
+    "request_goodput": null,
+    "output_throughput": 2483.290975939024,
+    "total_token_throughput": 5212.480561352571,
+    "max_output_tokens_per_s": 5684.0,
+    "max_concurrent_requests": 93,
+    "rtfx": 0.0,
+    "mean_ttft_ms": 2243.326397430559,
+    "median_ttft_ms": 65.21031049487647,
+    "std_ttft_ms": 8313.862500899826,
+    "p50_ttft_ms": 65.21031049487647,
+    "p75_ttft_ms": 89.76792674366152,
+    "p90_ttft_ms": 122.38087349978743,
+    "p95_ttft_ms": 33846.86689454538,
+    "p99_ttft_ms": 34296.97747644095,
+    "mean_tpot_ms": 14.565654478243141,
+    "median_tpot_ms": 13.845916201045018,
+    "std_tpot_ms": 6.324253036337483,
+    "p50_tpot_ms": 13.845916201045018,
+    "p75_tpot_ms": 15.63715378782063,
+    "p90_tpot_ms": 17.6658111402475,
+    "p95_tpot_ms": 19.784503530005047,
+    "p99_tpot_ms": 27.925665962418197,
+    "mean_itl_ms": 13.838549330532535,
+    "median_itl_ms": 9.22173350409139,
+    "std_itl_ms": 12.764028004731369,
+    "p50_itl_ms": 9.22173350409139,
+    "p75_itl_ms": 14.337923013954423,
+    "p90_itl_ms": 27.63924999453593,
+    "p95_itl_ms": 38.05765051220078,
+    "p99_itl_ms": 60.18371716636468,
+    "mean_e2el_ms": 4966.835847182781,
+    "median_e2el_ms": 2418.501694512088,
+    "std_e2el_ms": 8836.1276569626,
+    "p50_e2el_ms": 2418.501694512088,
+    "p75_e2el_ms": 4990.663702759775,
+    "p90_e2el_ms": 8880.876161213384,
+    "p95_e2el_ms": 34761.78080320241,
+    "p99_e2el_ms": 39665.1704419771
+  },
+  "model_meta": {
+    "model_id": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+    "quantization": "AWQ",
+    "parameters": 5405933568,
+    "size_bytes": 5570829760,
+    "dtype": "float16",
+    "weight_mem_gib": null
+  },
+  "profile_csv": "metrics/run_8001QwenQwen2.5-7B-Instruct-AWQ_20260423_145354.csv",
+  "profile_summary": {
+    "samples": 83,
+    "peak_gpu_mem_mb": 21991.0,
+    "avg_gpu_mem_mb": 21923.024096385543,
+    "gpu_mem_total_mb": 97887.0,
+    "peak_gpu_util_pct": 99.0,
+    "avg_gpu_util_pct": 96.18604651162791,
+    "peak_gpu_temp_c": 69.0,
+    "peak_gpu_power_w": 300.09,
+    "avg_gpu_power_w": 177.61060240963855,
+    "peak_cpu_rss_mb": 6253.625,
+    "peak_kv_cache_pct": 14.605589265874707
+  }
+}
