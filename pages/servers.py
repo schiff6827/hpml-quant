@@ -3,7 +3,7 @@ import subprocess
 import os
 import signal
 from nicegui import ui, app, run
-from services import hf_service, vllm_service, metrics_service
+from services import hf_service, vllm_service, metrics_service, queue_service
 import config
 
 _webui_proc = None
@@ -78,10 +78,12 @@ def content():
                 nsys_check = ui.checkbox('Enable Nsight profiling (nsys)')
             with ui.row().classes('gap-2 items-center'):
                 launch_btn = ui.button('Launch Server', icon='play_arrow').props('color=positive')
+                queue_add_btn = ui.button('Add to Queue', icon='playlist_add').props('color=secondary')
                 webui_launch_btn = ui.button('Launch Open WebUI', icon='open_in_new').props('color=accent')
                 webui_stop_btn = ui.button('Stop WebUI', icon='stop').props('color=negative')
                 webui_stop_btn.visible = False
                 webui_status = ui.label('').classes('text-sm')
+                queue_count_label = ui.label('').classes('text-xs text-grey')
             launch_status = ui.label('').classes('text-sm')
             with ui.row().classes('gap-2 items-center'):
                 copy_log_btn = ui.button('Copy log', icon='content_copy').props('flat dense')
@@ -244,6 +246,41 @@ def content():
         refresh_btn.on_click(refresh_all)
         stop_btn.on_click(stop_selected)
         launch_btn.on_click(launch)
+
+        def _update_queue_count():
+            q = queue_service.get_queue()
+            n = len(q.get('models', [])) if q else 0
+            queue_count_label.set_text(f'({n} in queue)' if n else '')
+
+        def add_to_queue():
+            model = model_select.value
+            if not model:
+                ui.notify('Pick a model first', type='warning')
+                return
+            if queue_service.is_running():
+                ui.notify('Cannot modify queue while it is running', type='warning')
+                return
+            info = _model_info.get(model, {})
+            real_model = info['path'] if info.get('source') == 'local' else model
+            use_kv_gb = cache_mode.value == 'KV Cache (GB)'
+            launch_cfg = {
+                'use_kv_gb': use_kv_gb,
+                'kv_cache_gb': int(kv_cache_input.value or 10),
+                'gpu_mem_util': float(gpu_slider.value or 0.9),
+                'dtype': dtype_select.value,
+                'quantization': quant_select.value or '',
+                'trust_remote_code': bool(trust_remote_check.value),
+            }
+            try:
+                queue_service.add_model(real_model, launch_cfg, name=model)
+                ui.notify(f'Added "{model}" to queue', type='positive')
+                _update_queue_count()
+            except Exception as e:
+                ui.notify(f'Failed: {e}', type='negative')
+
+        queue_add_btn.on_click(add_to_queue)
+        ui.timer(5.0, _update_queue_count)
+        _update_queue_count()
 
         async def launch_webui():
             global _webui_proc

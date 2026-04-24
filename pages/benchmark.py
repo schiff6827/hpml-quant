@@ -4,7 +4,7 @@ import tempfile
 import os
 from collections import deque
 from nicegui import ui, run
-from services import vllm_service, benchmark_service, metrics_service
+from services import vllm_service, benchmark_service, metrics_service, queue_service
 
 _PROFILE_MAX_POINTS = 240
 
@@ -96,9 +96,11 @@ def content():
         # --- Run controls ---
         with ui.row().classes('gap-2 items-center mt-2'):
             run_btn = ui.button('Run Benchmark', icon='play_arrow').props('color=positive')
+            queue_add_btn = ui.button('Add to Queue', icon='playlist_add').props('color=secondary')
             stop_btn = ui.button('Stop', icon='stop').props('color=negative')
             stop_btn.visible = False
             run_status = ui.label('').classes('text-sm')
+            queue_count_label = ui.label('').classes('text-xs text-grey')
 
         # --- Progress bar ---
         progress_bar = ui.linear_progress(value=0, show_value=False).classes('w-full')
@@ -1034,6 +1036,37 @@ def content():
     script_save_btn.on_click(on_script_save)
     script_load_btn.on_click(on_script_load)
     script_delete_btn.on_click(on_script_delete)
+
+    def _update_queue_count():
+        q = queue_service.get_queue()
+        n = len(q.get('benchmarks', [])) if q else 0
+        queue_count_label.set_text(f'({n} in queue)' if n else '')
+
+    def add_to_queue():
+        if queue_service.is_running():
+            ui.notify('Cannot modify queue while it is running', type='warning')
+            return
+        cfg = _capture_script_state()
+        if not any((cfg.get(t) or {}).get('enabled') for t in ('perf', 'quality', 'context_sweep')):
+            ui.notify('Enable at least one benchmark type (perf / quality / context_sweep)', type='warning')
+            return
+        name = (script_name_input.value or '').strip()
+        if not name:
+            # Auto-name: enabled types joined + timestamp
+            from datetime import datetime
+            enabled = [t for t in ('perf', 'quality', 'context_sweep') if (cfg.get(t) or {}).get('enabled')]
+            name = '+'.join(enabled) + '_' + datetime.now().strftime('%H%M%S')
+        cfg['name'] = name
+        try:
+            queue_service.add_benchmark(name, cfg)
+            ui.notify(f'Added benchmark "{name}" to queue', type='positive')
+            _update_queue_count()
+        except Exception as e:
+            ui.notify(f'Failed: {e}', type='negative')
+
+    queue_add_btn.on_click(add_to_queue)
+    ui.timer(5.0, _update_queue_count)
+    _update_queue_count()
     pareto_refresh_btn.on_click(refresh_pareto)
     pareto_task_select.on_value_change(lambda _: refresh_pareto())
     pareto_xaxis_select.on_value_change(lambda _: refresh_pareto())

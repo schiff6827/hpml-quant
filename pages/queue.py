@@ -1,9 +1,14 @@
-"""Queue tab: configure, save/load, run, and monitor serial benchmark queues."""
+"""Queue tab: view accumulated models × benchmarks, save/load presets, run + monitor.
+
+Models and benchmarks are populated via 'Add to Queue' buttons on the Servers
+and Benchmark tabs. The Queue tab itself is just a viewer + runner.
+"""
 import os
+import time
 
-from nicegui import ui, app, run
+from nicegui import ui
 
-from services import benchmark_service, hf_service, notify_service, queue_service
+from services import notify_service, queue_service
 
 
 def _fmt_sec(s):
@@ -22,120 +27,105 @@ def _fmt_sec(s):
     return f'{sec}s'
 
 
-def _status_color(status):
-    return {
-        'pending': 'grey',
-        'launching': 'blue',
-        'running': 'blue',
-        'completed': 'positive',
-        'failed': 'negative',
-        'cancelled': 'warning',
-    }.get(status, 'grey')
+def _launch_summary(launch):
+    bits = []
+    if launch.get('use_kv_gb'):
+        bits.append(f'KV={launch.get("kv_cache_gb")}GB')
+    else:
+        bits.append(f'mem={launch.get("gpu_mem_util"):.0%}')
+    if launch.get('dtype') and launch['dtype'] != 'auto':
+        bits.append(launch['dtype'])
+    if launch.get('quantization'):
+        bits.append(launch['quantization'])
+    if launch.get('cpu_offload_gb'):
+        bits.append(f'offload={launch["cpu_offload_gb"]}GB')
+    if launch.get('trust_remote_code'):
+        bits.append('trust')
+    return ', '.join(bits) or '—'
+
+
+def _bench_summary(config):
+    bits = []
+    for t in ('perf', 'quality', 'context_sweep'):
+        sub = config.get(t) or {}
+        if sub.get('enabled'):
+            bits.append(t)
+    return '+'.join(bits) or '—'
 
 
 def content():
-    """Returns a refresh coroutine for tab-switch triggering."""
-    _model_info = {}
-    _scripts = {}  # name -> path
+    """Returns an async refresh callable for tab-switch triggering."""
     _last_log_len = {'n': 0}
 
     with ui.column().classes('w-full gap-4'):
 
-        # ── Retry banner ──
-        retry_banner = ui.row().classes('w-full bg-amber-2 p-3 rounded items-center gap-3')
-        retry_banner.visible = False
-        with retry_banner:
-            retry_msg = ui.label('').classes('text-body2')
-            ui.space()
-            retry_load_btn = ui.button('Load retry queue', icon='replay').props('dense')
-
-        # ── Section 1: Job Editor ──
-        ui.label('Job Editor').classes('text-subtitle1 font-bold')
-        with ui.card().classes('w-full'):
-            model_select = ui.select([], label='Model(s) — multi-select', multiple=True, with_input=True).classes('w-full').props('use-chips')
-            with ui.row().classes('gap-4 items-end flex-wrap'):
-                cache_mode = ui.radio(['KV Cache (GB)', 'GPU Mem %'], value='KV Cache (GB)').props('inline')
-                kv_cache_input = ui.number('KV Cache (GB)', value=10, min=1, max=96, step=1).classes('w-32')
-                gpu_slider = ui.slider(min=0.1, max=1.0, step=0.05, value=0.90).classes('w-48')
-                gpu_label = ui.label().bind_text_from(gpu_slider, 'value', backward=lambda v: f'GPU Mem: {v:.0%}')
-                gpu_slider.visible = False
-                gpu_label.visible = False
-
-                def _toggle_cache():
-                    is_gb = cache_mode.value == 'KV Cache (GB)'
-                    kv_cache_input.visible = is_gb
-                    gpu_slider.visible = not is_gb
-                    gpu_label.visible = not is_gb
-                cache_mode.on_value_change(lambda _: _toggle_cache())
-
-            with ui.row().classes('gap-4 items-end flex-wrap'):
-                dtype_select = ui.select(['auto', 'float16', 'bfloat16'], value='auto', label='DType').classes('w-36')
-                quant_select = ui.select(['', 'awq', 'gptq', 'fp8', 'bitsandbytes'], value='', label='Quantization').classes('w-36')
-                trust_remote = ui.checkbox('Trust remote code', value=False)
-
-            scripts_select = ui.select([], label='Benchmark scripts (multi-select)', multiple=True, with_input=True).classes('w-full').props('use-chips')
-            ui.label('Each selected script contributes whichever of perf / quality / context_sweep it has enabled.').classes('text-xs text-grey')
-
-            with ui.expansion('Timeout overrides (per job)', icon='schedule').classes('w-full'):
-                ui.label('Soft cap: expected finish time. After it, idle window starts. If no GPU/CPU activity for idle_window, kill.').classes('text-xs text-grey')
-                ui.label('Hard cap: always kills, no exceptions.').classes('text-xs text-grey')
-                d = queue_service.DEFAULT_TIMEOUTS
-                with ui.row().classes('gap-4 items-end flex-wrap'):
-                    to_launch_soft = ui.number('Launch soft (s)', value=d['launch_soft_s'], min=30).classes('w-36')
-                    to_launch_hard = ui.number('Launch hard (s)', value=d['launch_hard_s'], min=60).classes('w-36')
-                    to_launch_idle = ui.number('Launch idle window (s)', value=d['launch_idle_window_s'], min=30).classes('w-44')
-                with ui.row().classes('gap-4 items-end flex-wrap'):
-                    to_bench_soft = ui.number('Bench soft (s)', value=d['bench_soft_s'], min=60).classes('w-36')
-                    to_bench_hard = ui.number('Bench hard (s)', value=d['bench_hard_s'], min=60).classes('w-36')
-                    to_bench_idle = ui.number('Bench idle window (s)', value=d['bench_idle_window_s'], min=30).classes('w-44')
-
-            add_btn = ui.button('Add job(s) to queue', icon='add').props('color=primary')
-
-        # ── Section 2: Current Queue ──
-        ui.label('Current Queue').classes('text-subtitle1 font-bold mt-2')
+        # ── Name + preset controls ──
         with ui.card().classes('w-full'):
             with ui.row().classes('items-end gap-2 flex-wrap w-full'):
                 queue_name_input = ui.input('Queue name', value='').classes('w-64')
+                rename_btn = ui.button('Rename', icon='edit').props('dense outline')
                 save_preset_btn = ui.button('Save as preset', icon='save').props('dense outline')
-                preset_select = ui.select([], label='Load preset', with_input=True).classes('w-64')
+                preset_select = ui.select([], label='Load preset', with_input=True).classes('w-96')
                 load_preset_btn = ui.button('Load', icon='folder_open').props('dense outline')
                 delete_preset_btn = ui.button('Delete preset', icon='delete').props('dense outline color=negative')
-            with ui.row().classes('items-end gap-2 flex-wrap w-full'):
-                retry_select = ui.select([], label='Load retry queue', with_input=True).classes('w-80')
-                load_retry_btn = ui.button('Load', icon='folder_open').props('dense outline')
+            ui.label('Failed jobs from a completed queue are saved as a new preset named "{queue}__failures_<timestamp>".').classes('text-xs text-grey')
 
-            queue_table = ui.table(
-                columns=[
-                    {'name': 'idx', 'label': '#', 'field': 'idx', 'align': 'right'},
-                    {'name': 'model', 'label': 'Model', 'field': 'model', 'align': 'left'},
-                    {'name': 'scripts', 'label': 'Benchmarks', 'field': 'scripts', 'align': 'left'},
-                    {'name': 'status', 'label': 'Status', 'field': 'status', 'align': 'center'},
-                    {'name': 'elapsed', 'label': 'Elapsed', 'field': 'elapsed', 'align': 'right'},
-                    {'name': 'error', 'label': 'Error', 'field': 'error', 'align': 'left'},
-                    {'name': 'remove', 'label': '', 'field': 'remove', 'align': 'center'},
-                ],
-                rows=[],
-                row_key='id',
-            ).classes('w-full')
-            queue_table.add_slot('body-cell-remove', '''
-                <q-td :props="props">
-                  <q-btn flat dense size="sm" icon="close" color="negative"
-                         @click="$parent.$emit('remove-job', props.row)" />
-                </q-td>
-            ''')
-            queue_table.on('remove-job', lambda e: _on_remove_job(e.args.get('id')))
+        # ── Models table ──
+        ui.label('Models in queue').classes('text-subtitle1 font-bold')
+        ui.label('Add models from the Servers tab using the "Add to Queue" button.').classes('text-xs text-grey')
+        models_table = ui.table(
+            columns=[
+                {'name': 'name', 'label': 'Name', 'field': 'name', 'align': 'left'},
+                {'name': 'model', 'label': 'Model / Path', 'field': 'model', 'align': 'left'},
+                {'name': 'launch', 'label': 'Launch', 'field': 'launch', 'align': 'left'},
+                {'name': 'remove', 'label': '', 'field': 'remove', 'align': 'center'},
+            ],
+            rows=[], row_key='id',
+        ).classes('w-full')
+        models_table.add_slot('body-cell-remove', '''
+            <q-td :props="props">
+              <q-btn flat dense size="sm" icon="close" color="negative"
+                     @click="$parent.$emit('remove-model', props.row)" />
+            </q-td>
+        ''')
+        models_table.on('remove-model', lambda e: _on_remove_model(e.args.get('id')))
+        with ui.row().classes('gap-2'):
+            clear_models_btn = ui.button('Clear all models', icon='delete_sweep').props('dense outline')
 
-            with ui.row().classes('gap-2 mt-2'):
-                start_btn = ui.button('Start queue', icon='play_arrow').props('color=positive')
+        # ── Benchmarks table ──
+        ui.label('Benchmarks in queue').classes('text-subtitle1 font-bold mt-2')
+        ui.label('Add benchmarks from the Benchmark tab using the "Add to Queue" button.').classes('text-xs text-grey')
+        benches_table = ui.table(
+            columns=[
+                {'name': 'name', 'label': 'Name', 'field': 'name', 'align': 'left'},
+                {'name': 'types', 'label': 'Types', 'field': 'types', 'align': 'left'},
+                {'name': 'remove', 'label': '', 'field': 'remove', 'align': 'center'},
+            ],
+            rows=[], row_key='id',
+        ).classes('w-full')
+        benches_table.add_slot('body-cell-remove', '''
+            <q-td :props="props">
+              <q-btn flat dense size="sm" icon="close" color="negative"
+                     @click="$parent.$emit('remove-bench', props.row)" />
+            </q-td>
+        ''')
+        benches_table.on('remove-bench', lambda e: _on_remove_bench(e.args.get('id')))
+        with ui.row().classes('gap-2'):
+            clear_benches_btn = ui.button('Clear all benchmarks', icon='delete_sweep').props('dense outline')
+
+        # ── Expansion preview + start controls ──
+        with ui.card().classes('w-full'):
+            expansion_label = ui.label('').classes('text-body1 font-bold')
+            with ui.row().classes('gap-2'):
+                start_btn = ui.button('Start queue (all-to-all)', icon='play_arrow').props('color=positive')
                 cancel_btn = ui.button('Stop queue', icon='stop').props('color=negative')
-                clear_btn = ui.button('Clear queue', icon='delete_sweep').props('outline')
 
-        # ── Section 3: Runner ──
+        # ── Runner / live state ──
         runner_card = ui.card().classes('w-full')
         with runner_card:
-            ui.label('Run Status').classes('text-subtitle1 font-bold')
+            ui.label('Run status').classes('text-subtitle1 font-bold')
             with ui.row().classes('items-center gap-4 flex-wrap w-full'):
-                run_model_label = ui.label('—').classes('text-body1 font-mono')
+                run_job_label = ui.label('—').classes('text-body1 font-mono')
                 run_step_label = ui.label('').classes('text-body2 text-grey')
                 run_progress_label = ui.label('').classes('text-body2 text-grey')
             with ui.row().classes('items-center gap-6 flex-wrap'):
@@ -146,125 +136,88 @@ def content():
             ui.label('Notification channels:').classes('text-xs text-grey mt-2')
             notify_status = ui.label('—').classes('text-xs text-grey font-mono')
             ui.separator()
-            log_panel = ui.log(max_lines=300).classes('w-full').style('height: 360px')
+            ui.label('Jobs').classes('text-xs text-grey')
+            jobs_table = ui.table(
+                columns=[
+                    {'name': 'idx', 'label': '#', 'field': 'idx', 'align': 'right'},
+                    {'name': 'name', 'label': 'Job', 'field': 'name', 'align': 'left'},
+                    {'name': 'status', 'label': 'Status', 'field': 'status', 'align': 'center'},
+                    {'name': 'elapsed', 'label': 'Elapsed', 'field': 'elapsed', 'align': 'right'},
+                    {'name': 'error', 'label': 'Error', 'field': 'error', 'align': 'left'},
+                ],
+                rows=[], row_key='id',
+            ).classes('w-full')
+            ui.separator()
+            log_panel = ui.log(max_lines=300).classes('w-full').style('height: 320px')
         runner_card.visible = False
 
-        # ── Internal queue state (mirror of queue_service's queue) ──
+        # ── Handlers ──
         def _current_queue():
             q = queue_service.get_queue()
-            if not q:
-                queue_service.set_queue(queue_service.new_queue(name=queue_name_input.value or 'queue'))
-            return queue_service.get_queue()
+            if q is None:
+                queue_service.set_queue(queue_service.new_queue())
+                q = queue_service.get_queue()
+            return q
 
-        def _refresh_queue_table():
-            q = queue_service.get_queue()
-            rows = []
-            if q:
-                for i, j in enumerate(q['jobs']):
-                    scripts = ', '.join(j.get('benchmarks') or []) or '(none)'
-                    elapsed = '—'
-                    if j.get('started_at') and j.get('finished_at'):
-                        try:
-                            from datetime import datetime
-                            a = datetime.fromisoformat(j['started_at'])
-                            b = datetime.fromisoformat(j['finished_at'])
-                            elapsed = _fmt_sec((b - a).total_seconds())
-                        except Exception:
-                            pass
-                    rows.append({
-                        'id': j['id'], 'idx': i + 1, 'model': j['model'],
-                        'scripts': scripts, 'status': j['status'],
-                        'elapsed': elapsed, 'error': (j.get('error') or '')[:120], 'remove': '',
-                    })
-            queue_table.rows = rows
-            queue_table.update()
+        def _on_remove_model(entry_id):
+            try:
+                queue_service.remove_model(entry_id)
+            except Exception as e:
+                ui.notify(str(e), type='warning'); return
+            _refresh_tables()
 
-        def _on_remove_job(job_id):
-            if queue_service.is_running():
-                ui.notify('Cannot modify queue while running', type='warning')
-                return
-            q = queue_service.get_queue()
-            if not q:
-                return
-            q['jobs'] = [j for j in q['jobs'] if j['id'] != job_id]
-            _refresh_queue_table()
+        def _on_remove_bench(entry_id):
+            try:
+                queue_service.remove_benchmark(entry_id)
+            except Exception as e:
+                ui.notify(str(e), type='warning'); return
+            _refresh_tables()
 
-        def _add_jobs():
-            if queue_service.is_running():
-                ui.notify('Cannot modify queue while running', type='warning')
-                return
-            models = list(model_select.value or [])
-            if not models:
-                ui.notify('Pick at least one model', type='warning')
-                return
-            script_paths = list(scripts_select.value or [])
-            if not script_paths:
-                ui.notify('Pick at least one benchmark script', type='warning')
-                return
-            # Map script paths back to names
-            script_names = []
-            for path in script_paths:
-                name = None
-                for n, p in _scripts.items():
-                    if p == path:
-                        name = n
-                        break
-                script_names.append(name or os.path.splitext(os.path.basename(path))[0])
+        def _on_clear_models():
+            try:
+                queue_service.clear_models()
+            except Exception as e:
+                ui.notify(str(e), type='warning'); return
+            _refresh_tables()
 
-            launch = {
-                'use_kv_gb': cache_mode.value == 'KV Cache (GB)',
-                'kv_cache_gb': int(kv_cache_input.value or 10),
-                'gpu_mem_util': float(gpu_slider.value or 0.9),
-                'dtype': dtype_select.value,
-                'quantization': quant_select.value or '',
-                'trust_remote_code': bool(trust_remote.value),
-            }
-            timeouts = {
-                'launch_soft_s': int(to_launch_soft.value),
-                'launch_hard_s': int(to_launch_hard.value),
-                'launch_idle_window_s': int(to_launch_idle.value),
-                'bench_soft_s': int(to_bench_soft.value),
-                'bench_hard_s': int(to_bench_hard.value),
-                'bench_idle_window_s': int(to_bench_idle.value),
-            }
-            q = _current_queue()
-            for model_id in models:
-                # For local models, use the filesystem path like servers.py does
-                info = _model_info.get(model_id) or {}
-                real_model = info.get('path') if info.get('source') == 'local' else model_id
-                j = queue_service._new_job(
-                    model=real_model,
-                    launch=launch,
-                    benchmarks=script_names,
-                    timeouts=timeouts,
-                    name=model_id,
-                )
-                q['jobs'].append(j)
-            _refresh_queue_table()
-            ui.notify(f'Added {len(models)} job(s)', type='positive')
+        def _on_clear_benches():
+            try:
+                queue_service.clear_benchmarks()
+            except Exception as e:
+                ui.notify(str(e), type='warning'); return
+            _refresh_tables()
 
-        add_btn.on_click(_add_jobs)
+        clear_models_btn.on_click(_on_clear_models)
+        clear_benches_btn.on_click(_on_clear_benches)
 
-        # ── Save / load presets ──
+        def _on_rename():
+            new_name = (queue_name_input.value or '').strip()
+            if not new_name:
+                ui.notify('Enter a queue name first', type='warning'); return
+            queue_service.rename_queue(new_name)
+            ui.notify(f'Queue renamed to "{new_name}"', type='positive')
+
+        rename_btn.on_click(_on_rename)
+
         def _refresh_presets():
             items = queue_service.list_presets()
-            opts = {it['path']: f'{it["name"]} ({it["num_jobs"]} jobs)' for it in items}
+            opts = {}
+            for it in items:
+                if it.get('parent'):
+                    # Failure preset: highlight lineage + pre-expanded job count
+                    opts[it['path']] = f'⚠ {it["name"]} ({it["num_jobs"]} failed jobs from "{it["parent"]}")'
+                else:
+                    opts[it['path']] = f'{it["name"]} ({it["num_models"]}m × {it["num_benchmarks"]}b)'
             preset_select.options = opts
             preset_select.update()
-            ritems = queue_service.list_retries()
-            ropts = {it['path']: f'{it["name"]} ({it["num_jobs"]} jobs, from {it.get("parent") or "?"})' for it in ritems}
-            retry_select.options = ropts
-            retry_select.update()
 
         def _on_save_preset():
             name = (queue_name_input.value or '').strip()
             if not name:
-                ui.notify('Give the queue a name first', type='warning')
-                return
+                ui.notify('Give the queue a name first', type='warning'); return
             q = queue_service.get_queue()
-            if not q or not q.get('jobs'):
-                ui.notify('Queue is empty', type='warning')
-                return
+            if not q or (not q.get('models') and not q.get('jobs')):
+                ui.notify('Queue is empty — add models + benchmarks first', type='warning'); return
             q['name'] = name
             queue_service.save_preset(name, q)
             ui.notify(f'Preset saved: {name}', type='positive')
@@ -272,105 +225,126 @@ def content():
 
         def _on_load_preset():
             if queue_service.is_running():
-                ui.notify('Cannot load while running', type='warning')
-                return
+                ui.notify('Cannot load while running', type='warning'); return
             path = preset_select.value
             if not path:
-                ui.notify('Pick a preset first', type='warning')
-                return
+                ui.notify('Pick a preset first', type='warning'); return
             data = queue_service.load_from_path(path)
             queue_service.set_queue(data)
             queue_name_input.value = data.get('name', '')
-            _refresh_queue_table()
-            ui.notify(f'Loaded: {data.get("name")}', type='info')
+            _refresh_tables()
+            ui.notify(f'Loaded preset: {data.get("name")}', type='info')
 
         def _on_delete_preset():
             path = preset_select.value
             if not path:
-                ui.notify('Pick a preset first', type='warning')
-                return
+                ui.notify('Pick a preset first', type='warning'); return
             queue_service.delete_preset(path)
             ui.notify('Preset deleted', type='positive')
             _refresh_presets()
 
-        def _on_load_retry():
-            if queue_service.is_running():
-                ui.notify('Cannot load while running', type='warning')
-                return
-            path = retry_select.value
-            if not path:
-                ui.notify('Pick a retry queue first', type='warning')
-                return
-            data = queue_service.load_from_path(path)
-            queue_service.set_queue(data)
-            queue_name_input.value = data.get('name', '')
-            retry_banner.visible = False
-            _refresh_queue_table()
-            ui.notify(f'Loaded retry queue: {data.get("name")}', type='info')
-
         save_preset_btn.on_click(_on_save_preset)
         load_preset_btn.on_click(_on_load_preset)
         delete_preset_btn.on_click(_on_delete_preset)
-        load_retry_btn.on_click(_on_load_retry)
-        retry_load_btn.on_click(_on_load_retry)
 
-        def _on_clear():
-            if queue_service.is_running():
-                ui.notify('Cannot clear while running', type='warning')
-                return
-            queue_service.set_queue(queue_service.new_queue(name=queue_name_input.value or 'queue'))
-            _refresh_queue_table()
-
-        clear_btn.on_click(_on_clear)
-
-        # ── Start / Stop ──
         def _on_start():
             q = queue_service.get_queue()
-            if not q or not q.get('jobs'):
-                ui.notify('Queue is empty', type='warning')
+            if not q:
+                ui.notify('No queue', type='warning'); return
+            n = len(q.get('models', [])) * len(q.get('benchmarks', []))
+            pending_jobs = sum(1 for j in q.get('jobs', []) if j['status'] == 'pending')
+            if n == 0 and pending_jobs == 0:
+                ui.notify('Need at least 1 model and 1 benchmark (or a failure preset with pending jobs)', type='warning')
                 return
-            pending = [j for j in q['jobs'] if j['status'] == 'pending']
-            if not pending:
-                ui.notify('No pending jobs in queue', type='warning')
-                return
-            # Persist the user-chosen queue name if they edited it
             if queue_name_input.value and queue_name_input.value.strip():
-                q['name'] = queue_name_input.value.strip()
+                queue_service.rename_queue(queue_name_input.value.strip())
             try:
                 queue_service.start()
                 ui.notify('Queue started', type='positive')
-                _refresh_queue_table()
                 runner_card.visible = True
                 _last_log_len['n'] = 0
                 log_panel.clear()
+                _refresh_tables()
             except Exception as e:
                 ui.notify(f'Start failed: {e}', type='negative')
 
         def _on_cancel():
             if not queue_service.is_running():
-                ui.notify('Queue is not running', type='info')
-                return
+                ui.notify('Queue is not running', type='info'); return
             queue_service.cancel()
-            ui.notify('Cancel requested — will stop after current step', type='warning')
+            ui.notify('Cancel requested — stops after current step', type='warning')
 
         start_btn.on_click(_on_start)
         cancel_btn.on_click(_on_cancel)
 
-        # ── Live countdown + log tick ──
-        import time
+        # ── Refresh ──
+        def _refresh_tables():
+            q = queue_service.get_queue()
+            # Models
+            m_rows = []
+            for m in (q.get('models') if q else []) or []:
+                m_rows.append({
+                    'id': m['id'], 'name': m['name'], 'model': m['model'],
+                    'launch': _launch_summary(m['launch']), 'remove': '',
+                })
+            models_table.rows = m_rows
+            models_table.update()
+            # Benchmarks
+            b_rows = []
+            for b in (q.get('benchmarks') if q else []) or []:
+                b_rows.append({
+                    'id': b['id'], 'name': b['name'],
+                    'types': _bench_summary(b['config']), 'remove': '',
+                })
+            benches_table.rows = b_rows
+            benches_table.update()
+            # Expansion preview
+            if q:
+                nm = len(q.get('models', []))
+                nb = len(q.get('benchmarks', []))
+                pending = sum(1 for j in q.get('jobs', []) if j['status'] == 'pending')
+                if nm and nb:
+                    expansion_label.set_text(f'Will run {nm} × {nb} = {nm * nb} jobs (all-to-all)')
+                elif pending:
+                    expansion_label.set_text(f'Loaded failure preset: {pending} pending job(s)')
+                else:
+                    expansion_label.set_text('Empty — add at least one model and one benchmark')
+            else:
+                expansion_label.set_text('Empty — add at least one model and one benchmark')
+
+        def _refresh_jobs_table():
+            q = queue_service.get_queue()
+            rows = []
+            if q:
+                from datetime import datetime
+                for i, j in enumerate(q.get('jobs', []) or []):
+                    elapsed = '—'
+                    if j.get('started_at') and j.get('finished_at'):
+                        try:
+                            a = datetime.fromisoformat(j['started_at'])
+                            b = datetime.fromisoformat(j['finished_at'])
+                            elapsed = _fmt_sec((b - a).total_seconds())
+                        except Exception:
+                            pass
+                    rows.append({
+                        'id': j['id'], 'idx': i + 1, 'name': j['name'],
+                        'status': j['status'], 'elapsed': elapsed,
+                        'error': (j.get('error') or '')[:120],
+                    })
+            jobs_table.rows = rows
+            jobs_table.update()
 
         def _tick():
             q = queue_service.get_queue()
             running = queue_service.is_running()
             runner_card.visible = bool(running or (q and q.get('status') in ('running', 'completed', 'completed_with_failures', 'failed', 'cancelled')))
 
-            # Update countdowns if a job phase is active
             current = None
-            if q and q.get('current_job_index') is not None and 0 <= q['current_job_index'] < len(q['jobs']):
+            if q and q.get('current_job_index') is not None and 0 <= q['current_job_index'] < len(q.get('jobs', [])):
                 current = q['jobs'][q['current_job_index']]
 
             if current:
-                run_model_label.set_text(current['model'])
+                run_job_label.set_text(current['name'])
                 step = current.get('current_step') or current.get('status')
                 run_step_label.set_text(f'step: {step}')
                 idx = q['current_job_index'] + 1
@@ -388,8 +362,7 @@ def content():
                     cd_soft.set_text(f'Soft {_fmt_sec(soft_s - elapsed)}')
                     cd_hard.set_text(f'Hard {_fmt_sec(hard_s - elapsed)}')
                     if crossed and la is not None and idle_w is not None:
-                        idle_remaining = idle_w - (now - la)
-                        cd_idle.set_text(f'Idle-kill in {_fmt_sec(idle_remaining)}')
+                        cd_idle.set_text(f'Idle-kill in {_fmt_sec(idle_w - (now - la))}')
                     else:
                         cd_idle.set_text('Idle —')
                 else:
@@ -398,7 +371,7 @@ def content():
                     cd_hard.set_text('Hard —')
                     cd_idle.set_text('Idle —')
             else:
-                run_model_label.set_text('—')
+                run_job_label.set_text('—')
                 run_step_label.set_text('')
                 run_progress_label.set_text('')
                 cd_elapsed.set_text('Elapsed —')
@@ -406,64 +379,32 @@ def content():
                 cd_hard.set_text('Hard —')
                 cd_idle.set_text('Idle —')
 
-            # Notification status
             backends = notify_service.enabled_backends()
-            if backends:
-                notify_status.set_text(f'enabled: {", ".join(backends)}')
-            else:
-                notify_status.set_text('none enabled — set up in Settings')
+            notify_status.set_text(f'enabled: {", ".join(backends)}' if backends else 'none enabled — set up in Settings')
 
-            # Log tail incremental push
             tail = queue_service.get_log_tail(300)
             if len(tail) > _last_log_len['n']:
                 for line in tail[_last_log_len['n']:]:
                     log_panel.push(line)
                 _last_log_len['n'] = len(tail)
             elif len(tail) < _last_log_len['n']:
-                # log was reset (probably a new queue run)
                 log_panel.clear()
                 for line in tail:
                     log_panel.push(line)
                 _last_log_len['n'] = len(tail)
 
-            # Table status (so live status changes show up)
-            _refresh_queue_table()
-
-            # Retry banner
-            last_retry = queue_service._state.get('last_retry_path')
-            if last_retry and os.path.exists(last_retry):
-                retry_msg.set_text(f'Retry queue available: {os.path.basename(last_retry)} — from the latest completed run with failures.')
-                retry_banner.visible = True
+            _refresh_jobs_table()
+            _refresh_tables()
 
         ui.timer(1.0, _tick)
-
-        # ── Initial population ──
-        async def refresh_models():
-            cached = await run.io_bound(hf_service.list_cached_models)
-            _model_info.clear()
-            for m in cached:
-                _model_info[m['id']] = m
-            ids = [m['id'] for m in cached]
-            model_select.options = ids
-            model_select.update()
-
-        async def refresh_scripts():
-            items = await run.io_bound(benchmark_service.list_scripts)
-            _scripts.clear()
-            for it in items:
-                _scripts[it['name']] = it['path']
-            opts = {it['path']: it['name'] for it in items}
-            scripts_select.options = opts
-            scripts_select.update()
+        ui.timer(5.0, _refresh_presets)  # keep dropdowns in sync with disk
 
         async def refresh_all():
-            await refresh_models()
-            await refresh_scripts()
             _refresh_presets()
-            _refresh_queue_table()
+            _refresh_tables()
             q = queue_service.get_queue()
-            if q:
-                queue_name_input.value = q.get('name') or queue_name_input.value
+            if q and not queue_name_input.value:
+                queue_name_input.value = q.get('name') or ''
             _tick()
 
     return refresh_all
