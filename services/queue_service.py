@@ -24,7 +24,7 @@ import uuid
 from datetime import datetime
 
 import config
-from services import benchmark_service, notify_service, vllm_service
+from services import benchmark_service, metrics_service, notify_service, vllm_service
 
 QUEUE_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'benchmarks', 'queue')
 ACTIVE_PATH = os.path.join(QUEUE_ROOT, 'active.json')
@@ -335,7 +335,7 @@ def _run_one_subprocess(bench_type, script_cfg, port, model, run_name, result_di
             random_output_len=int(perf.get('random_output_len', 128)),
             result_dir=result_dir, run_name=run_name,
         )
-        return proc, lambda: benchmark_service.parse_perf_result(result_dir, run_name)
+        return proc, lambda extras: benchmark_service.parse_perf_result(result_dir, run_name, extras=extras)
     if bench_type == 'quality':
         qual = script_cfg.get('quality', {})
         proc = benchmark_service.run_quality_benchmark(
@@ -346,7 +346,7 @@ def _run_one_subprocess(bench_type, script_cfg, port, model, run_name, result_di
             limit=int(qual.get('limit', 0) or 0),
             result_dir=result_dir, run_name=run_name,
         )
-        return proc, lambda: benchmark_service.parse_quality_result(result_dir, run_name)
+        return proc, lambda extras: benchmark_service.parse_quality_result(result_dir, run_name, extras=extras)
     if bench_type == 'context_sweep':
         ctx = script_cfg.get('context_sweep', {})
         proc = benchmark_service.run_context_sweep(
@@ -354,7 +354,7 @@ def _run_one_subprocess(bench_type, script_cfg, port, model, run_name, result_di
             upper_bound=int(ctx.get('upper_bound', 32768)),
             step=int(ctx.get('step', 1024)),
         )
-        return proc, lambda: benchmark_service.parse_context_sweep_result(result_dir, run_name)
+        return proc, lambda extras: benchmark_service.parse_context_sweep_result(result_dir, run_name, extras=extras)
     raise ValueError(f'unknown bench type: {bench_type}')
 
 
@@ -374,53 +374,74 @@ async def _bench_phase(job, port):
 
     model_meta = benchmark_service.get_model_metadata(job['model'], port=port)
 
-    for bench_type in bench_types:
-        run_name = f'{_safe(job["name"])}_{bench_type}'
-        result_dir = os.path.join('/tmp', f'queue_{job["id"]}_{bench_type}')
-        _log(f"Starting {bench_type} benchmark")
+    # Start GPU/CPU metrics recording for the whole job (shared across bench types).
+    metrics_run_name = _safe(job['name'])
+    profile_csv = None
+    try:
+        profile_csv = metrics_service.start_run_recording(port, metrics_run_name)
+        if profile_csv:
+            _log(f'  profile recording → {os.path.basename(profile_csv)}')
+    except Exception as e:
+        _log(f'  profile recording failed to start: {e}')
 
-        proc, parser = _run_one_subprocess(bench_type, script_cfg, port, job['model'], run_name, result_dir)
-        cpu_mon = _CpuMonitor(proc.pid)
+    try:
+        for bench_type in bench_types:
+            run_name = f'{_safe(job["name"])}_{bench_type}'
+            result_dir = os.path.join('/tmp', f'queue_{job["id"]}_{bench_type}')
+            _log(f"Starting {bench_type} benchmark")
 
-        def alive_check(p=proc):
-            return p.poll() is not None
+            proc, parser = _run_one_subprocess(bench_type, script_cfg, port, job['model'], run_name, result_dir)
+            cpu_mon = _CpuMonitor(proc.pid)
 
-        def is_active(cm=cpu_mon):
-            gpu = _gpu_util_pct()
-            cpu = cm.sample()
-            return gpu >= GPU_ACTIVITY_THRESHOLD or cpu >= CPU_ACTIVITY_THRESHOLD
+            def alive_check(p=proc):
+                return p.poll() is not None
 
-        try:
-            await _monitor_phase(
-                job=job,
-                phase_label=f'bench:{bench_type}',
-                condition_fn=alive_check,
-                is_active_fn=is_active,
-                soft_s=job['timeouts']['bench_soft_s'],
-                hard_s=job['timeouts']['bench_hard_s'],
-                idle_window_s=job['timeouts']['bench_idle_window_s'],
-            )
-        except (SoftTimeout, HardTimeout, QueueCancelled):
-            _kill_proc(proc)
-            raise
+            def is_active(cm=cpu_mon):
+                gpu = _gpu_util_pct()
+                cpu = cm.sample()
+                return gpu >= GPU_ACTIVITY_THRESHOLD or cpu >= CPU_ACTIVITY_THRESHOLD
 
-        if proc.returncode != 0:
-            raise RuntimeError(f'{bench_type} benchmark exited with code {proc.returncode}')
+            try:
+                await _monitor_phase(
+                    job=job,
+                    phase_label=f'bench:{bench_type}',
+                    condition_fn=alive_check,
+                    is_active_fn=is_active,
+                    soft_s=job['timeouts']['bench_soft_s'],
+                    hard_s=job['timeouts']['bench_hard_s'],
+                    idle_window_s=job['timeouts']['bench_idle_window_s'],
+                )
+            except (SoftTimeout, HardTimeout, QueueCancelled):
+                _kill_proc(proc)
+                raise
 
-        parsed = parser()
-        if parsed:
-            parsed['model_meta'] = model_meta
-            save_path = parsed.get('save_path')
-            if save_path and os.path.exists(save_path):
-                try:
-                    with open(save_path, 'w') as f:
-                        json.dump(parsed, f, indent=2)
-                except Exception:
-                    pass
-                job['result_paths'].append(save_path)
-            _log(f'  → {bench_type} done: {os.path.basename(save_path or "?")}')
-        else:
-            _log(f'  → {bench_type} finished but no result file parsed')
+            if proc.returncode != 0:
+                raise RuntimeError(f'{bench_type} benchmark exited with code {proc.returncode}')
+
+            try:
+                profile_summary = benchmark_service.summarize_profile_csv(profile_csv) if profile_csv else {}
+            except Exception:
+                profile_summary = {}
+            extras = {
+                'model_meta': model_meta,
+                'profile_csv': profile_csv,
+                'profile_summary': profile_summary,
+            }
+            parsed = parser(extras)
+            if parsed:
+                save_path = parsed.get('save_path')
+                if save_path:
+                    job['result_paths'].append(save_path)
+                _log(f'  → {bench_type} done: {os.path.basename(save_path or "?")}')
+            else:
+                _log(f'  → {bench_type} finished but no result file parsed')
+    finally:
+        if profile_csv:
+            try:
+                metrics_service.stop_run_recording(metrics_run_name)
+                _log('  profile recording stopped')
+            except Exception as e:
+                _log(f'  profile stop failed: {e}')
 
 
 def _kill_proc(proc):
