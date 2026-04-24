@@ -61,3 +61,15 @@ def build_config(model, model_id, smoothquant, sparsegpt, quant_method, quant_pa
         'compression_format': compression_format,
         'save_compressed': True,
     }
+
+
+def build_bnb_config(model, model_id, bnb_params, output_name):
+    output_dir = os.path.join(config.LOCAL_MODELS_DIR, output_name)
+    return {
+        'model': model,
+        'model_id': model_id,
+        'quant_method': 'bitsandbytes',
+        'bnb_params': bnb_params,
+        'output_dir': output_dir,
+        'output_name': output_name,
+    }

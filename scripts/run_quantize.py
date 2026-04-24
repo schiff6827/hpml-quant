@@ -47,10 +47,76 @@ def build_recipe(config):
     return recipe
 
 
+def run_bnb(config):
+    bnb = config.get('bnb_params', {})
+    mode_4bit = bnb.get('load_in_4bit', True)
+
+    print(f"Model: {config['model']}")
+    print("Method: bitsandbytes")
+    print(f"Output: {config['output_dir']}")
+    print(f"Mode: {'4-bit' if mode_4bit else '8-bit'}")
+    if mode_4bit:
+        print(f"  quant_type: {bnb.get('bnb_4bit_quant_type', 'nf4')}")
+        print(f"  compute_dtype: {bnb.get('bnb_4bit_compute_dtype', 'bfloat16')}")
+        print(f"  double_quant: {bnb.get('bnb_4bit_use_double_quant', True)}")
+    else:
+        print(f"  threshold: {bnb.get('llm_int8_threshold', 6.0)}")
+    print(flush=True)
+
+    import torch
+    from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+
+    dtype_map = {'bfloat16': torch.bfloat16, 'float16': torch.float16, 'float32': torch.float32}
+    compute_dtype = dtype_map.get(bnb.get('bnb_4bit_compute_dtype', 'bfloat16'), torch.bfloat16)
+
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=mode_4bit,
+        load_in_8bit=not mode_4bit,
+        bnb_4bit_quant_type=bnb.get('bnb_4bit_quant_type', 'nf4'),
+        bnb_4bit_compute_dtype=compute_dtype,
+        bnb_4bit_use_double_quant=bnb.get('bnb_4bit_use_double_quant', True),
+        llm_int8_threshold=bnb.get('llm_int8_threshold', 6.0),
+    )
+
+    print("STEP 1/2: Loading model with BitsAndBytes quantization...")
+    sys.stdout.flush()
+    model = AutoModelForCausalLM.from_pretrained(
+        config['model'],
+        quantization_config=bnb_config,
+        device_map='auto',
+    )
+    tokenizer = AutoTokenizer.from_pretrained(config['model'])
+
+    print("STEP 2/2: Saving quantized model...")
+    sys.stdout.flush()
+    os.makedirs(config['output_dir'], exist_ok=True)
+    model.save_pretrained(config['output_dir'], safe_serialization=True)
+    tokenizer.save_pretrained(config['output_dir'])
+
+    scheme = ('NF4' if bnb.get('bnb_4bit_quant_type', 'nf4') == 'nf4' else 'FP4') if mode_4bit else 'INT8'
+    meta = {
+        'source_model': config.get('model_id', config['model']),
+        'method': 'bitsandbytes',
+        'scheme': scheme,
+        'bnb_params': bnb,
+        'created': datetime.now().isoformat(),
+        'created_by': getpass.getuser(),
+    }
+    meta_path = os.path.join(config['output_dir'], '.model_meta.json')
+    with open(meta_path, 'w') as f:
+        json.dump(meta, f, indent=2)
+
+    print(f"QUANTIZATION_COMPLETE: {config['output_dir']}")
+
+
 def main():
     config_path = sys.argv[1]
     with open(config_path) as f:
         config = json.load(f)
+
+    if config.get('quant_method') == 'bitsandbytes':
+        run_bnb(config)
+        return
 
     recipe = build_recipe(config)
     cal = config.get('calibration', {})
