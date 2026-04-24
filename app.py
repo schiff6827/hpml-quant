@@ -75,15 +75,10 @@ def settings_page():
     pages.settings.content()
 
 
-@app.on_startup
-async def _on_startup():
-    queue_service.maybe_resume_worker()
-
-
 if __name__ == '__main__':
     from services import vllm_service
     vllm_service.reconnect_orphans()
-    queue_service.bootstrap_autoresume()
+    queue_service.bootstrap_load_state()
     print(f'\n  HPML Model Manager: http://{config.APP_HOSTNAME}:{config.APP_PORT}\n')
 
     ui.run(

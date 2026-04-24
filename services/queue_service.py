@@ -536,6 +536,21 @@ async def _maybe_heartbeat():
 
 
 # ── Failure preset ───────────────────────────────────────────────────────────
+import re
+_FAILURE_SUFFIX_RE = re.compile(r'(?:__failures_\d{8}_\d{6})+$|(?:_retry_\d{8}_\d{6})+$')
+
+
+def _strip_failure_suffixes(name):
+    """Strip trailing failure/retry suffixes so failure-preset names don't nest."""
+    if not name:
+        return name
+    prev = None
+    while name != prev:
+        prev = name
+        name = _FAILURE_SUFFIX_RE.sub('', name)
+    return name
+
+
 def _generate_failure_preset(queue):
     """When a queue finishes with any failed jobs, drop a new preset containing
     only the failed (model, benchmark) combinations. Loads and runs through the
@@ -544,7 +559,7 @@ def _generate_failure_preset(queue):
     if not failed:
         return None
     ts = datetime.now().strftime('%Y%m%d_%H%M%S')
-    orig = queue.get('name') or 'queue'
+    orig = _strip_failure_suffixes(queue.get('name') or 'queue')
     preset_name = f'{orig}__failures_{ts}'
     preset = new_queue(preset_name)
     preset['parent_queue'] = orig
@@ -920,31 +935,30 @@ def delete_preset(path):
 
 
 # ── Bootstrap ────────────────────────────────────────────────────────────────
-def bootstrap_autoresume():
+_TERMINAL_STATUSES = ('completed', 'completed_with_failures', 'failed', 'cancelled')
+
+
+def bootstrap_load_state():
+    """On app start: if the last queue was completed/failed/cancelled, drop it
+    so the UI starts clean. Otherwise load it (with any accumulated failure
+    suffixes stripped from the name). Worker is NOT auto-started."""
     q = load_active()
     if not q:
         return
+    n_pending = sum(1 for j in q.get('jobs', []) if j['status'] == 'pending')
+    if q.get('status') in _TERMINAL_STATUSES and not n_pending:
+        try:
+            if os.path.exists(ACTIVE_PATH):
+                os.remove(ACTIVE_PATH)
+        except Exception:
+            pass
+        return
+    # Sanitize any nested retry/failure suffixes that accumulated historically
+    q['name'] = _strip_failure_suffixes(q.get('name') or 'queue')
     _state['queue'] = q
     n_models = len(q.get('models', []))
     n_benches = len(q.get('benchmarks', []))
-    n_pending = sum(1 for j in q.get('jobs', []) if j['status'] == 'pending')
-    _log(f'Loaded active queue on startup: {q.get("name")} ({n_models} models, {n_benches} benchmarks, {n_pending} pending jobs)')
-
-
-def maybe_resume_worker():
-    if _state['running']:
-        return False
-    q = _state.get('queue')
-    if not q:
-        return False
-    has_pending = any(j.get('status') == 'pending' for j in q.get('jobs', []))
-    has_inputs = bool(q.get('models') and q.get('benchmarks'))
-    if not (has_pending or has_inputs):
-        return False
-    was_running = q.get('status') == 'running'
-    prefix = 'Auto-resuming' if was_running else 'Starting loaded queue'
-    _log(f'{prefix}: {q["name"]}')
-    return start()
+    _log(f'Loaded last queue on startup: {q.get("name")} ({n_models} models, {n_benches} benchmarks, {n_pending} pending jobs)')
 
 
 __all__ = [
@@ -953,6 +967,6 @@ __all__ = [
     'load_from_path', 'delete_preset',
     'add_model', 'add_benchmark', 'remove_model', 'remove_benchmark',
     'clear_models', 'clear_benchmarks', 'rename_queue', 'expand_jobs',
-    'bootstrap_autoresume', 'maybe_resume_worker', 'load_active',
+    'bootstrap_load_state', 'load_active',
     'DEFAULT_TIMEOUTS',
 ]
