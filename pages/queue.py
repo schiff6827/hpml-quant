@@ -119,6 +119,7 @@ def content():
             with ui.row().classes('gap-2'):
                 start_btn = ui.button('Start queue (all-to-all)', icon='play_arrow').props('color=positive')
                 cancel_btn = ui.button('Stop queue', icon='stop').props('color=negative')
+                force_reset_btn = ui.button('Force reset state', icon='restart_alt').props('outline color=warning')
 
         # ── Runner / live state ──
         runner_card = ui.card().classes('w-full')
@@ -259,7 +260,10 @@ def content():
             if queue_name_input.value and queue_name_input.value.strip():
                 queue_service.rename_queue(queue_name_input.value.strip())
             try:
-                queue_service.start()
+                started = queue_service.start()
+                if not started:
+                    ui.notify('Queue is already marked running. If the GPU is idle, use "Force reset state" to clear stuck state.', type='warning')
+                    return
                 ui.notify('Queue started', type='positive')
                 runner_card.visible = True
                 _last_log_len['n'] = 0
@@ -274,8 +278,22 @@ def content():
             queue_service.cancel()
             ui.notify('Cancel requested — stops after current step', type='warning')
 
+        def _on_force_reset():
+            with ui.dialog() as dlg, ui.card():
+                ui.label('Force-reset the queue running flag?').classes('text-body1')
+                ui.label('Use this only if the queue is stuck (UI thinks it is running but no worker is actually doing anything). This does not stop a real worker; it just clears the in-memory flag.').classes('text-body2 text-grey')
+                with ui.row().classes('justify-end w-full gap-2'):
+                    ui.button('Cancel', on_click=dlg.close).props('flat')
+                    def confirm():
+                        was_running = queue_service.force_reset_state()
+                        ui.notify(f'State reset (was_running={was_running})', type='positive')
+                        dlg.close()
+                    ui.button('Force reset', on_click=confirm).props('color=warning')
+            dlg.open()
+
         start_btn.on_click(_on_start)
         cancel_btn.on_click(_on_cancel)
+        force_reset_btn.on_click(_on_force_reset)
 
         # ── Refresh ──
         def _refresh_tables():

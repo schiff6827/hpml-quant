@@ -892,6 +892,18 @@ def cancel():
     return True
 
 
+def force_reset_state():
+    """Clear the running flag without running a worker. Use only when the
+    in-memory state is wedged (worker died without resetting the flag, leaving
+    start()/set_queue() permanently blocked)."""
+    was_running = _state['running']
+    _state['running'] = False
+    _state['cancel_requested'] = False
+    _state['task'] = None
+    _log(f'State force-reset by user (was_running={was_running})')
+    return was_running
+
+
 # ── Presets ──────────────────────────────────────────────────────────────────
 def _reset_queue_for_save(queue):
     data = dict(queue)
@@ -984,8 +996,8 @@ def bootstrap_load_state():
 
 __all__ = [
     'new_queue', 'set_queue', 'get_queue', 'get_log_tail', 'is_running',
-    'is_cancelling', 'start', 'cancel', 'save_preset', 'list_presets',
-    'load_from_path', 'delete_preset',
+    'is_cancelling', 'start', 'cancel', 'force_reset_state',
+    'save_preset', 'list_presets', 'load_from_path', 'delete_preset',
     'add_model', 'add_benchmark', 'remove_model', 'remove_benchmark',
     'clear_models', 'clear_benchmarks', 'rename_queue', 'expand_jobs',
     'bootstrap_load_state', 'load_active',
