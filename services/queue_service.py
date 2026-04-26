@@ -459,12 +459,31 @@ async def _bench_phase(job, port):
 
 
 def _kill_proc(proc):
+    """Terminate a benchmark subprocess and any children.
+
+    lm_eval --model vllm spawns an EngineCore child that owns the GPU. If only
+    the parent gets the signal, the child is reparented to init and leaks the
+    model out of GPU memory. We kill the whole process group instead — works
+    only if the proc was spawned with start_new_session=True (see
+    benchmark_service.run_quality_benchmark / run_perf_benchmark).
+    """
+    import os
+    import signal as sig
     try:
-        if proc.poll() is None:
+        if proc.poll() is not None:
+            return
+        try:
+            pgid = os.getpgid(proc.pid)
+            os.killpg(pgid, sig.SIGTERM)
+        except (ProcessLookupError, PermissionError):
             proc.terminate()
+        try:
+            proc.wait(timeout=10)
+        except subprocess.TimeoutExpired:
             try:
-                proc.wait(timeout=10)
-            except subprocess.TimeoutExpired:
+                pgid = os.getpgid(proc.pid)
+                os.killpg(pgid, sig.SIGKILL)
+            except (ProcessLookupError, PermissionError):
                 proc.kill()
     except Exception:
         pass

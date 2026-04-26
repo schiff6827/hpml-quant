@@ -339,7 +339,11 @@ def run_perf_benchmark(port, model, dataset, num_prompts, request_rate,
         path = _get_sharegpt_path()
         if path:
             cmd += ['--dataset-path', path]
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    # start_new_session so the queue worker can kill us + any children as a
+    # process group on cancel/timeout (lm_eval --model vllm spawns an
+    # EngineCore child that holds the GPU; without group-kill it leaks).
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                            start_new_session=True)
     _active_proc = proc
     return proc
 
@@ -450,7 +454,12 @@ def run_quality_benchmark(port, model, tasks, num_fewshot, num_concurrent,
         ]
     if limit and int(limit) > 0:
         cmd += ['--limit', str(int(limit))]
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    # start_new_session so the queue worker can kill the lm_eval process group
+    # (including the EngineCore child that holds GPU memory in --model vllm
+    # mode). Without this, killing lm_eval orphans the engine and leaks ~all
+    # of GPU VRAM until the orphan is manually killed.
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                            start_new_session=True)
     _active_proc = proc
     return proc
 
