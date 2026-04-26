@@ -321,7 +321,7 @@ async def _launch_phase(job):
 
 
 # ── Benchmark phase ──────────────────────────────────────────────────────────
-def _run_one_subprocess(bench_type, script_cfg, port, model, run_name, result_dir):
+def _run_one_subprocess(bench_type, script_cfg, port, model, run_name, result_dir, launch_config=None):
     os.makedirs(result_dir, exist_ok=True)
     if bench_type == 'perf':
         perf = script_cfg.get('perf', {})
@@ -345,6 +345,7 @@ def _run_one_subprocess(bench_type, script_cfg, port, model, run_name, result_di
             num_concurrent=int(qual.get('num_concurrent', 1)),
             limit=int(qual.get('limit', 0) or 0),
             result_dir=result_dir, run_name=run_name,
+            launch_config=launch_config,
         )
         return proc, lambda extras: benchmark_service.parse_quality_result(result_dir, run_name, extras=extras)
     if bench_type == 'context_sweep':
@@ -388,9 +389,22 @@ async def _bench_phase(job, port):
         for bench_type in bench_types:
             run_name = f'{_safe(job["name"])}_{bench_type}'
             result_dir = os.path.join('/tmp', f'queue_{job["id"]}_{bench_type}')
+
+            # Quality uses lm-eval's in-process vllm backend (avoids the
+            # local-completions HTTP client deadlock seen in lm-eval 0.4.x).
+            # It loads its own model, so the externally-launched vLLM server
+            # must be torn down first to free the GPU.
+            if bench_type == 'quality' and vllm_service.is_alive(port):
+                _log(f'  stopping perf vLLM on port {port} before in-process quality run')
+                vllm_service.stop_server(port)
+                await asyncio.sleep(5)
+
             _log(f"Starting {bench_type} benchmark")
 
-            proc, parser = _run_one_subprocess(bench_type, script_cfg, port, job['model'], run_name, result_dir)
+            proc, parser = _run_one_subprocess(
+                bench_type, script_cfg, port, job['model'], run_name, result_dir,
+                launch_config=job.get('launch') if bench_type == 'quality' else None,
+            )
             cpu_mon = _CpuMonitor(proc.pid)
 
             def alive_check(p=proc):
@@ -879,8 +893,12 @@ def start():
     _state['running'] = True
     _state['cancel_requested'] = False
     _state['last_heartbeat_at'] = time.monotonic()
-    loop = asyncio.get_event_loop()
-    _state['task'] = loop.create_task(_worker())
+    # Use nicegui.background_tasks so the coroutine is scheduled on the
+    # running UI event loop. Calling asyncio.get_event_loop() from a sync
+    # click handler can return a fresh non-running loop on Python 3.10+,
+    # in which case the task object exists but its coroutine never executes.
+    from nicegui import background_tasks
+    _state['task'] = background_tasks.create(_worker())
     return True
 
 

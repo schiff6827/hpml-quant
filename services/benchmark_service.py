@@ -404,17 +404,50 @@ def parse_context_sweep_result(result_dir, run_name, extras=None):
 
 
 def run_quality_benchmark(port, model, tasks, num_fewshot, num_concurrent,
-                          limit, result_dir, run_name):
+                          limit, result_dir, run_name, launch_config=None):
+    """Run lm-eval quality benchmark.
+
+    If launch_config is provided, use lm-eval's native --model vllm backend
+    (in-process, no HTTP). This avoids a deadlock in lm-eval 0.4.x's
+    local-completions client that hangs after a few minutes of MCQ workloads.
+    Falls back to --model local-completions when launch_config is None
+    (preserves the legacy UI-driven path that runs against an external server).
+    """
     global _active_proc
     os.makedirs(result_dir, exist_ok=True)
-    cmd = [
-        'lm_eval', 'run',
-        '--model', 'local-completions',
-        '--model_args', f'model={model},base_url=http://localhost:{port}/v1/completions,num_concurrent={num_concurrent}',
-        '--tasks', ','.join(tasks),
-        '--num_fewshot', str(num_fewshot),
-        '--output_path', result_dir,
-    ]
+
+    if launch_config is not None:
+        # In-process vLLM backend. Quality runs load their own model; caller
+        # is responsible for ensuring the GPU is free (stop any external vLLM).
+        dtype = launch_config.get('dtype') or 'auto'
+        gpu_mem_util = launch_config.get('gpu_mem_util') or 0.9
+        model_args_parts = [
+            f'pretrained={model}',
+            f'dtype={dtype}',
+            f'gpu_memory_utilization={gpu_mem_util}',
+        ]
+        if launch_config.get('quantization'):
+            model_args_parts.append(f'quantization={launch_config["quantization"]}')
+        if launch_config.get('trust_remote_code'):
+            model_args_parts.append('trust_remote_code=True')
+        cmd = [
+            'lm_eval',
+            '--model', 'vllm',
+            '--model_args', ','.join(model_args_parts),
+            '--tasks', ','.join(tasks),
+            '--num_fewshot', str(num_fewshot),
+            '--batch_size', 'auto',
+            '--output_path', result_dir,
+        ]
+    else:
+        cmd = [
+            'lm_eval', 'run',
+            '--model', 'local-completions',
+            '--model_args', f'model={model},base_url=http://localhost:{port}/v1/completions,num_concurrent={num_concurrent}',
+            '--tasks', ','.join(tasks),
+            '--num_fewshot', str(num_fewshot),
+            '--output_path', result_dir,
+        ]
     if limit and int(limit) > 0:
         cmd += ['--limit', str(int(limit))]
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
