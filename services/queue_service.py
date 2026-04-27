@@ -19,6 +19,7 @@ import glob
 import json
 import os
 import subprocess
+import threading
 import time
 import uuid
 from datetime import datetime
@@ -68,9 +69,12 @@ _state = {
     'task': None,
     'cancel_requested': False,
     'log_tail': [],
+    'bench_log_tail': [],
     'last_heartbeat_at': 0,
 }
 _LOG_TAIL_MAX = 300
+_BENCH_LOG_TAIL_MAX = 2000
+_bench_log_lock = threading.Lock()
 
 
 def _now_iso():
@@ -176,6 +180,43 @@ def _log(line):
         try:
             with open(path, 'a') as f:
                 f.write(formatted + '\n')
+        except Exception:
+            pass
+
+
+def _bench_log(line):
+    with _bench_log_lock:
+        _state['bench_log_tail'].append(line)
+        if len(_state['bench_log_tail']) > _BENCH_LOG_TAIL_MAX:
+            del _state['bench_log_tail'][:-_BENCH_LOG_TAIL_MAX]
+
+
+def _bench_log_clear():
+    with _bench_log_lock:
+        _state['bench_log_tail'].clear()
+
+
+def _drain_proc_stdout(proc):
+    """Background-drain proc.stdout into the bench log buffer.
+
+    Why: the worker monitor loop only polls proc.poll(); without a drainer the
+    OS pipe buffer (~64KB) fills, the child blocks on write, and the whole job
+    hangs with VRAM held — exactly the MMLU-in-queue stall. Read with a real
+    file read so PermissionError on closed-fd doesn't kill the thread.
+    """
+    try:
+        for raw in iter(proc.stdout.readline, b''):
+            try:
+                line = raw.decode('utf-8', errors='replace').rstrip('\r\n')
+            except Exception:
+                continue
+            if line:
+                _bench_log(line)
+    except Exception:
+        pass
+    finally:
+        try:
+            proc.stdout.close()
         except Exception:
             pass
 
@@ -400,11 +441,17 @@ async def _bench_phase(job, port):
                 await asyncio.sleep(5)
 
             _log(f"Starting {bench_type} benchmark")
+            _bench_log_clear()
+            _bench_log(f'─── {bench_type} benchmark for {job["name"]} ───')
 
             proc, parser = _run_one_subprocess(
                 bench_type, script_cfg, port, job['model'], run_name, result_dir,
                 launch_config=job.get('launch') if bench_type == 'quality' else None,
             )
+            drain_thread = threading.Thread(
+                target=_drain_proc_stdout, args=(proc,), daemon=True,
+            )
+            drain_thread.start()
             cpu_mon = _CpuMonitor(proc.pid)
 
             def alive_check(p=proc):
@@ -427,7 +474,10 @@ async def _bench_phase(job, port):
                 )
             except (SoftTimeout, HardTimeout, QueueCancelled):
                 _kill_proc(proc)
+                drain_thread.join(timeout=2)
                 raise
+
+            drain_thread.join(timeout=5)
 
             if proc.returncode != 0:
                 raise RuntimeError(f'{bench_type} benchmark exited with code {proc.returncode}')
@@ -825,6 +875,12 @@ def get_log_tail(n=100):
     return list(_state['log_tail'])[-n:]
 
 
+def get_bench_log_tail(n=500):
+    """Streamed stdout from the active benchmark subprocess (queue mode)."""
+    with _bench_log_lock:
+        return list(_state['bench_log_tail'])[-n:]
+
+
 def is_running():
     return _state['running']
 
@@ -1032,7 +1088,7 @@ def bootstrap_load_state():
 
 
 __all__ = [
-    'new_queue', 'set_queue', 'get_queue', 'get_log_tail', 'is_running',
+    'new_queue', 'set_queue', 'get_queue', 'get_log_tail', 'get_bench_log_tail', 'is_running',
     'is_cancelling', 'start', 'cancel', 'force_reset_state',
     'save_preset', 'list_presets', 'load_from_path', 'delete_preset',
     'add_model', 'add_benchmark', 'remove_model', 'remove_benchmark',
