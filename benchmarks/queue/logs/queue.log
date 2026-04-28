@@ -1,0 +1,237 @@
+[19:10:05] Queue 'queue' started with 2 job(s)
+[19:10:05] (no notify backends enabled; skipping: HPML Queue started: queue)
+[19:10:05] ── Job 1/2: Qwen2.5-7B-Instruct-BNB-NF4-DQ · perf+quality_190843
+[19:10:05] Launching vLLM for '/opt/hpml_project/models/local/Qwen2.5-7B-Instruct-BNB-NF4-DQ'
+[19:10:05]   → port 8002
+[19:10:45]   → healthy on 8002
+[19:10:45]   profile recording → run_Qwen2.5-7B-Instruct-BNB-NF4-DQ___perf_quality_190843_20260426_191045.csv
+[19:10:45] Starting perf benchmark
+[19:12:46]   → perf done: Qwen2.5-7B-Instruct-BNB-NF4-DQ___perf_quality_190843_perf_perf_20260426_191246.json
+[19:12:46]   stopping perf vLLM on port 8002 before in-process quality run
+[19:12:49] Starting quality benchmark
+[19:14:19]   → quality done: Qwen2.5-7B-Instruct-BNB-NF4-DQ___perf_quality_190843_quality_quality_20260426_191419.json
+[19:14:19]   profile recording stopped
+[19:14:19] ✓ Job 1 completed
+[19:14:19]   stopping server on port 8002
+[19:14:19] ── Job 2/2: Qwen/Qwen2.5-7B-Instruct-GPTQ-Int8 · perf+quality_190843
+[19:14:19] Launching vLLM for 'Qwen/Qwen2.5-7B-Instruct-GPTQ-Int8'
+[19:14:19]   → port 8002
+[19:14:44]   → healthy on 8002
+[19:14:44]   profile recording → run_Qwen_Qwen2.5-7B-Instruct-GPTQ-Int8___perf_quality_190843_20260426_191444.csv
+[19:14:44] Starting perf benchmark
+[19:15:20]   → perf done: Qwen_Qwen2.5-7B-Instruct-GPTQ-Int8___perf_quality_190843_perf_perf_20260426_191520.json
+[19:15:20]   stopping perf vLLM on port 8002 before in-process quality run
+[19:15:26] Starting quality benchmark
+[19:16:42]   → quality done: Qwen_Qwen2.5-7B-Instruct-GPTQ-Int8___perf_quality_190843_quality_quality_20260426_191642.json
+[19:16:42]   profile recording stopped
+[19:16:42] ✓ Job 2 completed
+[19:16:42]   stopping server on port 8002
+[19:16:42] (no notify backends enabled; skipping: HPML Queue done: queue (completed))
+[19:23:47] Queue 'queue' started with 8 job(s)
+[19:23:47] (no notify backends enabled; skipping: HPML Queue started: queue)
+[19:23:47] ── Job 1/8: Qwen/Qwen2.5-7B-Instruct-AWQ · perf+quality_192337
+[19:23:47] Launching vLLM for 'Qwen/Qwen2.5-7B-Instruct-AWQ'
+[19:23:47]   → port 8001
+[19:24:13]   → healthy on 8001
+[19:24:13]   profile recording → run_Qwen_Qwen2.5-7B-Instruct-AWQ___perf_quality_192337_20260426_192413.csv
+[19:24:13] Starting perf benchmark
+[19:24:44]   → perf done: Qwen_Qwen2.5-7B-Instruct-AWQ___perf_quality_192337_perf_perf_20260426_192444.json
+[19:24:44]   stopping perf vLLM on port 8001 before in-process quality run
+[19:24:48] Starting quality benchmark
+[19:25:52]   → quality done: Qwen_Qwen2.5-7B-Instruct-AWQ___perf_quality_192337_quality_quality_20260426_192552.json
+[19:25:52]   profile recording stopped
+[19:25:52] ✓ Job 1 completed
+[19:25:52]   stopping server on port 8001
+[19:25:52] ── Job 2/8: Qwen/Qwen2.5-7B-Instruct · perf+quality_192337
+[19:25:52] Launching vLLM for 'Qwen/Qwen2.5-7B-Instruct'
+[19:25:52]   → port 8001
+[19:27:10]   → healthy on 8001
+[19:27:10]   profile recording → run_Qwen_Qwen2.5-7B-Instruct___perf_quality_192337_20260426_192710.csv
+[19:27:10] Starting perf benchmark
+[19:28:22]   → perf done: Qwen_Qwen2.5-7B-Instruct___perf_quality_192337_perf_perf_20260426_192822.json
+[19:28:22]   stopping perf vLLM on port 8001 before in-process quality run
+[19:28:28] Starting quality benchmark
+[19:29:37]   → quality done: Qwen_Qwen2.5-7B-Instruct___perf_quality_192337_quality_quality_20260426_192937.json
+[19:29:37]   profile recording stopped
+[19:29:37] ✓ Job 2 completed
+[19:29:37]   stopping server on port 8001
+[19:29:37] ── Job 3/8: Qwen2.5-14B-Instruct-BNB-NF4-DQ · perf+quality_192337
+[19:29:37] Launching vLLM for '/opt/hpml_project/models/local/Qwen2.5-14B-Instruct-BNB-NF4-DQ'
+[19:29:37]   → port 8001
+[19:30:29]   → healthy on 8001
+[19:30:29]   profile recording → run_Qwen2.5-14B-Instruct-BNB-NF4-DQ___perf_quality_192337_20260426_193029.csv
+[19:30:29] Starting perf benchmark
+[19:34:12]   → perf done: Qwen2.5-14B-Instruct-BNB-NF4-DQ___perf_quality_192337_perf_perf_20260426_193412.json
+[19:34:12]   stopping perf vLLM on port 8001 before in-process quality run
+[19:34:18] Starting quality benchmark
+[19:36:49]   → quality done: Qwen2.5-14B-Instruct-BNB-NF4-DQ___perf_quality_192337_quality_quality_20260426_193649.json
+[19:36:49]   profile recording stopped
+[19:36:49] ✓ Job 3 completed
+[19:36:49]   stopping server on port 8001
+[19:36:49] ── Job 4/8: Qwen2.5-32B-Instruct-BNB-NF4-DQ · perf+quality_192337
+[19:36:49] Launching vLLM for '/opt/hpml_project/models/local/Qwen2.5-32B-Instruct-BNB-NF4-DQ'
+[19:36:49]   → port 8001
+[19:38:08]   → healthy on 8001
+[19:38:08]   profile recording → run_Qwen2.5-32B-Instruct-BNB-NF4-DQ___perf_quality_192337_20260426_193808.csv
+[19:38:08] Starting perf benchmark
+[19:47:05]   → perf done: Qwen2.5-32B-Instruct-BNB-NF4-DQ___perf_quality_192337_perf_perf_20260426_194705.json
+[19:47:05]   stopping perf vLLM on port 8001 before in-process quality run
+[19:47:09] Starting quality benchmark
+[19:51:34] (no notify backends enabled; skipping: HPML Queue heartbeat: queue)
+[19:52:24]   → quality done: Qwen2.5-32B-Instruct-BNB-NF4-DQ___perf_quality_192337_quality_quality_20260426_195224.json
+[19:52:24]   profile recording stopped
+[19:52:24] ✓ Job 4 completed
+[19:52:24]   stopping server on port 8001
+[19:52:24] ── Job 5/8: Qwen2.5-72B-Instruct-BNB-NF4-DQ · perf+quality_192337
+[19:52:24] Launching vLLM for '/opt/hpml_project/models/local/Qwen2.5-72B-Instruct-BNB-NF4-DQ'
+[19:52:24]   → port 8001
+[19:54:40]   → healthy on 8001
+[19:54:40]   profile recording → run_Qwen2.5-72B-Instruct-BNB-NF4-DQ___perf_quality_192337_20260426_195440.csv
+[19:54:40] Starting perf benchmark
+[20:14:53]   → perf done: Qwen2.5-72B-Instruct-BNB-NF4-DQ___perf_quality_192337_perf_perf_20260426_201453.json
+[20:14:53]   stopping perf vLLM on port 8001 before in-process quality run
+[20:14:56] Starting quality benchmark
+[20:19:18] (no notify backends enabled; skipping: HPML Queue heartbeat: queue)
+[20:27:10]   → quality done: Qwen2.5-72B-Instruct-BNB-NF4-DQ___perf_quality_192337_quality_quality_20260426_202710.json
+[20:27:10]   profile recording stopped
+[20:27:10] ✓ Job 5 completed
+[20:27:10]   stopping server on port 8001
+[20:27:10] ── Job 6/8: Qwen/Qwen2.5-14B-Instruct · perf+quality_192337
+[20:27:10] Launching vLLM for 'Qwen/Qwen2.5-14B-Instruct'
+[20:27:10]   → port 8001
+[20:28:01]   → healthy on 8001
+[20:28:01]   profile recording → run_Qwen_Qwen2.5-14B-Instruct___perf_quality_192337_20260426_202801.csv
+[20:28:01] Starting perf benchmark
+[20:29:37]   → perf done: Qwen_Qwen2.5-14B-Instruct___perf_quality_192337_perf_perf_20260426_202937.json
+[20:29:37]   stopping perf vLLM on port 8001 before in-process quality run
+[20:29:43] Starting quality benchmark
+[20:31:54]   → quality done: Qwen_Qwen2.5-14B-Instruct___perf_quality_192337_quality_quality_20260426_203154.json
+[20:31:54]   profile recording stopped
+[20:31:54] ✓ Job 6 completed
+[20:31:54]   stopping server on port 8001
+[20:31:54] ── Job 7/8: Qwen/Qwen2.5-72B-Instruct-GPTQ-Int8 · perf+quality_192337
+[20:31:54] Launching vLLM for 'Qwen/Qwen2.5-72B-Instruct-GPTQ-Int8'
+[20:31:54]   → port 8001
+[20:33:48]   → healthy on 8001
+[20:33:48]   profile recording → run_Qwen_Qwen2.5-72B-Instruct-GPTQ-Int8___perf_quality_192337_20260426_203348.csv
+[20:33:48] Starting perf benchmark
+[20:38:25]   → perf done: Qwen_Qwen2.5-72B-Instruct-GPTQ-Int8___perf_quality_192337_perf_perf_20260426_203825.json
+[20:38:25]   stopping perf vLLM on port 8001 before in-process quality run
+[20:38:31] Starting quality benchmark
+[20:47:01] (no notify backends enabled; skipping: HPML Queue heartbeat: queue)
+[20:48:51]   → quality done: Qwen_Qwen2.5-72B-Instruct-GPTQ-Int8___perf_quality_192337_quality_quality_20260426_204851.json
+[20:48:51]   profile recording stopped
+[20:48:51] ✓ Job 7 completed
+[20:48:51]   stopping server on port 8001
+[20:48:51] ── Job 8/8: Qwen/Qwen2.5-72B-Instruct-AWQ · perf+quality_192337
+[20:48:51] Launching vLLM for 'Qwen/Qwen2.5-72B-Instruct-AWQ'
+[20:48:51]   → port 8001
+[20:50:17]   → healthy on 8001
+[20:50:17]   profile recording → run_Qwen_Qwen2.5-72B-Instruct-AWQ___perf_quality_192337_20260426_205017.csv
+[20:50:17] Starting perf benchmark
+[20:53:50]   → perf done: Qwen_Qwen2.5-72B-Instruct-AWQ___perf_quality_192337_perf_perf_20260426_205350.json
+[20:53:50]   stopping perf vLLM on port 8001 before in-process quality run
+[20:53:56] Starting quality benchmark
+[21:01:20]   → quality done: Qwen_Qwen2.5-72B-Instruct-AWQ___perf_quality_192337_quality_quality_20260426_210120.json
+[21:01:20]   profile recording stopped
+[21:01:20] ✓ Job 8 completed
+[21:01:20]   stopping server on port 8001
+[21:01:20] (no notify backends enabled; skipping: HPML Queue done: queue (completed))
+[21:38:04] Queue 'queue' started with 3 job(s)
+[21:38:04] (no notify backends enabled; skipping: HPML Queue started: queue)
+[21:38:04] ── Job 1/3: Qwen/Qwen2.5-32B-Instruct · perf+quality_192337
+[21:38:04] Launching vLLM for 'Qwen/Qwen2.5-32B-Instruct'
+[21:38:04]   → port 8001
+[21:39:21]   → healthy on 8001
+[21:39:21]   profile recording → run_Qwen_Qwen2.5-32B-Instruct___perf_quality_192337_20260426_213921.csv
+[21:39:21] Starting perf benchmark
+[21:42:32]   → perf done: Qwen_Qwen2.5-32B-Instruct___perf_quality_192337_perf_perf_20260426_214232.json
+[21:42:32]   stopping perf vLLM on port 8001 before in-process quality run
+[21:42:38] Starting quality benchmark
+[21:46:48]   → quality done: Qwen_Qwen2.5-32B-Instruct___perf_quality_192337_quality_quality_20260426_214648.json
+[21:46:48]   profile recording stopped
+[21:46:48] ✓ Job 1 completed
+[21:46:48]   stopping server on port 8001
+[21:46:48] ── Job 2/3: Qwen/Qwen2.5-32B-Instruct-AWQ · perf+quality_192337
+[21:46:48] Launching vLLM for 'Qwen/Qwen2.5-32B-Instruct-AWQ'
+[21:46:48]   → port 8001
+[21:47:46]   → healthy on 8001
+[21:47:46]   profile recording → run_Qwen_Qwen2.5-32B-Instruct-AWQ___perf_quality_192337_20260426_214746.csv
+[21:47:46] Starting perf benchmark
+[21:49:33]   → perf done: Qwen_Qwen2.5-32B-Instruct-AWQ___perf_quality_192337_perf_perf_20260426_214933.json
+[21:49:33]   stopping perf vLLM on port 8001 before in-process quality run
+[21:49:36] Starting quality benchmark
+[21:53:29]   → quality done: Qwen_Qwen2.5-32B-Instruct-AWQ___perf_quality_192337_quality_quality_20260426_215329.json
+[21:53:29]   profile recording stopped
+[21:53:29] ✓ Job 2 completed
+[21:53:29]   stopping server on port 8001
+[21:53:29] ── Job 3/3: Qwen/Qwen2.5-32B-Instruct-GPTQ-Int8 · perf+quality_192337
+[21:53:29] Launching vLLM for 'Qwen/Qwen2.5-32B-Instruct-GPTQ-Int8'
+[21:53:29]   → port 8001
+[21:54:32]   → healthy on 8001
+[21:54:32]   profile recording → run_Qwen_Qwen2.5-32B-Instruct-GPTQ-Int8___perf_quality_192337_20260426_215432.csv
+[21:54:32] Starting perf benchmark
+[21:56:49]   → perf done: Qwen_Qwen2.5-32B-Instruct-GPTQ-Int8___perf_quality_192337_perf_perf_20260426_215649.json
+[21:56:49]   stopping perf vLLM on port 8001 before in-process quality run
+[21:56:55] Starting quality benchmark
+[22:01:28]   → quality done: Qwen_Qwen2.5-32B-Instruct-GPTQ-Int8___perf_quality_192337_quality_quality_20260426_220128.json
+[22:01:28]   profile recording stopped
+[22:01:28] ✓ Job 3 completed
+[22:01:28]   stopping server on port 8001
+[22:01:28] (no notify backends enabled; skipping: HPML Queue done: queue (completed))
+[22:05:55] Queue 'queue' started with 4 job(s)
+[22:05:55] (no notify backends enabled; skipping: HPML Queue started: queue)
+[22:05:55] ── Job 1/4: Qwen/Qwen2.5-14B-Instruct-AWQ · perf+quality_220543
+[22:05:55] Launching vLLM for 'Qwen/Qwen2.5-14B-Instruct-AWQ'
+[22:05:55]   → port 8001
+[22:06:33]   → healthy on 8001
+[22:06:33]   profile recording → run_Qwen_Qwen2.5-14B-Instruct-AWQ___perf_quality_220543_20260426_220633.csv
+[22:06:33] Starting perf benchmark
+[22:07:50]   → perf done: Qwen_Qwen2.5-14B-Instruct-AWQ___perf_quality_220543_perf_perf_20260426_220750.json
+[22:07:50]   stopping perf vLLM on port 8001 before in-process quality run
+[22:07:55] Starting quality benchmark
+[22:08:56]   profile recording stopped
+[22:08:56] ✗ Job 1 failed: quality benchmark exited with code 1
+[22:08:56]   stopping server on port 8001
+[22:08:56] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-14B-Instruct-AWQ · perf+quality_220543)
+[22:08:56] ── Job 2/4: Qwen/Qwen2.5-7B-Instruct-AWQ · perf+quality_220543
+[22:08:56] Launching vLLM for 'Qwen/Qwen2.5-7B-Instruct-AWQ'
+[22:08:56]   → port 8001
+[22:09:19]   → healthy on 8001
+[22:09:19]   profile recording → run_Qwen_Qwen2.5-7B-Instruct-AWQ___perf_quality_220543_20260426_220919.csv
+[22:09:19] Starting perf benchmark
+[22:09:58]   → perf done: Qwen_Qwen2.5-7B-Instruct-AWQ___perf_quality_220543_perf_perf_20260426_220958.json
+[22:09:58]   stopping perf vLLM on port 8001 before in-process quality run
+[22:10:03] Starting quality benchmark
+[22:10:48]   profile recording stopped
+[22:10:48] ✗ Job 2 failed: quality benchmark exited with code 1
+[22:10:48]   stopping server on port 8001
+[22:10:48] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-7B-Instruct-AWQ · perf+quality_220543)
+[22:10:48] ── Job 3/4: Qwen/Qwen2.5-32B-Instruct-AWQ · perf+quality_220543
+[22:10:48] Launching vLLM for 'Qwen/Qwen2.5-32B-Instruct-AWQ'
+[22:10:48]   → port 8001
+[22:11:26]   → healthy on 8001
+[22:11:26]   profile recording → run_Qwen_Qwen2.5-32B-Instruct-AWQ___perf_quality_220543_20260426_221126.csv
+[22:11:26] Starting perf benchmark
+[22:14:21]   → perf done: Qwen_Qwen2.5-32B-Instruct-AWQ___perf_quality_220543_perf_perf_20260426_221421.json
+[22:14:21]   stopping perf vLLM on port 8001 before in-process quality run
+[22:14:24] Starting quality benchmark
+[22:15:27]   profile recording stopped
+[22:15:27] ✗ Job 3 failed: quality benchmark exited with code 1
+[22:15:27]   stopping server on port 8001
+[22:15:27] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-32B-Instruct-AWQ · perf+quality_220543)
+[22:15:27] ── Job 4/4: Qwen/Qwen2.5-72B-Instruct-AWQ · perf+quality_220543
+[22:15:27] Launching vLLM for 'Qwen/Qwen2.5-72B-Instruct-AWQ'
+[22:15:27]   → port 8001
+[22:16:45]   → healthy on 8001
+[22:16:45]   profile recording → run_Qwen_Qwen2.5-72B-Instruct-AWQ___perf_quality_220543_20260426_221645.csv
+[22:16:45] Starting perf benchmark
+[22:23:24]   → perf done: Qwen_Qwen2.5-72B-Instruct-AWQ___perf_quality_220543_perf_perf_20260426_222324.json
+[22:23:24]   stopping perf vLLM on port 8001 before in-process quality run
+[22:23:31] Starting quality benchmark
+[22:25:11]   profile recording stopped
+[22:25:11] ✗ Job 4 failed: quality benchmark exited with code 1
+[22:25:11] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-72B-Instruct-AWQ · perf+quality_220543)
+[22:25:11]   stopping server on port 8001
+[22:25:11] Failure preset saved: queue__failures_20260426_222511.json (in Presets)
+[22:25:11] (no notify backends enabled; skipping: HPML Queue done: queue (completed_with_failures))

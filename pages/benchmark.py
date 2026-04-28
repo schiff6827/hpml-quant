@@ -579,6 +579,37 @@ def content():
         'avg_gpu_power_w': 'Avg GPU power (W)',
     }
 
+    # Direction of "better" per axis: True = higher is better, False = lower is better.
+    _axis_higher_is_better = {
+        'quality_score': True,
+        'throughput_tps': True,
+        'prefill_tps': True,
+        'parameters_b': False,
+        'size_gb': False,
+        'peak_vram_gb': False,
+        'avg_gpu_power_w': False,
+    }
+
+    def _pareto_frontier_points(points, x_hi_better, y_hi_better):
+        # points: list of [x, y, label]. Returns non-dominated subset sorted by x.
+        frontier = []
+        for i, p in enumerate(points):
+            dominated = False
+            for j, q in enumerate(points):
+                if i == j:
+                    continue
+                x_ge = q[0] >= p[0] if x_hi_better else q[0] <= p[0]
+                y_ge = q[1] >= p[1] if y_hi_better else q[1] <= p[1]
+                x_gt = q[0] > p[0] if x_hi_better else q[0] < p[0]
+                y_gt = q[1] > p[1] if y_hi_better else q[1] < p[1]
+                if x_ge and y_ge and (x_gt or y_gt):
+                    dominated = True
+                    break
+            if not dominated:
+                frontier.append(p)
+        frontier.sort(key=lambda p: p[0])
+        return frontier
+
     def refresh_pareto():
         tasks = benchmark_service.list_quality_tasks_seen()
         pareto_task_select.options = tasks
@@ -633,6 +664,27 @@ def content():
                 'data': pts,
                 'label': {'show': True, 'position': 'right', 'formatter': '{@[2]}', 'fontSize': 10},
             })
+
+        # Pareto frontier line: drawn once there's more than one plotted point.
+        all_pts = [pt for pts in groups.values() for pt in pts]
+        if len(all_pts) > 1:
+            frontier = _pareto_frontier_points(
+                all_pts,
+                _axis_higher_is_better.get(x_key, True),
+                _axis_higher_is_better.get(y_key, True),
+            )
+            if len(frontier) >= 2:
+                series.append({
+                    'name': 'Pareto frontier',
+                    'type': 'line',
+                    'data': [[p[0], p[1]] for p in frontier],
+                    'smooth': True,
+                    'showSymbol': False,
+                    'lineStyle': {'type': 'dashed', 'width': 2, 'color': '#888'},
+                    'itemStyle': {'color': '#888'},
+                    'tooltip': {'show': False},
+                    'z': 1,
+                })
         pareto_chart.options['series'] = series
         x_label = _axis_labels.get(x_key, x_key)
         y_label = _axis_labels.get(y_key, y_key)
