@@ -1,0 +1,257 @@
+{
+  "name": "queue__failures_20260426_222511",
+  "created": "2026-04-26T22:25:11",
+  "models": [],
+  "benchmarks": [],
+  "jobs": [
+    {
+      "id": "855f3e9d",
+      "name": "Qwen/Qwen2.5-14B-Instruct-AWQ \u00b7 perf+quality_220543",
+      "model": "Qwen/Qwen2.5-14B-Instruct-AWQ",
+      "launch": {
+        "use_kv_gb": true,
+        "kv_cache_gb": 10,
+        "gpu_mem_util": 0.9,
+        "dtype": "auto",
+        "quantization": "",
+        "trust_remote_code": true
+      },
+      "timeouts": {
+        "launch_soft_s": 300,
+        "launch_hard_s": 1200,
+        "bench_soft_s": 1800,
+        "bench_hard_s": 14400,
+        "launch_idle_window_s": 300,
+        "bench_idle_window_s": 600
+      },
+      "bench_name": "perf+quality_220543",
+      "bench_config": {
+        "perf": {
+          "enabled": true,
+          "dataset": "random",
+          "num_prompts": 500,
+          "request_rate": "inf",
+          "max_concurrency": 64,
+          "random_input_len": 512,
+          "random_output_len": 256
+        },
+        "quality": {
+          "enabled": true,
+          "tasks": [
+            "mmlu"
+          ],
+          "num_fewshot": 8,
+          "num_concurrent": 16,
+          "limit": 250
+        },
+        "context_sweep": {
+          "enabled": false,
+          "upper_bound": 131072,
+          "step": 4096
+        },
+        "name": "perf+quality_220543"
+      },
+      "status": "pending",
+      "error": null,
+      "started_at": null,
+      "finished_at": null,
+      "result_paths": [],
+      "port": null,
+      "current_step": null,
+      "phase_started_at": null,
+      "phase_soft_s": null,
+      "phase_hard_s": null,
+      "phase_idle_window_s": null,
+      "phase_last_activity_at": null,
+      "phase_soft_crossed": false
+    },
+    {
+      "id": "3d92d63a",
+      "name": "Qwen/Qwen2.5-7B-Instruct-AWQ \u00b7 perf+quality_220543",
+      "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+      "launch": {
+        "use_kv_gb": true,
+        "kv_cache_gb": 10,
+        "gpu_mem_util": 0.9,
+        "dtype": "auto",
+        "quantization": "",
+        "trust_remote_code": true
+      },
+      "timeouts": {
+        "launch_soft_s": 300,
+        "launch_hard_s": 1200,
+        "bench_soft_s": 1800,
+        "bench_hard_s": 14400,
+        "launch_idle_window_s": 300,
+        "bench_idle_window_s": 600
+      },
+      "bench_name": "perf+quality_220543",
+      "bench_config": {
+        "perf": {
+          "enabled": true,
+          "dataset": "random",
+          "num_prompts": 500,
+          "request_rate": "inf",
+          "max_concurrency": 64,
+          "random_input_len": 512,
+          "random_output_len": 256
+        },
+        "quality": {
+          "enabled": true,
+          "tasks": [
+            "mmlu"
+          ],
+          "num_fewshot": 8,
+          "num_concurrent": 16,
+          "limit": 250
+        },
+        "context_sweep": {
+          "enabled": false,
+          "upper_bound": 131072,
+          "step": 4096
+        },
+        "name": "perf+quality_220543"
+      },
+      "status": "pending",
+      "error": null,
+      "started_at": null,
+      "finished_at": null,
+      "result_paths": [],
+      "port": null,
+      "current_step": null,
+      "phase_started_at": null,
+      "phase_soft_s": null,
+      "phase_hard_s": null,
+      "phase_idle_window_s": null,
+      "phase_last_activity_at": null,
+      "phase_soft_crossed": false
+    },
+    {
+      "id": "2e64d0f9",
+      "name": "Qwen/Qwen2.5-32B-Instruct-AWQ \u00b7 perf+quality_220543",
+      "model": "Qwen/Qwen2.5-32B-Instruct-AWQ",
+      "launch": {
+        "use_kv_gb": true,
+        "kv_cache_gb": 10,
+        "gpu_mem_util": 0.9,
+        "dtype": "auto",
+        "quantization": "",
+        "trust_remote_code": true
+      },
+      "timeouts": {
+        "launch_soft_s": 300,
+        "launch_hard_s": 1200,
+        "bench_soft_s": 1800,
+        "bench_hard_s": 14400,
+        "launch_idle_window_s": 300,
+        "bench_idle_window_s": 600
+      },
+      "bench_name": "perf+quality_220543",
+      "bench_config": {
+        "perf": {
+          "enabled": true,
+          "dataset": "random",
+          "num_prompts": 500,
+          "request_rate": "inf",
+          "max_concurrency": 64,
+          "random_input_len": 512,
+          "random_output_len": 256
+        },
+        "quality": {
+          "enabled": true,
+          "tasks": [
+            "mmlu"
+          ],
+          "num_fewshot": 8,
+          "num_concurrent": 16,
+          "limit": 250
+        },
+        "context_sweep": {
+          "enabled": false,
+          "upper_bound": 131072,
+          "step": 4096
+        },
+        "name": "perf+quality_220543"
+      },
+      "status": "pending",
+      "error": null,
+      "started_at": null,
+      "finished_at": null,
+      "result_paths": [],
+      "port": null,
+      "current_step": null,
+      "phase_started_at": null,
+      "phase_soft_s": null,
+      "phase_hard_s": null,
+      "phase_idle_window_s": null,
+      "phase_last_activity_at": null,
+      "phase_soft_crossed": false
+    },
+    {
+      "id": "eb72e572",
+      "name": "Qwen/Qwen2.5-72B-Instruct-AWQ \u00b7 perf+quality_220543",
+      "model": "Qwen/Qwen2.5-72B-Instruct-AWQ",
+      "launch": {
+        "use_kv_gb": true,
+        "kv_cache_gb": 10,
+        "gpu_mem_util": 0.9,
+        "dtype": "auto",
+        "quantization": "",
+        "trust_remote_code": true
+      },
+      "timeouts": {
+        "launch_soft_s": 300,
+        "launch_hard_s": 1200,
+        "bench_soft_s": 1800,
+        "bench_hard_s": 14400,
+        "launch_idle_window_s": 300,
+        "bench_idle_window_s": 600
+      },
+      "bench_name": "perf+quality_220543",
+      "bench_config": {
+        "perf": {
+          "enabled": true,
+          "dataset": "random",
+          "num_prompts": 500,
+          "request_rate": "inf",
+          "max_concurrency": 64,
+          "random_input_len": 512,
+          "random_output_len": 256
+        },
+        "quality": {
+          "enabled": true,
+          "tasks": [
+            "mmlu"
+          ],
+          "num_fewshot": 8,
+          "num_concurrent": 16,
+          "limit": 250
+        },
+        "context_sweep": {
+          "enabled": false,
+          "upper_bound": 131072,
+          "step": 4096
+        },
+        "name": "perf+quality_220543"
+      },
+      "status": "pending",
+      "error": null,
+      "started_at": null,
+      "finished_at": null,
+      "result_paths": [],
+      "port": null,
+      "current_step": null,
+      "phase_started_at": null,
+      "phase_soft_s": null,
+      "phase_hard_s": null,
+      "phase_idle_window_s": null,
+      "phase_last_activity_at": null,
+      "phase_soft_crossed": false
+    }
+  ],
+  "status": "idle",
+  "current_job_index": -1,
+  "started_at": null,
+  "finished_at": null,
+  "parent_queue": "queue"
+}
