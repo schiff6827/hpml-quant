@@ -6,7 +6,9 @@ import pages.monitor
 import pages.chat
 import pages.benchmark
 import pages.quantize
+import pages.queue
 import pages.settings
+from services import queue_service
 
 
 @ui.page('/')
@@ -24,6 +26,7 @@ def index():
             monitor_tab = ui.tab('Monitor')
             chat_tab = ui.tab('Chat')
             benchmark_tab = ui.tab('Benchmark')
+            queue_tab = ui.tab('Queue')
             quantize_tab = ui.tab('Quantize')
 
         with ui.tab_panels(tabs, value=search_tab).classes('w-full'):
@@ -39,6 +42,8 @@ def index():
                 chat_refresh = pages.chat.content()
             with ui.tab_panel(benchmark_tab):
                 benchmark_refresh = pages.benchmark.content()
+            with ui.tab_panel(queue_tab):
+                queue_refresh = pages.queue.content()
             with ui.tab_panel(quantize_tab):
                 quantize_refresh = pages.quantize.content()
 
@@ -53,6 +58,8 @@ def index():
                 background_tasks.create(chat_refresh())
             elif e.value == benchmark_tab:
                 background_tasks.create(benchmark_refresh())
+            elif e.value == queue_tab:
+                background_tasks.create(queue_refresh())
             elif e.value == quantize_tab:
                 background_tasks.create(quantize_refresh())
 
@@ -71,6 +78,7 @@ def settings_page():
 if __name__ == '__main__':
     from services import vllm_service
     vllm_service.reconnect_orphans()
+    queue_service.bootstrap_load_state()
     print(f'\n  HPML Model Manager: http://{config.APP_HOSTNAME}:{config.APP_PORT}\n')
 
     ui.run(
