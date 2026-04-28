@@ -11,6 +11,17 @@ from datetime import datetime
 BENCHMARKS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'benchmarks')
 SCRIPTS_DIR = os.path.join(BENCHMARKS_DIR, 'scripts')
 
+# Queue runs save perf/quality/context_sweep as separate result files keyed by
+# distinct run_names with a trailing bench-type suffix. Strip it when grouping
+# so a single queue job collapses to one Pareto row with all metrics merged.
+_BENCH_TYPE_SUFFIX_RE = re.compile(r'_(?:perf|quality|context_sweep)$')
+
+
+def _canonical_run_name(run_name):
+    if not run_name:
+        return run_name
+    return _BENCH_TYPE_SUFFIX_RE.sub('', run_name)
+
 _QUANT_PATTERNS = [
     ('awq', 'AWQ'), ('gptq', 'GPTQ'), ('int4', 'INT4'), ('int8', 'INT8'),
     ('w4a16', 'W4A16'), ('w8a8', 'W8A8'), ('w8a16', 'W8A16'),
@@ -594,7 +605,7 @@ def build_pareto_dataset(quality_metric_preference=None):
             data = json.loads(open(fpath).read())
         except Exception:
             continue
-        run = data.get('run_name')
+        run = _canonical_run_name(data.get('run_name'))
         if not run:
             continue
         if data.get('type') == 'perf':
@@ -616,14 +627,17 @@ def build_pareto_dataset(quality_metric_preference=None):
         if tasks:
             task_entry = None
             if quality_metric_preference:
+                # Strict match — never fall back to a different task, or runs
+                # missing the selected task would silently plot under it.
                 for t in tasks:
                     if t.get('task') == quality_metric_preference:
                         task_entry = t
                         break
-            if task_entry is None:
+            else:
                 task_entry = tasks[0]
-            q_val = task_entry.get('acc_norm', task_entry.get('acc', task_entry.get('exact_match')))
-            q_task = task_entry.get('task')
+            if task_entry is not None:
+                q_val = task_entry.get('acc_norm', task_entry.get('acc', task_entry.get('exact_match')))
+                q_task = task_entry.get('task')
 
         meta = perf.get('model_meta') or qual.get('model_meta') or {}
         prof = perf.get('profile_summary') or qual.get('profile_summary') or {}
@@ -664,7 +678,7 @@ def list_run_names_seen():
             continue
         if data.get('type') not in ('perf', 'quality', 'context_sweep'):
             continue
-        run = data.get('run_name')
+        run = _canonical_run_name(data.get('run_name'))
         if run:
             names.add(run)
     return sorted(names)
@@ -675,15 +689,22 @@ def list_quantizations_seen():
     if not os.path.isdir(BENCHMARKS_DIR):
         return []
     out = set()
+    saw_untagged = False
     for fpath in glob.glob(os.path.join(BENCHMARKS_DIR, '*.json')):
         try:
             data = json.loads(open(fpath).read())
         except Exception:
             continue
+        if data.get('type') not in ('perf', 'quality', 'context_sweep'):
+            continue
         meta = data.get('model_meta') or {}
         q = meta.get('quantization')
         if q:
             out.add(str(q).upper())
+        else:
+            saw_untagged = True
+    if saw_untagged:
+        out.add('UNKNOWN')
     return sorted(out) or ['UNKNOWN']
 
 

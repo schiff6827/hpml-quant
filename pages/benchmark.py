@@ -281,6 +281,7 @@ def content():
                 pareto_refresh_btn = ui.button('Refresh', icon='refresh').props('flat dense')
                 pareto_backfill_btn = ui.button('Backfill metadata on old runs', icon='build').props('flat dense')
             pareto_empty_label = ui.label('').classes('text-caption text-grey')
+            pareto_best_label = ui.label('').classes('text-sm font-bold text-primary')
             pareto_chart = ui.echart({
                 'title': {'text': '', 'textStyle': {'fontSize': 13}},
                 'tooltip': {'trigger': 'item'},
@@ -289,7 +290,7 @@ def content():
                 'yAxis': {'type': 'value', 'name': 'Quality', 'min': 0, 'max': 1},
                 'series': [],
                 'animation': False,
-            }).classes('w-full h-80')
+            }).classes('w-full h-[32rem]')
 
         # --- Compare ---
         ui.separator()
@@ -592,6 +593,34 @@ def content():
         'avg_gpu_power_w': False,
     }
 
+    def _best_point(points, x_hi_better, y_hi_better):
+        """Pick the point closest to the ideal corner after min-max normalizing
+        each axis. Used to flag the most balanced run for the selected axes."""
+        if not points:
+            return None
+        if len(points) == 1:
+            return points[0]
+        xs = [p[0] for p in points]
+        ys = [p[1] for p in points]
+        x_min, x_max = min(xs), max(xs)
+        y_min, y_max = min(ys), max(ys)
+        x_span = (x_max - x_min) or 1
+        y_span = (y_max - y_min) or 1
+        best = None
+        best_dist = None
+        for p in points:
+            nx = (p[0] - x_min) / x_span
+            ny = (p[1] - y_min) / y_span
+            if not x_hi_better:
+                nx = 1 - nx
+            if not y_hi_better:
+                ny = 1 - ny
+            d = ((1 - nx) ** 2 + (1 - ny) ** 2) ** 0.5
+            if best_dist is None or d < best_dist:
+                best = p
+                best_dist = d
+        return best
+
     def _pareto_frontier_points(points, x_hi_better, y_hi_better):
         # points: list of [x, y, label]. Returns non-dominated subset sorted by x.
         frontier = []
@@ -699,10 +728,22 @@ def content():
         pareto_chart.options['title']['text'] = f'{y_label} vs {x_label}'
         pareto_chart.update()
 
+        quality_axis = (y_key == 'quality_score' or x_key == 'quality_score')
+        n_missing_task = 0
+        n_no_quality = 0
+        if quality_axis:
+            for r in rows:
+                if r.get('has_quality') and r.get('quality_score') is None:
+                    n_missing_task += 1
+                elif not r.get('has_quality'):
+                    n_no_quality += 1
+
         total_plotted = sum(len(pts) for pts in groups.values())
         if total_plotted == 0:
             hint = []
-            if y_key == 'quality_score' and not any(r.get('has_quality') for r in rows):
+            if quality_axis and metric and n_missing_task:
+                hint.append(f"{n_missing_task} run(s) lack task '{metric}' — pick a different task or run it on those models")
+            if quality_axis and n_no_quality and not any(r.get('has_quality') for r in rows):
                 hint.append('no saved quality runs yet — try Y=Throughput')
             if x_key in ('peak_vram_gb', 'avg_gpu_power_w') and not any(r.get(x_key) for r in rows):
                 hint.append('no profile data saved on any run for that axis')
@@ -712,7 +753,28 @@ def content():
                 'No points to plot. ' + ('; '.join(hint) if hint else f'{skipped_empty_axis} rows missing the selected axis.')
             )
         else:
-            pareto_empty_label.set_text(f'{total_plotted} point(s) across {len(groups)} group(s).')
+            extras = []
+            if quality_axis and metric and n_missing_task:
+                extras.append(f"{n_missing_task} excluded — no '{metric}' result")
+            tail = (' — ' + '; '.join(extras)) if extras else ''
+            pareto_empty_label.set_text(f'{total_plotted} point(s) across {len(groups)} group(s).{tail}')
+
+        # Most-optimal run for the selected axes (closest to ideal corner after
+        # normalization). Skip the frontier line — it's plotted as scatter only.
+        scatter_pts = [pt for pts in groups.values() for pt in pts]
+        best = _best_point(
+            scatter_pts,
+            _axis_higher_is_better.get(x_key, True),
+            _axis_higher_is_better.get(y_key, True),
+        )
+        if best is not None:
+            x_label = _axis_labels.get(x_key, x_key)
+            y_label = _axis_labels.get(y_key, y_key)
+            pareto_best_label.set_text(
+                f'★ Best: {best[2]} — {y_label} {best[1]:.4g}, {x_label} {best[0]:.4g}'
+            )
+        else:
+            pareto_best_label.set_text('')
 
     def on_script_delete():
         path = script_select.value
