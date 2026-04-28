@@ -56,6 +56,7 @@ def _bench_summary(config):
 def content():
     """Returns an async refresh callable for tab-switch triggering."""
     _last_log_len = {'n': 0}
+    _last_bench_log_len = {'n': 0}
 
     with ui.column().classes('w-full gap-4'):
 
@@ -149,7 +150,10 @@ def content():
                 rows=[], row_key='id',
             ).classes('w-full')
             ui.separator()
-            log_panel = ui.log(max_lines=300).classes('w-full').style('height: 320px')
+            ui.label('Queue status log').classes('text-xs text-grey')
+            log_panel = ui.log(max_lines=300).classes('w-full').style('height: 220px')
+            ui.label('Active benchmark output (subprocess stdout)').classes('text-xs text-grey mt-2')
+            bench_log_panel = ui.log(max_lines=2000).classes('w-full font-mono').style('height: 320px')
         runner_card.visible = False
 
         # ── Handlers ──
@@ -267,7 +271,9 @@ def content():
                 ui.notify('Queue started', type='positive')
                 runner_card.visible = True
                 _last_log_len['n'] = 0
+                _last_bench_log_len['n'] = 0
                 log_panel.clear()
+                bench_log_panel.clear()
                 _refresh_tables()
             except Exception as e:
                 ui.notify(f'Start failed: {e}', type='negative')
@@ -410,6 +416,18 @@ def content():
                 for line in tail:
                     log_panel.push(line)
                 _last_log_len['n'] = len(tail)
+
+            btail = queue_service.get_bench_log_tail(2000)
+            if len(btail) > _last_bench_log_len['n']:
+                for line in btail[_last_bench_log_len['n']:]:
+                    bench_log_panel.push(line)
+                _last_bench_log_len['n'] = len(btail)
+            elif len(btail) < _last_bench_log_len['n']:
+                # Buffer was cleared (new bench started) — resync.
+                bench_log_panel.clear()
+                for line in btail:
+                    bench_log_panel.push(line)
+                _last_bench_log_len['n'] = len(btail)
 
             _refresh_jobs_table()
             _refresh_tables()
