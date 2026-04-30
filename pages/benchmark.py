@@ -8,6 +8,16 @@ from services import vllm_service, benchmark_service, metrics_service, queue_ser
 
 _PROFILE_MAX_POINTS = 240
 
+# Pareto chart helpers — keep legend ordering and per-point labels consistent
+# across the UI and the standalone analyze.py script.
+_PARETO_QUANT_ORDER = {'BFLOAT16': 0, 'GPTQ': 1, 'AWQ': 2, 'BITSANDBYTES': 3}
+_PARETO_SIZE_RE = re.compile(r'(\d+)B(?:-|$)')
+
+def _pareto_size_label(model_id, run_name):
+    """Nominal Qwen size (e.g. '7B') from the model name. Empty if not found."""
+    m = _PARETO_SIZE_RE.search(model_id or run_name or '')
+    return f'{m.group(1)}B' if m else ''
+
 
 def content():
     """Benchmark tab. Returns a refresh callable."""
@@ -684,16 +694,20 @@ def content():
                 group_key = (mid.split('/', 1)[0] if '/' in mid else mid) or 'unknown'
             else:
                 group_key = q
-            groups.setdefault(group_key, []).append([x, y, r.get('run_name', '')])
+            size_label = _pareto_size_label(r.get('model_id'), r.get('run_name'))
+            groups.setdefault(group_key, []).append([x, y, r.get('run_name', ''), size_label])
 
         series = []
-        for key, pts in sorted(groups.items()):
+        # Order quantization series highest-precision -> lowest (BF16, GPTQ, AWQ, BnB);
+        # other group keys (e.g. model-family mode) fall back to alphabetical.
+        for key in sorted(groups.keys(), key=lambda k: (_PARETO_QUANT_ORDER.get(k, 99), k)):
+            pts = groups[key]
             series.append({
                 'name': key,
                 'type': 'scatter',
                 'symbolSize': 14,
                 'data': pts,
-                'label': {'show': True, 'position': 'right', 'formatter': '{@[2]}', 'fontSize': 10},
+                'label': {'show': True, 'position': 'right', 'formatter': '{@[3]}', 'fontSize': 10},
             })
 
         # Pareto frontier line: drawn once there's more than one plotted point.
@@ -722,7 +736,7 @@ def content():
         pareto_chart.options['xAxis'] = {'type': 'value', 'name': x_label}
         # Only force 0-1 range for quality axis.
         if y_key == 'quality_score':
-            pareto_chart.options['yAxis'] = {'type': 'value', 'name': y_label, 'min': 0, 'max': 1}
+            pareto_chart.options['yAxis'] = {'type': 'value', 'name': y_label, 'min': 0.5, 'max': 1}
         else:
             pareto_chart.options['yAxis'] = {'type': 'value', 'name': y_label}
         pareto_chart.options['title']['text'] = f'{y_label} vs {x_label}'
@@ -845,8 +859,12 @@ def content():
     def _show_qual_result(parsed, table):
         rows = []
         for t in parsed.get('tasks', []):
-            acc_val = t.get('acc_norm', t.get('acc', t.get('exact_match')))
-            stderr = t.get('acc_norm_stderr', t.get('acc_stderr', t.get('exact_match_stderr')))
+            acc_val = stderr = None
+            for k in ('acc_norm', 'acc', 'exact_match_strict', 'exact_match_flex', 'exact_match'):
+                if k in t:
+                    acc_val = t[k]
+                    stderr = t.get(f'{k}_stderr')
+                    break
             rows.append({
                 'task': t['task'],
                 'acc': _fmt(acc_val),
