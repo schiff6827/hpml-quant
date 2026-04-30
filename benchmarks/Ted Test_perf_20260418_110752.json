@@ -1,0 +1,78 @@
+{
+  "type": "perf",
+  "run_name": "Ted Test",
+  "timestamp": "2026-04-18T11:07:52.842980",
+  "request_throughput": 31.35962321749183,
+  "output_throughput": 8028.0635436779085,
+  "prefill_throughput": 1744.7257768087427,
+  "metrics": {
+    "ttft": {
+      "mean": 293.45585810997363
+    },
+    "tpot": {
+      "mean": 5.53698518505888
+    },
+    "itl": {
+      "mean": 5.53698610937255
+    },
+    "e2el": {
+      "mean": 1705.3870802999882
+    }
+  },
+  "raw": {
+    "date": "20260418-110752",
+    "endpoint_type": "openai",
+    "backend": "openai",
+    "label": null,
+    "model_id": "Qwen/Qwen3-0.6B",
+    "tokenizer_id": "Qwen/Qwen3-0.6B",
+    "num_prompts": 100,
+    "request_rate": "inf",
+    "burstiness": 1.0,
+    "max_concurrency": 64,
+    "duration": 3.188813822999691,
+    "completed": 100,
+    "failed": 0,
+    "total_input_tokens": 51200,
+    "total_output_tokens": 25600,
+    "request_throughput": 31.35962321749183,
+    "request_goodput": null,
+    "output_throughput": 8028.0635436779085,
+    "total_token_throughput": 24084.190631033725,
+    "max_output_tokens_per_s": 10080.0,
+    "max_concurrent_requests": 98,
+    "rtfx": 0.0,
+    "mean_ttft_ms": 293.45585810997363,
+    "median_ttft_ms": 367.0059414998832,
+    "std_ttft_ms": 153.58869973168268,
+    "p50_ttft_ms": 367.0059414998832,
+    "p75_ttft_ms": 428.66657249999207,
+    "p90_ttft_ms": 460.84038879994296,
+    "p95_ttft_ms": 461.0870773497709,
+    "p99_ttft_ms": 461.24324086983506,
+    "mean_tpot_ms": 5.53698518505888,
+    "median_tpot_ms": 6.108926672549405,
+    "std_tpot_ms": 0.8741044836367398,
+    "p50_tpot_ms": 6.108926672549405,
+    "p75_tpot_ms": 6.219576727451514,
+    "p90_tpot_ms": 6.2426777764707655,
+    "p95_tpot_ms": 6.242991103725787,
+    "p99_tpot_ms": 6.290635802196826,
+    "mean_itl_ms": 5.53698610937255,
+    "median_itl_ms": 5.502334500079087,
+    "std_itl_ms": 2.8285331778225222,
+    "p50_itl_ms": 5.502334500079087,
+    "p75_itl_ms": 6.066748249963894,
+    "p90_itl_ms": 6.40665159994569,
+    "p95_itl_ms": 6.67420635002145,
+    "p99_itl_ms": 11.620445319622377,
+    "mean_e2el_ms": 1705.3870802999882,
+    "median_e2el_ms": 1958.6370129998159,
+    "std_e2el_ms": 370.0348786853796,
+    "p50_e2el_ms": 1958.6370129998159,
+    "p75_e2el_ms": 1993.6721450001187,
+    "p90_e2el_ms": 2011.1019859999942,
+    "p95_e2el_ms": 2011.471382499758,
+    "p99_e2el_ms": 2011.6485669097074
+  }
+}

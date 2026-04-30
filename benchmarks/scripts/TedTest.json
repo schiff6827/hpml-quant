@@ -1,0 +1,26 @@
+{
+  "perf": {
+    "enabled": true,
+    "dataset": "random",
+    "num_prompts": 100,
+    "request_rate": "inf",
+    "max_concurrency": 64,
+    "random_input_len": 512,
+    "random_output_len": 256
+  },
+  "quality": {
+    "enabled": true,
+    "tasks": [
+      "mmlu"
+    ],
+    "num_fewshot": 5,
+    "num_concurrent": 16,
+    "limit": 0
+  },
+  "context_sweep": {
+    "enabled": false,
+    "upper_bound": 131072,
+    "step": 4096
+  },
+  "name": "Ted Test"
+}

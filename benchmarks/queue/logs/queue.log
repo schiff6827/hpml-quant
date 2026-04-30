@@ -235,3 +235,32 @@
 [22:25:11]   stopping server on port 8001
 [22:25:11] Failure preset saved: queue__failures_20260426_222511.json (in Presets)
 [22:25:11] (no notify backends enabled; skipping: HPML Queue done: queue (completed_with_failures))
+[16:17:51] Queue 'queue' started with 2 job(s)
+[16:17:51] (no notify backends enabled; skipping: HPML Queue started: queue)
+[16:17:51] ── Job 1/2: Qwen/Qwen2.5-14B-Instruct-AWQ · perf+quality_161638
+[16:17:51] Launching vLLM for 'Qwen/Qwen2.5-14B-Instruct-AWQ'
+[16:17:51]   → port 8001
+[16:18:32]   → healthy on 8001
+[16:18:32]   profile recording → run_Qwen_Qwen2.5-14B-Instruct-AWQ___perf_quality_161638_20260430_161832.csv
+[16:18:32] Starting perf benchmark
+[16:22:14]   → perf done: Qwen_Qwen2.5-14B-Instruct-AWQ___perf_quality_161638_perf_perf_20260430_162214.json
+[16:22:14]   stopping perf vLLM on port 8001 before in-process quality run
+[16:22:20] Starting quality benchmark
+[16:24:48]   → quality done: Qwen_Qwen2.5-14B-Instruct-AWQ___perf_quality_161638_quality_quality_20260430_162448.json
+[16:24:48]   profile recording stopped
+[16:24:48] ✓ Job 1 completed
+[16:24:48]   stopping server on port 8001
+[16:24:48] ── Job 2/2: Qwen/Qwen2.5-14B-Instruct-GPTQ-Int8 · perf+quality_161638
+[16:24:48] Launching vLLM for 'Qwen/Qwen2.5-14B-Instruct-GPTQ-Int8'
+[16:24:48]   → port 8001
+[16:25:25]   → healthy on 8001
+[16:25:25]   profile recording → run_Qwen_Qwen2.5-14B-Instruct-GPTQ-Int8___perf_quality_161638_20260430_162525.csv
+[16:25:25] Starting perf benchmark
+[16:27:24]   → perf done: Qwen_Qwen2.5-14B-Instruct-GPTQ-Int8___perf_quality_161638_perf_perf_20260430_162724.json
+[16:27:24]   stopping perf vLLM on port 8001 before in-process quality run
+[16:27:30] Starting quality benchmark
+[16:29:37]   → quality done: Qwen_Qwen2.5-14B-Instruct-GPTQ-Int8___perf_quality_161638_quality_quality_20260430_162937.json
+[16:29:37]   profile recording stopped
+[16:29:37] ✓ Job 2 completed
+[16:29:37]   stopping server on port 8001
+[16:29:37] (no notify backends enabled; skipping: HPML Queue done: queue (completed))

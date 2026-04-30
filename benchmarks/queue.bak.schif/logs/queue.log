@@ -1,0 +1,28 @@
+[13:53:26] Queue 'queue' started with 1 job(s)
+[13:53:26] (no notify backends enabled; skipping: HPML Queue started: queue)
+[13:53:26] ── Job 1/1: Qwen2.5-7B-Instruct-BNB-NF4-DQ · perf_135317
+[13:53:26] Launching vLLM for '/opt/hpml_project/models/local/Qwen2.5-7B-Instruct-BNB-NF4-DQ'
+[13:53:26]   → port 8001
+[13:53:58]   → healthy on 8001
+[13:53:58] Starting perf benchmark
+[13:54:37]   → perf done: Qwen2.5-7B-Instruct-BNB-NF4-DQ___perf_135317_perf_perf_20260424_135437.json
+[13:54:37] ✓ Job 1 completed
+[13:54:37]   stopping server on port 8001
+[13:54:38] (no notify backends enabled; skipping: HPML Queue done: queue (completed))
+[13:58:48] Queue 'queue' started with 4 job(s)
+[13:58:48] (no notify backends enabled; skipping: HPML Queue started: queue)
+[13:58:48] ── Job 1/4: Qwen2.5-7B-Instruct-BNB-NF4-DQ · perf_135317
+[13:58:48] Launching vLLM for '/opt/hpml_project/models/local/Qwen2.5-7B-Instruct-BNB-NF4-DQ'
+[13:58:48]   → port 8001
+[13:59:17]   → healthy on 8001
+[13:59:17] Starting perf benchmark
+[13:59:52]   → perf done: Qwen2.5-7B-Instruct-BNB-NF4-DQ___perf_135317_perf_perf_20260424_135952.json
+[13:59:52] ✓ Job 1 completed
+[13:59:52]   stopping server on port 8001
+[13:59:53] ── Job 2/4: Qwen2.5-7B-Instruct-BNB-NF4-DQ · perf_135812
+[13:59:53] Launching vLLM for '/opt/hpml_project/models/local/Qwen2.5-7B-Instruct-BNB-NF4-DQ'
+[13:59:53]   → port 8001
+[13:59:54] Cancel requested
+[13:59:55] Queue cancelled
+[13:59:55] (no notify backends enabled; skipping: HPML Queue done: queue (cancelled))
+[14:04:52] Loaded last queue on startup: queue (2 models, 2 benchmarks, 2 pending jobs)

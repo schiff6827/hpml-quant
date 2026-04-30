@@ -1,0 +1,326 @@
+{
+  "name": "queue",
+  "created": "2026-04-24T13:53:04",
+  "models": [
+    {
+      "id": "4ccbc651",
+      "name": "Qwen2.5-7B-Instruct-BNB-NF4-DQ",
+      "model": "/opt/hpml_project/models/local/Qwen2.5-7B-Instruct-BNB-NF4-DQ",
+      "launch": {
+        "use_kv_gb": true,
+        "kv_cache_gb": 10,
+        "gpu_mem_util": 0.9,
+        "dtype": "auto",
+        "quantization": "",
+        "trust_remote_code": false
+      },
+      "timeouts": {
+        "launch_soft_s": 300,
+        "launch_hard_s": 1200,
+        "bench_soft_s": 1800,
+        "bench_hard_s": 14400,
+        "launch_idle_window_s": 300,
+        "bench_idle_window_s": 600
+      }
+    },
+    {
+      "id": "9bad43a0",
+      "name": "Qwen/Qwen2.5-0.5B-Instruct",
+      "model": "Qwen/Qwen2.5-0.5B-Instruct",
+      "launch": {
+        "use_kv_gb": true,
+        "kv_cache_gb": 10,
+        "gpu_mem_util": 0.9,
+        "dtype": "auto",
+        "quantization": "",
+        "trust_remote_code": false
+      },
+      "timeouts": {
+        "launch_soft_s": 300,
+        "launch_hard_s": 1200,
+        "bench_soft_s": 1800,
+        "bench_hard_s": 14400,
+        "launch_idle_window_s": 300,
+        "bench_idle_window_s": 600
+      }
+    }
+  ],
+  "benchmarks": [
+    {
+      "id": "96f81993",
+      "name": "perf_135317",
+      "config": {
+        "perf": {
+          "enabled": true,
+          "dataset": "random",
+          "num_prompts": 100,
+          "request_rate": "inf",
+          "max_concurrency": 64,
+          "random_input_len": 512,
+          "random_output_len": 256
+        },
+        "quality": {
+          "enabled": false,
+          "tasks": [],
+          "num_fewshot": 5,
+          "num_concurrent": 16,
+          "limit": 0
+        },
+        "context_sweep": {
+          "enabled": false,
+          "upper_bound": 131072,
+          "step": 4096
+        },
+        "name": "perf_135317"
+      }
+    },
+    {
+      "id": "70a6a455",
+      "name": "perf_135812",
+      "config": {
+        "perf": {
+          "enabled": true,
+          "dataset": "random",
+          "num_prompts": 100,
+          "request_rate": "inf",
+          "max_concurrency": 64,
+          "random_input_len": 512,
+          "random_output_len": 256
+        },
+        "quality": {
+          "enabled": false,
+          "tasks": [],
+          "num_fewshot": 5,
+          "num_concurrent": 16,
+          "limit": 0
+        },
+        "context_sweep": {
+          "enabled": false,
+          "upper_bound": 131072,
+          "step": 4096
+        },
+        "name": "perf_135812"
+      }
+    }
+  ],
+  "jobs": [
+    {
+      "id": "2f247281",
+      "name": "Qwen2.5-7B-Instruct-BNB-NF4-DQ \u00b7 perf_135317",
+      "model": "/opt/hpml_project/models/local/Qwen2.5-7B-Instruct-BNB-NF4-DQ",
+      "launch": {
+        "use_kv_gb": true,
+        "kv_cache_gb": 10,
+        "gpu_mem_util": 0.9,
+        "dtype": "auto",
+        "quantization": "",
+        "trust_remote_code": false
+      },
+      "timeouts": {
+        "launch_soft_s": 300,
+        "launch_hard_s": 1200,
+        "bench_soft_s": 1800,
+        "bench_hard_s": 14400,
+        "launch_idle_window_s": 300,
+        "bench_idle_window_s": 600
+      },
+      "bench_name": "perf_135317",
+      "bench_config": {
+        "perf": {
+          "enabled": true,
+          "dataset": "random",
+          "num_prompts": 100,
+          "request_rate": "inf",
+          "max_concurrency": 64,
+          "random_input_len": 512,
+          "random_output_len": 256
+        },
+        "quality": {
+          "enabled": false,
+          "tasks": [],
+          "num_fewshot": 5,
+          "num_concurrent": 16,
+          "limit": 0
+        },
+        "context_sweep": {
+          "enabled": false,
+          "upper_bound": 131072,
+          "step": 4096
+        },
+        "name": "perf_135317"
+      },
+      "status": "completed",
+      "error": null,
+      "started_at": "2026-04-24T13:58:48",
+      "finished_at": "2026-04-24T13:59:52",
+      "result_paths": [
+        "/opt/hpml_project/app/benchmarks/Qwen2.5-7B-Instruct-BNB-NF4-DQ___perf_135317_perf_perf_20260424_135952.json"
+      ],
+      "port": 8001,
+      "current_step": null
+    },
+    {
+      "id": "c6e798a4",
+      "name": "Qwen2.5-7B-Instruct-BNB-NF4-DQ \u00b7 perf_135812",
+      "model": "/opt/hpml_project/models/local/Qwen2.5-7B-Instruct-BNB-NF4-DQ",
+      "launch": {
+        "use_kv_gb": true,
+        "kv_cache_gb": 10,
+        "gpu_mem_util": 0.9,
+        "dtype": "auto",
+        "quantization": "",
+        "trust_remote_code": false
+      },
+      "timeouts": {
+        "launch_soft_s": 300,
+        "launch_hard_s": 1200,
+        "bench_soft_s": 1800,
+        "bench_hard_s": 14400,
+        "launch_idle_window_s": 300,
+        "bench_idle_window_s": 600
+      },
+      "bench_name": "perf_135812",
+      "bench_config": {
+        "perf": {
+          "enabled": true,
+          "dataset": "random",
+          "num_prompts": 100,
+          "request_rate": "inf",
+          "max_concurrency": 64,
+          "random_input_len": 512,
+          "random_output_len": 256
+        },
+        "quality": {
+          "enabled": false,
+          "tasks": [],
+          "num_fewshot": 5,
+          "num_concurrent": 16,
+          "limit": 0
+        },
+        "context_sweep": {
+          "enabled": false,
+          "upper_bound": 131072,
+          "step": 4096
+        },
+        "name": "perf_135812"
+      },
+      "status": "cancelled",
+      "error": "cancelled by user",
+      "started_at": "2026-04-24T13:59:53",
+      "finished_at": "2026-04-24T13:59:55",
+      "result_paths": [],
+      "port": 8001,
+      "current_step": null
+    },
+    {
+      "id": "e3fe0e29",
+      "name": "Qwen/Qwen2.5-0.5B-Instruct \u00b7 perf_135317",
+      "model": "Qwen/Qwen2.5-0.5B-Instruct",
+      "launch": {
+        "use_kv_gb": true,
+        "kv_cache_gb": 10,
+        "gpu_mem_util": 0.9,
+        "dtype": "auto",
+        "quantization": "",
+        "trust_remote_code": false
+      },
+      "timeouts": {
+        "launch_soft_s": 300,
+        "launch_hard_s": 1200,
+        "bench_soft_s": 1800,
+        "bench_hard_s": 14400,
+        "launch_idle_window_s": 300,
+        "bench_idle_window_s": 600
+      },
+      "bench_name": "perf_135317",
+      "bench_config": {
+        "perf": {
+          "enabled": true,
+          "dataset": "random",
+          "num_prompts": 100,
+          "request_rate": "inf",
+          "max_concurrency": 64,
+          "random_input_len": 512,
+          "random_output_len": 256
+        },
+        "quality": {
+          "enabled": false,
+          "tasks": [],
+          "num_fewshot": 5,
+          "num_concurrent": 16,
+          "limit": 0
+        },
+        "context_sweep": {
+          "enabled": false,
+          "upper_bound": 131072,
+          "step": 4096
+        },
+        "name": "perf_135317"
+      },
+      "status": "pending",
+      "error": null,
+      "started_at": null,
+      "finished_at": null,
+      "result_paths": [],
+      "port": null,
+      "current_step": null
+    },
+    {
+      "id": "736ff862",
+      "name": "Qwen/Qwen2.5-0.5B-Instruct \u00b7 perf_135812",
+      "model": "Qwen/Qwen2.5-0.5B-Instruct",
+      "launch": {
+        "use_kv_gb": true,
+        "kv_cache_gb": 10,
+        "gpu_mem_util": 0.9,
+        "dtype": "auto",
+        "quantization": "",
+        "trust_remote_code": false
+      },
+      "timeouts": {
+        "launch_soft_s": 300,
+        "launch_hard_s": 1200,
+        "bench_soft_s": 1800,
+        "bench_hard_s": 14400,
+        "launch_idle_window_s": 300,
+        "bench_idle_window_s": 600
+      },
+      "bench_name": "perf_135812",
+      "bench_config": {
+        "perf": {
+          "enabled": true,
+          "dataset": "random",
+          "num_prompts": 100,
+          "request_rate": "inf",
+          "max_concurrency": 64,
+          "random_input_len": 512,
+          "random_output_len": 256
+        },
+        "quality": {
+          "enabled": false,
+          "tasks": [],
+          "num_fewshot": 5,
+          "num_concurrent": 16,
+          "limit": 0
+        },
+        "context_sweep": {
+          "enabled": false,
+          "upper_bound": 131072,
+          "step": 4096
+        },
+        "name": "perf_135812"
+      },
+      "status": "pending",
+      "error": null,
+      "started_at": null,
+      "finished_at": null,
+      "result_paths": [],
+      "port": null,
+      "current_step": null
+    }
+  ],
+  "status": "cancelled",
+  "current_job_index": 1,
+  "started_at": "2026-04-24T13:58:48",
+  "finished_at": "2026-04-24T13:59:55"
+}

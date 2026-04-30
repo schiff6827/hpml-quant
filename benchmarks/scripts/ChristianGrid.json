@@ -1,0 +1,26 @@
+{
+  "perf": {
+    "enabled": true,
+    "dataset": "random",
+    "num_prompts": 500,
+    "request_rate": "inf",
+    "max_concurrency": 64,
+    "random_input_len": 512,
+    "random_output_len": 256
+  },
+  "quality": {
+    "enabled": true,
+    "tasks": [
+      "gsm8k"
+    ],
+    "num_fewshot": 8,
+    "num_concurrent": 16,
+    "limit": 250
+  },
+  "context_sweep": {
+    "enabled": false,
+    "upper_bound": 131072,
+    "step": 4096
+  },
+  "name": "Christian Grid"
+}
