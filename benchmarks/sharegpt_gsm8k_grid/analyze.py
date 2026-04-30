@@ -126,18 +126,31 @@ def pareto(points):
 
 
 COLORS = {'BFLOAT16': '#1f77b4', 'GPTQ': '#ff7f0e', 'AWQ': '#2ca02c', 'BITSANDBYTES': '#d62728'}
+# Legend order: highest precision -> lowest (FP16 > INT8 > INT4-AWQ > INT4-BnB)
+QUANT_ORDER = {'BFLOAT16': 0, 'GPTQ': 1, 'AWQ': 2, 'BITSANDBYTES': 3}
+
+_SIZE_RE = re.compile(r'(\d+)B(?:-|$)')
+
+def _nominal_size_label(r):
+    """Use the nominal model size (7B / 14B / 32B / 72B) from model_id, NOT the
+    reported parameter count — for quantized variants vLLM reports a slightly
+    different value (e.g. 5.4B for 7B-AWQ) that mis-labels points on the chart."""
+    mid = r.get('model_id') or r.get('run_name') or ''
+    m = _SIZE_RE.search(mid)
+    return f'{m.group(1)}B' if m else ''
 
 
 def _scatter(ax, plottable, xkey, ykey, xlabel, ylabel, title, ylim=None):
     by_q = {}
     for r in plottable:
         by_q.setdefault(r['quantization'] or 'UNKNOWN', []).append(r)
-    for q, group in sorted(by_q.items()):
+    for q in sorted(by_q.keys(), key=lambda k: QUANT_ORDER.get(k, 99)):
+        group = by_q[q]
         xs = [r[xkey] for r in group]; ys = [r[ykey] for r in group]
         ax.scatter(xs, ys, s=120, label=q, color=COLORS.get(q, '#888'), edgecolors='black', linewidths=0.5)
         for r in group:
-            sz = f'{int(round(r["parameters_b"]))}B' if r.get('parameters_b') else ''
-            ax.annotate(sz, (r[xkey], r[ykey]), fontsize=8, xytext=(5, 5), textcoords='offset points')
+            ax.annotate(_nominal_size_label(r), (r[xkey], r[ykey]), fontsize=9,
+                        xytext=(5, 5), textcoords='offset points')
     pts = [[r[xkey], r[ykey], r['run_name']] for r in plottable]
     front = pareto(pts)
     if len(front) >= 2:
@@ -157,7 +170,7 @@ front1 = _scatter(ax, [{**r, 'tput': r['throughput_tps'], 'q': r['gsm8k_strict']
                   'tput', 'q',
                   'Throughput (output tok/s, sharegpt n=500, conc=64)',
                   'gsm8k exact_match (strict-match, n-shot=8, limit=250)',
-                  'Pareto: gsm8k vs Throughput - Qwen2.5-Instruct grid', ylim=(0, 1))
+                  'Pareto: gsm8k vs Throughput - Qwen2.5-Instruct grid', ylim=(0.5, 1))
 out1 = os.path.join(GRID_DIR, 'pareto_gsm8k_vs_throughput.png')
 fig.savefig(out1, dpi=140, bbox_inches='tight')
 print(f'\nPareto frontier (gsm8k strict vs throughput):')
@@ -173,7 +186,7 @@ front2 = _scatter(ax2, [{**r, 'vram': r['_vram'], 'q': r['gsm8k_strict']} for r 
                   'vram', 'q',
                   'Peak GPU VRAM (GB)',
                   'gsm8k exact_match (strict-match)',
-                  'Quality vs VRAM cost - lower-left dominated, upper-left ideal', ylim=(0, 1))
+                  'Quality vs VRAM cost - lower-left dominated, upper-left ideal', ylim=(0.5, 1))
 ax2.invert_xaxis()  # left = less VRAM = better; pareto front is upper-left
 out2 = os.path.join(GRID_DIR, 'pareto_gsm8k_vs_vram.png')
 fig2.savefig(out2, dpi=140, bbox_inches='tight')

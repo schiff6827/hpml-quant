@@ -573,7 +573,11 @@ def _summarize_result(path):
             if tasks:
                 parts = []
                 for t0 in tasks[:3]:
-                    met = t0.get('acc_norm', t0.get('acc', t0.get('exact_match')))
+                    met = None
+                    for k in ('acc_norm', 'acc', 'exact_match_strict', 'exact_match_flex', 'exact_match'):
+                        if k in t0:
+                            met = t0[k]
+                            break
                     if met is not None:
                         parts.append(f'{t0.get("task")}={met:.3f}')
                 return f'{name} quality: ' + (', '.join(parts) or '(no metrics)')

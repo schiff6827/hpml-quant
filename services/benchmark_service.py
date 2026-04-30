@@ -563,17 +563,25 @@ def parse_quality_result(result_dir, run_name, extras=None):
         'tasks': [],
         'raw': raw,
     }
+    # Map lm_eval result keys to our stored field names. gsm8k reports two
+    # exact_match variants (strict-match, flexible-extract); using `split(',')[0]`
+    # naively collapses both onto `exact_match` and the second iteration silently
+    # overwrites the first — so keep them as distinct fields.
+    _METRIC_KEY_MAP = [
+        ('acc,none', 'acc'),
+        ('acc_norm,none', 'acc_norm'),
+        ('exact_match,strict-match', 'exact_match_strict'),
+        ('exact_match,flexible-extract', 'exact_match_flex'),
+    ]
     results = raw.get('results', {})
     for task_name, task_data in results.items():
         entry = {'task': task_name}
-        for key in ['acc,none', 'acc_norm,none', 'exact_match,strict-match',
-                     'exact_match,flexible-extract']:
-            if key in task_data:
-                metric_name = key.split(',')[0]
-                entry[metric_name] = task_data[key]
-                stderr_key = f'{key}_stderr'
+        for src_key, field in _METRIC_KEY_MAP:
+            if src_key in task_data:
+                entry[field] = task_data[src_key]
+                stderr_key = f'{src_key}_stderr'
                 if stderr_key in task_data:
-                    entry[f'{metric_name}_stderr'] = task_data[stderr_key]
+                    entry[f'{field}_stderr'] = task_data[stderr_key]
         if len(entry) > 1:
             parsed['tasks'].append(entry)
     if extras:
@@ -636,7 +644,13 @@ def build_pareto_dataset(quality_metric_preference=None):
             else:
                 task_entry = tasks[0]
             if task_entry is not None:
-                q_val = task_entry.get('acc_norm', task_entry.get('acc', task_entry.get('exact_match')))
+                # Prefer strict-match for tasks like gsm8k; fall back through
+                # flexible-extract, then the legacy 'exact_match' field for
+                # JSONs parsed before the strict/flex split.
+                for k in ('acc_norm', 'acc', 'exact_match_strict', 'exact_match_flex', 'exact_match'):
+                    if k in task_entry:
+                        q_val = task_entry[k]
+                        break
                 q_task = task_entry.get('task')
 
         meta = perf.get('model_meta') or qual.get('model_meta') or {}
@@ -828,10 +842,14 @@ def compare_results(path1, path2):
         for task in all_tasks:
             a_data = tasks_a.get(task, {})
             b_data = tasks_b.get(task, {})
-            metric_key = 'acc_norm' if 'acc_norm' in a_data or 'acc_norm' in b_data else 'acc'
+            metric_key = None
+            for k in ('acc_norm', 'acc', 'exact_match_strict', 'exact_match_flex', 'exact_match'):
+                if k in a_data or k in b_data:
+                    metric_key = k
+                    break
             comparison['rows'].append({
                 'metric': task,
-                'a': a_data.get(metric_key),
-                'b': b_data.get(metric_key),
+                'a': a_data.get(metric_key) if metric_key else None,
+                'b': b_data.get(metric_key) if metric_key else None,
             })
     return comparison
