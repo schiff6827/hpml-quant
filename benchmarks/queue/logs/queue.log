@@ -264,3 +264,156 @@
 [16:29:37] ✓ Job 2 completed
 [16:29:37]   stopping server on port 8001
 [16:29:37] (no notify backends enabled; skipping: HPML Queue done: queue (completed))
+[22:10:36] Queue 'queue' started with 15 job(s)
+[22:10:36] (no notify backends enabled; skipping: HPML Queue started: queue)
+[22:10:36] ── Job 1/15: Qwen/Qwen2.5-7B-Instruct · context_sweep_220614
+[22:10:36] Launching vLLM for 'Qwen/Qwen2.5-7B-Instruct'
+[22:10:36]   → port 8001
+[22:11:20]   → healthy on 8001
+[22:11:20]   profile recording → run_Qwen_Qwen2.5-7B-Instruct___context_sweep_220614_20260430_221120.csv
+[22:11:20] Starting context_sweep benchmark
+[22:11:24]   → context_sweep done: Qwen_Qwen2.5-7B-Instruct___context_sweep_220614_context_sweep_context_20260430_221124.json
+[22:11:24]   profile recording stopped
+[22:11:24] ✓ Job 1 completed
+[22:11:24]   stopping server on port 8001
+[22:11:24] ── Job 2/15: Qwen/Qwen2.5-7B-Instruct-GPTQ-Int8 · context_sweep_220614
+[22:11:24] Launching vLLM for 'Qwen/Qwen2.5-7B-Instruct-GPTQ-Int8'
+[22:11:24]   → port 8001
+[22:12:00]   → healthy on 8001
+[22:12:00]   profile recording → run_Qwen_Qwen2.5-7B-Instruct-GPTQ-Int8___context_sweep_220614_20260430_221200.csv
+[22:12:00] Starting context_sweep benchmark
+[22:12:04]   → context_sweep done: Qwen_Qwen2.5-7B-Instruct-GPTQ-Int8___context_sweep_220614_context_sweep_context_20260430_221204.json
+[22:12:04]   profile recording stopped
+[22:12:04] ✓ Job 2 completed
+[22:12:04]   stopping server on port 8001
+[22:12:04] ── Job 3/15: Qwen/Qwen2.5-14B-Instruct-GPTQ-Int8 · context_sweep_220614
+[22:12:04] Launching vLLM for 'Qwen/Qwen2.5-14B-Instruct-GPTQ-Int8'
+[22:12:04]   → port 8001
+[22:12:40]   → healthy on 8001
+[22:12:40]   profile recording → run_Qwen_Qwen2.5-14B-Instruct-GPTQ-Int8___context_sweep_220614_20260430_221240.csv
+[22:12:40] Starting context_sweep benchmark
+[22:12:47]   → context_sweep done: Qwen_Qwen2.5-14B-Instruct-GPTQ-Int8___context_sweep_220614_context_sweep_context_20260430_221247.json
+[22:12:47]   profile recording stopped
+[22:12:47] ✓ Job 3 completed
+[22:12:47]   stopping server on port 8001
+[22:12:48] ── Job 4/15: Qwen/Qwen2.5-32B-Instruct-GPTQ-Int8 · context_sweep_220614
+[22:12:48] Launching vLLM for 'Qwen/Qwen2.5-32B-Instruct-GPTQ-Int8'
+[22:12:48]   → port 8001
+[22:13:48]   → healthy on 8001
+[22:13:48]   profile recording → run_Qwen_Qwen2.5-32B-Instruct-GPTQ-Int8___context_sweep_220614_20260430_221348.csv
+[22:13:48] Starting context_sweep benchmark
+[22:14:01]   → context_sweep done: Qwen_Qwen2.5-32B-Instruct-GPTQ-Int8___context_sweep_220614_context_sweep_context_20260430_221401.json
+[22:14:01]   profile recording stopped
+[22:14:01] ✓ Job 4 completed
+[22:14:01]   stopping server on port 8001
+[22:14:01] ── Job 5/15: Qwen/Qwen2.5-72B-Instruct-GPTQ-Int8 · context_sweep_220614
+[22:14:01] Launching vLLM for 'Qwen/Qwen2.5-72B-Instruct-GPTQ-Int8'
+[22:14:01]   → port 8001
+[22:16:11]   → healthy on 8001
+[22:16:11]   profile recording → run_Qwen_Qwen2.5-72B-Instruct-GPTQ-Int8___context_sweep_220614_20260430_221611.csv
+[22:16:11] Starting context_sweep benchmark
+[22:16:40]   → context_sweep done: Qwen_Qwen2.5-72B-Instruct-GPTQ-Int8___context_sweep_220614_context_sweep_context_20260430_221640.json
+[22:16:40]   profile recording stopped
+[22:16:40] ✓ Job 5 completed
+[22:16:40]   stopping server on port 8001
+[22:16:41] ── Job 6/15: Qwen/Qwen2.5-14B-Instruct · context_sweep_220614
+[22:16:41] Launching vLLM for 'Qwen/Qwen2.5-14B-Instruct'
+[22:16:41]   → port 8001
+[22:17:40]   → healthy on 8001
+[22:17:40]   profile recording → run_Qwen_Qwen2.5-14B-Instruct___context_sweep_220614_20260430_221740.csv
+[22:17:40] Starting context_sweep benchmark
+[22:17:46]   → context_sweep done: Qwen_Qwen2.5-14B-Instruct___context_sweep_220614_context_sweep_context_20260430_221746.json
+[22:17:46]   profile recording stopped
+[22:17:46] ✓ Job 6 completed
+[22:17:46]   stopping server on port 8001
+[22:17:47] ── Job 7/15: Qwen/Qwen2.5-32B-Instruct · context_sweep_220614
+[22:17:47] Launching vLLM for 'Qwen/Qwen2.5-32B-Instruct'
+[22:17:47]   → port 8001
+[22:18:59]   → healthy on 8001
+[22:18:59]   profile recording → run_Qwen_Qwen2.5-32B-Instruct___context_sweep_220614_20260430_221859.csv
+[22:18:59] Starting context_sweep benchmark
+[22:19:11]   → context_sweep done: Qwen_Qwen2.5-32B-Instruct___context_sweep_220614_context_sweep_context_20260430_221911.json
+[22:19:11]   profile recording stopped
+[22:19:11] ✓ Job 7 completed
+[22:19:11]   stopping server on port 8001
+[22:19:12] ── Job 8/15: Qwen/Qwen2.5-7B-Instruct-AWQ · context_sweep_220614
+[22:19:12] Launching vLLM for 'Qwen/Qwen2.5-7B-Instruct-AWQ'
+[22:19:12]   → port 8001
+[22:19:48]   → healthy on 8001
+[22:19:48]   profile recording → run_Qwen_Qwen2.5-7B-Instruct-AWQ___context_sweep_220614_20260430_221948.csv
+[22:19:48] Starting context_sweep benchmark
+[22:19:56]   → context_sweep done: Qwen_Qwen2.5-7B-Instruct-AWQ___context_sweep_220614_context_sweep_context_20260430_221956.json
+[22:19:56]   profile recording stopped
+[22:19:56] ✓ Job 8 completed
+[22:19:56]   stopping server on port 8001
+[22:19:56] ── Job 9/15: Qwen/Qwen2.5-14B-Instruct-AWQ · context_sweep_220614
+[22:19:56] Launching vLLM for 'Qwen/Qwen2.5-14B-Instruct-AWQ'
+[22:19:56]   → port 8001
+[22:20:35]   → healthy on 8001
+[22:20:35]   profile recording → run_Qwen_Qwen2.5-14B-Instruct-AWQ___context_sweep_220614_20260430_222035.csv
+[22:20:35] Starting context_sweep benchmark
+[22:20:46]   → context_sweep done: Qwen_Qwen2.5-14B-Instruct-AWQ___context_sweep_220614_context_sweep_context_20260430_222046.json
+[22:20:46]   profile recording stopped
+[22:20:46] ✓ Job 9 completed
+[22:20:46]   stopping server on port 8001
+[22:20:46] ── Job 10/15: Qwen/Qwen2.5-32B-Instruct-AWQ · context_sweep_220614
+[22:20:46] Launching vLLM for 'Qwen/Qwen2.5-32B-Instruct-AWQ'
+[22:20:46]   → port 8001
+[22:21:54]   → healthy on 8001
+[22:21:54]   profile recording → run_Qwen_Qwen2.5-32B-Instruct-AWQ___context_sweep_220614_20260430_222154.csv
+[22:21:54] Starting context_sweep benchmark
+[22:22:23]   → context_sweep done: Qwen_Qwen2.5-32B-Instruct-AWQ___context_sweep_220614_context_sweep_context_20260430_222223.json
+[22:22:23]   profile recording stopped
+[22:22:23] ✓ Job 10 completed
+[22:22:23]   stopping server on port 8001
+[22:22:24] ── Job 11/15: Qwen/Qwen2.5-72B-Instruct-AWQ · context_sweep_220614
+[22:22:24] Launching vLLM for 'Qwen/Qwen2.5-72B-Instruct-AWQ'
+[22:22:24]   → port 8001
+[22:24:36]   → healthy on 8001
+[22:24:36]   profile recording → run_Qwen_Qwen2.5-72B-Instruct-AWQ___context_sweep_220614_20260430_222436.csv
+[22:24:36] Starting context_sweep benchmark
+[22:25:39]   → context_sweep done: Qwen_Qwen2.5-72B-Instruct-AWQ___context_sweep_220614_context_sweep_context_20260430_222539.json
+[22:25:39]   profile recording stopped
+[22:25:39] ✓ Job 11 completed
+[22:25:39]   stopping server on port 8001
+[22:25:40] ── Job 12/15: Qwen2.5-7B-Instruct-BNB-NF4-DQ · context_sweep_220614
+[22:25:40] Launching vLLM for '/opt/hpml_project/models/local/Qwen2.5-7B-Instruct-BNB-NF4-DQ'
+[22:25:40]   → port 8001
+[22:26:20]   → healthy on 8001
+[22:26:20]   profile recording → run_Qwen2.5-7B-Instruct-BNB-NF4-DQ___context_sweep_220614_20260430_222620.csv
+[22:26:20] Starting context_sweep benchmark
+[22:26:23]   → context_sweep done: Qwen2.5-7B-Instruct-BNB-NF4-DQ___context_sweep_220614_context_sweep_context_20260430_222623.json
+[22:26:23]   profile recording stopped
+[22:26:23] ✓ Job 12 completed
+[22:26:23]   stopping server on port 8001
+[22:26:24] ── Job 13/15: Qwen2.5-14B-Instruct-BNB-NF4-DQ · context_sweep_220614
+[22:26:24] Launching vLLM for '/opt/hpml_project/models/local/Qwen2.5-14B-Instruct-BNB-NF4-DQ'
+[22:26:24]   → port 8001
+[22:27:18]   → healthy on 8001
+[22:27:18]   profile recording → run_Qwen2.5-14B-Instruct-BNB-NF4-DQ___context_sweep_220614_20260430_222718.csv
+[22:27:18] Starting context_sweep benchmark
+[22:27:24]   → context_sweep done: Qwen2.5-14B-Instruct-BNB-NF4-DQ___context_sweep_220614_context_sweep_context_20260430_222724.json
+[22:27:24]   profile recording stopped
+[22:27:24] ✓ Job 13 completed
+[22:27:24]   stopping server on port 8001
+[22:27:25] ── Job 14/15: Qwen2.5-32B-Instruct-BNB-NF4-DQ · context_sweep_220614
+[22:27:25] Launching vLLM for '/opt/hpml_project/models/local/Qwen2.5-32B-Instruct-BNB-NF4-DQ'
+[22:27:25]   → port 8001
+[22:28:42]   → healthy on 8001
+[22:28:42]   profile recording → run_Qwen2.5-32B-Instruct-BNB-NF4-DQ___context_sweep_220614_20260430_222842.csv
+[22:28:42] Starting context_sweep benchmark
+[22:28:55]   → context_sweep done: Qwen2.5-32B-Instruct-BNB-NF4-DQ___context_sweep_220614_context_sweep_context_20260430_222855.json
+[22:28:55]   profile recording stopped
+[22:28:55] ✓ Job 14 completed
+[22:28:55]   stopping server on port 8001
+[22:28:56] ── Job 15/15: Qwen2.5-72B-Instruct-BNB-NF4-DQ · context_sweep_220614
+[22:28:56] Launching vLLM for '/opt/hpml_project/models/local/Qwen2.5-72B-Instruct-BNB-NF4-DQ'
+[22:28:56]   → port 8001
+[22:31:13]   → healthy on 8001
+[22:31:13]   profile recording → run_Qwen2.5-72B-Instruct-BNB-NF4-DQ___context_sweep_220614_20260430_223113.csv
+[22:31:13] Starting context_sweep benchmark
+[22:31:42]   → context_sweep done: Qwen2.5-72B-Instruct-BNB-NF4-DQ___context_sweep_220614_context_sweep_context_20260430_223142.json
+[22:31:42]   profile recording stopped
+[22:31:42] ✓ Job 15 completed
+[22:31:42]   stopping server on port 8001
+[22:31:43] (no notify backends enabled; skipping: HPML Queue done: queue (completed))

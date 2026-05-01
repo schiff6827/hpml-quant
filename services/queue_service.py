@@ -324,6 +324,7 @@ async def _launch_phase(job):
         quantization=launch.get('quantization') or None,
         extra_args=extra,
         kv_cache_gb=int(launch.get('kv_cache_gb', 10)) if use_kv_gb else None,
+        nsys_profile=bool(launch.get('nsys_profile')),
     )
     try:
         port = vllm_service.launch_server(cpu_offload_gb=cpu_offload, **kwargs)

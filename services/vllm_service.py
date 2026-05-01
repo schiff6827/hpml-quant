@@ -11,7 +11,9 @@ import config
 _running = {}
 
 
-NSYS_DEFAULT_DIR = "/tmp/vllm_nsys"
+# Project-relative so reports survive reboots and the 30-day systemd-tmpfiles
+# sweep on /tmp. Large binary artifacts — keep this path in .gitignore.
+NSYS_DEFAULT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'benchmarks', 'nsys')
 
 
 def launch_server(model, port=None, gpu_mem_util=None, dtype=None, quantization=None, extra_args=None, token=None, kv_cache_gb=None, nsys_profile=False, nsys_output_dir=None):
@@ -128,17 +130,29 @@ def check_health(port):
     return True
 
 
-_WEIGHT_RE = re.compile(r"Model loading took\s+([\d.]+)\s*Gi?B", re.IGNORECASE)
-_KV_RE = re.compile(r"(Available KV cache memory|KV cache size)[^\d]*([\d.]+)\s*Gi?B", re.IGNORECASE)
+_WEIGHT_RE = re.compile(r"Model loading took\s+(?P<gib>[\d.]+)\s*Gi?B", re.IGNORECASE)
+# vLLM emits the KV capacity differently across versions and launch modes:
+#   - vLLM 0.17 with --kv-cache-memory-bytes: "reserved 10.0 GiB memory for KV Cache"
+#   - older vLLM:                              "Available KV cache memory: 10.0 GiB" / "KV cache size: 10.0 GiB"
+# Try the new format first, then fall back. Both put the number into the `gib` group.
+_KV_RES = [
+    re.compile(r"reserved\s+(?P<gib>[\d.]+)\s*Gi?B\s+memory\s+for\s+KV\s+Cache", re.IGNORECASE),
+    re.compile(r"(?:Available KV cache memory|KV cache size)[^\d]*(?P<gib>[\d.]+)\s*Gi?B", re.IGNORECASE),
+]
+# vLLM also reports KV pool capacity in tokens — useful for derived kv_bytes_per_token.
+_KV_TOKENS_RE = re.compile(r"GPU KV cache size:\s*([\d,]+)\s+tokens", re.IGNORECASE)
 _INIT_RE = re.compile(r"init engine.*took\s+([\d.]+)\s*seconds", re.IGNORECASE)
 
 
 def _refresh_memory_stats(port):
-    """Parse vLLM startup log for weight-mem and KV-capacity once per server."""
+    """Parse vLLM startup log for weight-mem, KV-capacity, and engine-init time
+    once per server. The strings vLLM emits change between versions, so we try
+    multiple regexes and skip silently if none match."""
     info = _running.get(port)
     if not info:
         return
-    if info.get("weight_mem_gib") and info.get("kv_cache_capacity_gib"):
+    if (info.get("weight_mem_gib") and info.get("kv_cache_capacity_gib")
+            and info.get("kv_cache_capacity_tokens") and info.get("engine_init_seconds")):
         return
     log_path = info.get("log_path")
     if not log_path or not os.path.exists(log_path):
@@ -151,11 +165,17 @@ def _refresh_memory_stats(port):
     if "weight_mem_gib" not in info:
         m = _WEIGHT_RE.search(text)
         if m:
-            info["weight_mem_gib"] = float(m.group(1))
+            info["weight_mem_gib"] = float(m.group("gib"))
     if "kv_cache_capacity_gib" not in info:
-        m = _KV_RE.search(text)
+        for rx in _KV_RES:
+            m = rx.search(text)
+            if m:
+                info["kv_cache_capacity_gib"] = float(m.group("gib"))
+                break
+    if "kv_cache_capacity_tokens" not in info:
+        m = _KV_TOKENS_RE.search(text)
         if m:
-            info["kv_cache_capacity_gib"] = float(m.group(2))
+            info["kv_cache_capacity_tokens"] = int(m.group(1).replace(",", ""))
     if "engine_init_seconds" not in info:
         m = _INIT_RE.search(text)
         if m:
