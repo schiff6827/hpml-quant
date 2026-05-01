@@ -1,0 +1,21 @@
+{
+  "type": "context_sweep",
+  "run_name": "32B-Normal_ctx_120705",
+  "timestamp": "2026-05-01T12:20:41.556778",
+  "max_context_tokens": 112576,
+  "source": "vllm_estimated",
+  "kv_pool_tokens": null,
+  "launch_succeeded": false,
+  "launch_error": null,
+  "launch_log": "/tmp/run_context_sweep_8001_1777651625.log",
+  "returncode": 1,
+  "launch": {
+    "configured_max_model_len": 131072,
+    "kv_cache_gb": null,
+    "gpu_mem_util": 0.95,
+    "dtype": "auto",
+    "quantization": null,
+    "model": "Qwen/Qwen2.5-32B-Instruct"
+  },
+  "probes": []
+}

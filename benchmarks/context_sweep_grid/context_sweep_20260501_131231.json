@@ -1,0 +1,21 @@
+{
+  "type": "context_sweep",
+  "run_name": "72B-GPTQ_ctx_125716",
+  "timestamp": "2026-05-01T13:12:31.784337",
+  "max_context_tokens": null,
+  "source": null,
+  "kv_pool_tokens": null,
+  "launch_succeeded": false,
+  "launch_error": "timed out after 900s waiting for vLLM startup",
+  "launch_log": "/tmp/run_context_sweep_8001_1777654636.log",
+  "returncode": null,
+  "launch": {
+    "configured_max_model_len": 131072,
+    "kv_cache_gb": null,
+    "gpu_mem_util": 0.95,
+    "dtype": "auto",
+    "quantization": null,
+    "model": "Qwen/Qwen2.5-72B-Instruct-GPTQ-Int8"
+  },
+  "probes": []
+}

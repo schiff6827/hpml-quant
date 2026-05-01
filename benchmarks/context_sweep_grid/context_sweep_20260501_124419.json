@@ -1,0 +1,21 @@
+{
+  "type": "context_sweep",
+  "run_name": "7B-GPTQ_ctx_124129",
+  "timestamp": "2026-05-01T12:44:19.551708",
+  "max_context_tokens": 1503808,
+  "source": "kv_pool_tokens",
+  "kv_pool_tokens": 1503808,
+  "launch_succeeded": true,
+  "launch_error": null,
+  "launch_log": "/tmp/run_context_sweep_8001_1777653689.log",
+  "returncode": null,
+  "launch": {
+    "configured_max_model_len": 131072,
+    "kv_cache_gb": null,
+    "gpu_mem_util": 0.95,
+    "dtype": "auto",
+    "quantization": null,
+    "model": "Qwen/Qwen2.5-7B-Instruct-GPTQ-Int8"
+  },
+  "probes": []
+}
