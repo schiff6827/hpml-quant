@@ -417,3 +417,11 @@
 [22:31:42] ✓ Job 15 completed
 [22:31:42]   stopping server on port 8001
 [22:31:43] (no notify backends enabled; skipping: HPML Queue done: queue (completed))
+[22:50:10] Queue 'queue' started with 4 job(s)
+[22:50:10] (no notify backends enabled; skipping: HPML Queue started: queue)
+[22:50:10] ── Job 1/4: Qwen/Qwen2.5-7B-Instruct-AWQ · perf_224914
+[22:50:10] Launching vLLM for 'Qwen/Qwen2.5-7B-Instruct-AWQ'
+[22:50:10]   → port 8001
+[22:50:40]   → healthy on 8001
+[22:50:40]   profile recording → run_Qwen_Qwen2.5-7B-Instruct-AWQ___perf_224914_20260430_225040.csv
+[22:50:40] Starting perf benchmark
