@@ -1,0 +1,21 @@
+{
+  "type": "context_sweep",
+  "run_name": "14B-AWQ_ctx_122257",
+  "timestamp": "2026-05-01T12:26:06.156163",
+  "max_context_tokens": 432224,
+  "source": "kv_pool_tokens",
+  "kv_pool_tokens": 432224,
+  "launch_succeeded": true,
+  "launch_error": null,
+  "launch_log": "/tmp/run_context_sweep_8001_1777652577.log",
+  "returncode": null,
+  "launch": {
+    "configured_max_model_len": 131072,
+    "kv_cache_gb": null,
+    "gpu_mem_util": 0.95,
+    "dtype": "auto",
+    "quantization": null,
+    "model": "Qwen/Qwen2.5-14B-Instruct-AWQ"
+  },
+  "probes": []
+}

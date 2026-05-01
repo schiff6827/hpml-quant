@@ -117,16 +117,28 @@ def launch_and_extract(args):
                     extracted['source'] = 'vllm_estimated'
                     print(f'detected| vLLM estimated maximum model length: {m.group(1)}', flush=True)
 
-            # Success-path side info — KV pool capacity in tokens, useful for
-            # the writeup even when launch succeeds.
+            # Success path — vLLM logs KV pool capacity AFTER it has validated
+            # that max_model_len fits. Seeing this line means the launch will
+            # succeed; the remaining startup work (cudagraph capture, uvicorn)
+            # is irrelevant to our measurement and can take many minutes more.
+            # We have everything we need; break immediately.
             if extracted['kv_pool_tokens'] is None:
                 m = _KV_TOKENS_RE.search(text)
                 if m:
                     extracted['kv_pool_tokens'] = int(m.group(1).replace(',', ''))
-                    print(f'detected| GPU KV cache size: {m.group(1)} tokens', flush=True)
+                    extracted['launch_succeeded'] = True
+                    # The TRUE VRAM-bounded ceiling is the KV pool size in tokens
+                    # (a single request can use the whole pool). The configured
+                    # max_model_len is just a cap we set; if pool > cap, the
+                    # cap is what limits a single request in practice.
+                    extracted['max_context_tokens'] = extracted['kv_pool_tokens']
+                    extracted['source'] = 'kv_pool_tokens'
+                    print(f'detected| GPU KV cache size: {m.group(1)} tokens (== VRAM-bounded max single-request context)', flush=True)
+                    break
 
-            # Success terminal: API server is up. The configured max_model_len
-            # IS achievable for this KV config (vLLM's own validation passed).
+            # Backstop: if Uvicorn comes up before we see the KV pool line for
+            # any reason (vLLM version differences, log buffering), still treat
+            # that as success and use the configured max_model_len as the answer.
             if _STARTUP_DONE_RE.search(text):
                 extracted['launch_succeeded'] = True
                 if extracted['max_context_tokens'] is None:

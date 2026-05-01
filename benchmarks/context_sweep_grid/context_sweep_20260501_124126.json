@@ -1,0 +1,21 @@
+{
+  "type": "context_sweep",
+  "run_name": "72B-AWQ_ctx_123124",
+  "timestamp": "2026-05-01T12:41:26.016244",
+  "max_context_tokens": 161968,
+  "source": "kv_pool_tokens",
+  "kv_pool_tokens": 161968,
+  "launch_succeeded": true,
+  "launch_error": null,
+  "launch_log": "/tmp/run_context_sweep_8001_1777653084.log",
+  "returncode": null,
+  "launch": {
+    "configured_max_model_len": 131072,
+    "kv_cache_gb": null,
+    "gpu_mem_util": 0.95,
+    "dtype": "auto",
+    "quantization": null,
+    "model": "Qwen/Qwen2.5-72B-Instruct-AWQ"
+  },
+  "probes": []
+}

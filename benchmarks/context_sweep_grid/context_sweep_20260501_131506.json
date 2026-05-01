@@ -1,0 +1,21 @@
+{
+  "type": "context_sweep",
+  "run_name": "32B-BnB_ctx_131409",
+  "timestamp": "2026-05-01T13:15:06.259474",
+  "max_context_tokens": 283184,
+  "source": "kv_pool_tokens",
+  "kv_pool_tokens": 283184,
+  "launch_succeeded": true,
+  "launch_error": null,
+  "launch_log": "/tmp/run_context_sweep_8001_1777655649.log",
+  "returncode": null,
+  "launch": {
+    "configured_max_model_len": 131072,
+    "kv_cache_gb": null,
+    "gpu_mem_util": 0.95,
+    "dtype": "auto",
+    "quantization": null,
+    "model": "/opt/hpml_project/models/local/Qwen2.5-32B-Instruct-BNB-NF4-DQ"
+  },
+  "probes": []
+}

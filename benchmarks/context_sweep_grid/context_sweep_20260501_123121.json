@@ -1,0 +1,21 @@
+{
+  "type": "context_sweep",
+  "run_name": "32B-AWQ_ctx_122609",
+  "timestamp": "2026-05-01T12:31:21.508938",
+  "max_context_tokens": 288272,
+  "source": "kv_pool_tokens",
+  "kv_pool_tokens": 288272,
+  "launch_succeeded": true,
+  "launch_error": null,
+  "launch_log": "/tmp/run_context_sweep_8001_1777652769.log",
+  "returncode": null,
+  "launch": {
+    "configured_max_model_len": 131072,
+    "kv_cache_gb": null,
+    "gpu_mem_util": 0.95,
+    "dtype": "auto",
+    "quantization": null,
+    "model": "Qwen/Qwen2.5-32B-Instruct-AWQ"
+  },
+  "probes": []
+}
