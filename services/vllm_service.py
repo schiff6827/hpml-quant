@@ -62,6 +62,13 @@ def launch_server(model, port=None, gpu_mem_util=None, dtype=None, quantization=
     env = {**os.environ, "HF_HUB_CACHE": config.MODEL_CACHE_DIR}
     if token:
         env["HF_TOKEN"] = token
+    # If --max-model-len was passed and exceeds the model's trained position
+    # embeddings, vLLM refuses to start unless this env var is set. We use the
+    # override deliberately for VRAM-bounded context-sweep experiments — quality
+    # past the trained max is undefined (RoPE extrapolation), but for memory
+    # ceiling measurement this is intentional.
+    if extra_args and any(a == "--max-model-len" for a in extra_args):
+        env["VLLM_ALLOW_LONG_MAX_MODEL_LEN"] = "1"
 
     log_path = f"/tmp/vllm_{getpass.getuser()}_{port}.log"
     log_file = open(log_path, "w")

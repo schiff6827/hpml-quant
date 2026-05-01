@@ -425,3 +425,171 @@
 [22:50:40]   → healthy on 8001
 [22:50:40]   profile recording → run_Qwen_Qwen2.5-7B-Instruct-AWQ___perf_224914_20260430_225040.csv
 [22:50:40] Starting perf benchmark
+[22:51:25]   → perf done: Qwen_Qwen2.5-7B-Instruct-AWQ___perf_224914_perf_perf_20260430_225125.json
+[22:51:25]   profile recording stopped
+[22:51:25] ✓ Job 1 completed
+[22:51:25]   stopping server on port 8001
+[22:51:39] ── Job 2/4: Qwen/Qwen2.5-14B-Instruct-AWQ · perf_224914
+[22:51:39] Launching vLLM for 'Qwen/Qwen2.5-14B-Instruct-AWQ'
+[22:51:39]   → port 8001
+[22:52:21]   → healthy on 8001
+[22:52:21]   profile recording → run_Qwen_Qwen2.5-14B-Instruct-AWQ___perf_224914_20260430_225221.csv
+[22:52:21] Starting perf benchmark
+[22:53:44]   → perf done: Qwen_Qwen2.5-14B-Instruct-AWQ___perf_224914_perf_perf_20260430_225344.json
+[22:53:44]   profile recording stopped
+[22:53:44] ✓ Job 2 completed
+[22:53:44]   stopping server on port 8001
+[22:53:59] ── Job 3/4: Qwen/Qwen2.5-32B-Instruct-AWQ · perf_224914
+[22:53:59] Launching vLLM for 'Qwen/Qwen2.5-32B-Instruct-AWQ'
+[22:53:59]   → port 8001
+[22:55:07]   → healthy on 8001
+[22:55:07]   profile recording → run_Qwen_Qwen2.5-32B-Instruct-AWQ___perf_224914_20260430_225507.csv
+[22:55:07] Starting perf benchmark
+[22:58:15]   → perf done: Qwen_Qwen2.5-32B-Instruct-AWQ___perf_224914_perf_perf_20260430_225815.json
+[22:58:15]   profile recording stopped
+[22:58:15] ✓ Job 3 completed
+[22:58:15]   stopping server on port 8001
+[22:58:29] ── Job 4/4: Qwen/Qwen2.5-72B-Instruct-AWQ · perf_224914
+[22:58:29] Launching vLLM for 'Qwen/Qwen2.5-72B-Instruct-AWQ'
+[22:58:29]   → port 8001
+[23:00:35]   → healthy on 8001
+[23:00:35]   profile recording → run_Qwen_Qwen2.5-72B-Instruct-AWQ___perf_224914_20260430_230035.csv
+[23:00:35] Starting perf benchmark
+[23:07:20]   → perf done: Qwen_Qwen2.5-72B-Instruct-AWQ___perf_224914_perf_perf_20260430_230720.json
+[23:07:20]   profile recording stopped
+[23:07:20] ✓ Job 4 completed
+[23:07:20]   stopping server on port 8001
+[23:07:34] (no notify backends enabled; skipping: HPML Queue done: queue (completed))
+[23:22:37] Queue 'queue' started with 15 job(s)
+[23:22:37] (no notify backends enabled; skipping: HPML Queue started: queue)
+[23:22:37] ── Job 1/15: Qwen/Qwen2.5-7B-Instruct · context_sweep_231847
+[23:22:37] Launching vLLM for 'Qwen/Qwen2.5-7B-Instruct'
+[23:22:37]   → port 8001
+[23:22:42] ✗ Job 1 failed: vLLM process exited during launch
+[23:22:42] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-7B-Instruct · context_sweep_231847)
+[23:22:42] ── Job 2/15: Qwen/Qwen2.5-14B-Instruct · context_sweep_231847
+[23:22:42] Launching vLLM for 'Qwen/Qwen2.5-14B-Instruct'
+[23:22:42]   → port 8002
+[23:22:49] ✗ Job 2 failed: vLLM process exited during launch
+[23:22:49] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-14B-Instruct · context_sweep_231847)
+[23:22:49] ── Job 3/15: Qwen/Qwen2.5-32B-Instruct · context_sweep_231847
+[23:22:49] Launching vLLM for 'Qwen/Qwen2.5-32B-Instruct'
+[23:22:49]   → port 8001
+[23:22:54] ✗ Job 3 failed: vLLM process exited during launch
+[23:22:54] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-32B-Instruct · context_sweep_231847)
+[23:22:54] ── Job 4/15: Qwen/Qwen2.5-7B-Instruct-GPTQ-Int8 · context_sweep_231847
+[23:22:54] Launching vLLM for 'Qwen/Qwen2.5-7B-Instruct-GPTQ-Int8'
+[23:22:54]   → port 8002
+[23:23:00] ✗ Job 4 failed: vLLM process exited during launch
+[23:23:00] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-7B-Instruct-GPTQ-Int8 · context_sweep_231847)
+[23:23:00] ── Job 5/15: Qwen/Qwen2.5-14B-Instruct-GPTQ-Int8 · context_sweep_231847
+[23:23:00] Launching vLLM for 'Qwen/Qwen2.5-14B-Instruct-GPTQ-Int8'
+[23:23:00]   → port 8001
+[23:23:05] ✗ Job 5 failed: vLLM process exited during launch
+[23:23:05] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-14B-Instruct-GPTQ-Int8 · context_sweep_231847)
+[23:23:05] ── Job 6/15: Qwen/Qwen2.5-32B-Instruct-GPTQ-Int8 · context_sweep_231847
+[23:23:05] Launching vLLM for 'Qwen/Qwen2.5-32B-Instruct-GPTQ-Int8'
+[23:23:05]   → port 8002
+[23:23:11] ✗ Job 6 failed: vLLM process exited during launch
+[23:23:11] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-32B-Instruct-GPTQ-Int8 · context_sweep_231847)
+[23:23:11] ── Job 7/15: Qwen/Qwen2.5-72B-Instruct-GPTQ-Int8 · context_sweep_231847
+[23:23:11] Launching vLLM for 'Qwen/Qwen2.5-72B-Instruct-GPTQ-Int8'
+[23:23:11]   → port 8001
+[23:23:16] ✗ Job 7 failed: vLLM process exited during launch
+[23:23:16] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-72B-Instruct-GPTQ-Int8 · context_sweep_231847)
+[23:23:16] ── Job 8/15: Qwen/Qwen2.5-7B-Instruct-AWQ · context_sweep_231847
+[23:23:16] Launching vLLM for 'Qwen/Qwen2.5-7B-Instruct-AWQ'
+[23:23:16]   → port 8002
+[23:23:21] ✗ Job 8 failed: vLLM process exited during launch
+[23:23:21] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-7B-Instruct-AWQ · context_sweep_231847)
+[23:23:21] ── Job 9/15: Qwen/Qwen2.5-14B-Instruct-AWQ · context_sweep_231847
+[23:23:21] Launching vLLM for 'Qwen/Qwen2.5-14B-Instruct-AWQ'
+[23:23:21]   → port 8001
+[23:23:27] ✗ Job 9 failed: vLLM process exited during launch
+[23:23:27] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-14B-Instruct-AWQ · context_sweep_231847)
+[23:23:27] ── Job 10/15: Qwen/Qwen2.5-32B-Instruct-AWQ · context_sweep_231847
+[23:23:27] Launching vLLM for 'Qwen/Qwen2.5-32B-Instruct-AWQ'
+[23:23:27]   → port 8001
+[23:23:33] ✗ Job 10 failed: vLLM process exited during launch
+[23:23:33] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-32B-Instruct-AWQ · context_sweep_231847)
+[23:23:33] ── Job 11/15: Qwen/Qwen2.5-72B-Instruct-AWQ · context_sweep_231847
+[23:23:33] Launching vLLM for 'Qwen/Qwen2.5-72B-Instruct-AWQ'
+[23:23:33]   → port 8001
+[23:23:38] ✗ Job 11 failed: vLLM process exited during launch
+[23:23:38] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-72B-Instruct-AWQ · context_sweep_231847)
+[23:23:38] ── Job 12/15: Qwen2.5-7B-Instruct-BNB-NF4-DQ · context_sweep_231847
+[23:23:38] Launching vLLM for '/opt/hpml_project/models/local/Qwen2.5-7B-Instruct-BNB-NF4-DQ'
+[23:23:38]   → port 8002
+[23:23:42] ✗ Job 12 failed: vLLM process exited during launch
+[23:23:42] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen2.5-7B-Instruct-BNB-NF4-DQ · context_sweep_231847)
+[23:23:42] ── Job 13/15: Qwen2.5-14B-Instruct-BNB-NF4-DQ · context_sweep_231847
+[23:23:42] Launching vLLM for '/opt/hpml_project/models/local/Qwen2.5-14B-Instruct-BNB-NF4-DQ'
+[23:23:42]   → port 8001
+[23:23:47] ✗ Job 13 failed: vLLM process exited during launch
+[23:23:47] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen2.5-14B-Instruct-BNB-NF4-DQ · context_sweep_231847)
+[23:23:47] ── Job 14/15: Qwen2.5-32B-Instruct-BNB-NF4-DQ · context_sweep_231847
+[23:23:47] Launching vLLM for '/opt/hpml_project/models/local/Qwen2.5-32B-Instruct-BNB-NF4-DQ'
+[23:23:47]   → port 8002
+[23:23:53] ✗ Job 14 failed: vLLM process exited during launch
+[23:23:53] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen2.5-32B-Instruct-BNB-NF4-DQ · context_sweep_231847)
+[23:23:53] ── Job 15/15: Qwen2.5-72B-Instruct-BNB-NF4-DQ · context_sweep_231847
+[23:23:53] Launching vLLM for '/opt/hpml_project/models/local/Qwen2.5-72B-Instruct-BNB-NF4-DQ'
+[23:23:53]   → port 8001
+[23:23:58] ✗ Job 15 failed: vLLM process exited during launch
+[23:23:58] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen2.5-72B-Instruct-BNB-NF4-DQ · context_sweep_231847)
+[23:23:58] Failure preset saved: queue__failures_20260430_232358.json (in Presets)
+[23:23:58] (no notify backends enabled; skipping: HPML Queue done: queue (completed_with_failures))
+[23:29:49] Queue 'queue' started with 15 job(s)
+[23:29:49] (no notify backends enabled; skipping: HPML Queue started: queue)
+[23:29:49] ── Job 1/15: Qwen/Qwen2.5-7B-Instruct · context_sweep_231847
+[23:29:49] Launching vLLM for 'Qwen/Qwen2.5-7B-Instruct'
+[23:29:49]   → port 8001
+[23:29:56] ✗ Job 1 failed: vLLM process exited during launch
+[23:29:56] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-7B-Instruct · context_sweep_231847)
+[23:29:56] ── Job 2/15: Qwen/Qwen2.5-14B-Instruct · context_sweep_231847
+[23:29:56] Launching vLLM for 'Qwen/Qwen2.5-14B-Instruct'
+[23:29:56]   → port 8002
+[23:30:01] ✗ Job 2 failed: vLLM process exited during launch
+[23:30:01] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-14B-Instruct · context_sweep_231847)
+[23:30:01] ── Job 3/15: Qwen/Qwen2.5-32B-Instruct · context_sweep_231847
+[23:30:01] Launching vLLM for 'Qwen/Qwen2.5-32B-Instruct'
+[23:30:01]   → port 8001
+[23:30:07] ✗ Job 3 failed: vLLM process exited during launch
+[23:30:07] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-32B-Instruct · context_sweep_231847)
+[23:30:07] ── Job 4/15: Qwen/Qwen2.5-7B-Instruct-GPTQ-Int8 · context_sweep_231847
+[23:30:07] Launching vLLM for 'Qwen/Qwen2.5-7B-Instruct-GPTQ-Int8'
+[23:30:07]   → port 8001
+[23:30:13] ✗ Job 4 failed: vLLM process exited during launch
+[23:30:13] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-7B-Instruct-GPTQ-Int8 · context_sweep_231847)
+[23:30:13] ── Job 5/15: Qwen/Qwen2.5-14B-Instruct-GPTQ-Int8 · context_sweep_231847
+[23:30:13] Launching vLLM for 'Qwen/Qwen2.5-14B-Instruct-GPTQ-Int8'
+[23:30:13]   → port 8002
+[23:30:18] ✗ Job 5 failed: vLLM process exited during launch
+[23:30:18] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-14B-Instruct-GPTQ-Int8 · context_sweep_231847)
+[23:30:18] ── Job 6/15: Qwen/Qwen2.5-32B-Instruct-GPTQ-Int8 · context_sweep_231847
+[23:30:18] Launching vLLM for 'Qwen/Qwen2.5-32B-Instruct-GPTQ-Int8'
+[23:30:18]   → port 8001
+[23:30:24] ✗ Job 6 failed: vLLM process exited during launch
+[23:30:24] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-32B-Instruct-GPTQ-Int8 · context_sweep_231847)
+[23:30:24] ── Job 7/15: Qwen/Qwen2.5-72B-Instruct-GPTQ-Int8 · context_sweep_231847
+[23:30:24] Launching vLLM for 'Qwen/Qwen2.5-72B-Instruct-GPTQ-Int8'
+[23:30:24]   → port 8001
+[23:30:29] ✗ Job 7 failed: vLLM process exited during launch
+[23:30:29] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-72B-Instruct-GPTQ-Int8 · context_sweep_231847)
+[23:30:29] ── Job 8/15: Qwen/Qwen2.5-7B-Instruct-AWQ · context_sweep_231847
+[23:30:29] Launching vLLM for 'Qwen/Qwen2.5-7B-Instruct-AWQ'
+[23:30:29]   → port 8002
+[23:30:36] ✗ Job 8 failed: vLLM process exited during launch
+[23:30:36] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-7B-Instruct-AWQ · context_sweep_231847)
+[23:30:36] ── Job 9/15: Qwen/Qwen2.5-14B-Instruct-AWQ · context_sweep_231847
+[23:30:36] Launching vLLM for 'Qwen/Qwen2.5-14B-Instruct-AWQ'
+[23:30:36]   → port 8001
+[23:30:42] ✗ Job 9 failed: vLLM process exited during launch
+[23:30:42] (no notify backends enabled; skipping: HPML Queue FAIL: queue - Qwen/Qwen2.5-14B-Instruct-AWQ · context_sweep_231847)
+[23:30:42] ── Job 10/15: Qwen/Qwen2.5-32B-Instruct-AWQ · context_sweep_231847
+[23:30:42] Launching vLLM for 'Qwen/Qwen2.5-32B-Instruct-AWQ'
+[23:30:42]   → port 8002
+[23:30:44] Cancel requested
+[23:30:45] Queue cancelled
+[23:30:45] Failure preset saved: queue__failures_20260430_233045.json (in Presets)
+[23:30:45] (no notify backends enabled; skipping: HPML Queue done: queue (cancelled))

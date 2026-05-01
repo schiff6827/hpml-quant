@@ -1,0 +1,20 @@
+Top kernels — 72B-AWQ (sharegpt n=100, conc=64)
+Source: Qwen_Qwen2.5-72B-Instruct-AWQ_8001_20260430_225829.nsys-rep
+
+  Time%   Total (ms)     Calls    Avg (us)    p50 (us)   p99~ (us)      CV  Category        Operation
+------------------------------------------------------------------------------------------------------------------------------------------------------
+   34.5      40344.7     35520      1135.8       985.5      7619.6    0.80  AWQ dequant     vllm::awq::dequantize_weights(int *, __half *, int *, __half *, int)
+   25.0      29227.8     25680      1138.2       625.7     61967.6    2.12  GEMM (cutlass)  void cutlass::Kernel2<cutlass_80_tensorop_f16_s16816gemm_relu_f16_128x64_64x3_nn
+   19.8      23154.4      8321      2782.6         0.5   1441960.4    8.31  Memory ops      [CUDA memcpy Host-to-Device]
+   11.4      13295.1       320     41547.3     40926.1     45025.0    0.05  GEMM (cutlass)  void cutlass::Kernel2<cutlass_80_tensorop_f16_s16816gemm_relu_f16_64x256_32x4_nn
+    4.2       4948.1      6000       824.7       272.6     69919.4    2.86  GEMM (cutlass)  void cutlass::Kernel2<cutlass_80_tensorop_f16_s16816gemm_relu_f16_64x64_32x6_nn_
+    0.7        869.3      2640       329.3       300.1       961.4    0.46  Flash attention  void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<(int)128, (int)64, 
+    0.6        686.1       343      2000.4      1938.3     13613.3    0.43  GEMM (cutlass)  void cutlass::Kernel2<cutlass_80_tensorop_f16_s16816gemm_relu_f16_128x64_64x3_tn
+    0.5        555.5      1280       434.0       528.3       725.7    0.62  GEMM (cutlass)  void cutlass::Kernel2<cutlass_80_tensorop_f16_s16816gemm_f16_128x64_32x6_nn_alig
+    0.4        497.5       276      1802.6      1791.7      1906.3    0.02  GEMM (cutlass)  void cutlass::Kernel2<cutlass_80_wmma_tensorop_f16_s161616gemm_f16_16x16_128x2_t
+    0.4        487.7      8880        54.9        15.6      1023.8    3.27  Triton/vLLM custom  triton_poi_fused_mul_silu_slice_1
+    0.3        375.7      9250        40.6         8.7       469.2    2.72  Softmax / norm  triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_2
+    0.3        371.5       800       464.4         9.3      5748.2    2.16  Other compute   void at::native::elementwise_kernel<(int)128, (int)2, void at::native::gpu_kerne
+    0.3        293.5       155      1893.5      1892.5      1915.7    0.01  GEMM (cutlass)  void cutlass::Kernel2<cutlass_80_tensorop_f16_s16816gemm_relu_f16_128x64_64x4_tn
+    0.2        249.2       640       389.4       359.2       657.7    0.57  GEMM (cutlass)  void cutlass::Kernel2<cutlass_80_tensorop_f16_s16816gemm_f16_256x64_32x4_nn_alig
+    0.2        211.1      4080        51.7        45.3       125.7    0.67  Flash attention  void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<(int)128, (int)64, 
