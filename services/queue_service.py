@@ -312,7 +312,13 @@ def _resolve_model(model_id):
 async def _launch_phase(job):
     launch = job['launch']
     use_kv_gb = launch.get('use_kv_gb', True)
-    extra = ['--trust-remote-code'] if launch.get('trust_remote_code') else None
+    extra = ['--trust-remote-code'] if launch.get('trust_remote_code') else []
+    # Override the model's native max_model_len when set — needed for VRAM-bounded
+    # context-sweep runs (otherwise the model's config preset binds first).
+    mml = int(launch.get('max_model_len') or 0)
+    if mml > 0:
+        extra.extend(['--max-model-len', str(mml)])
+    extra = extra or None  # vllm_service treats None as "no extras"
     cpu_offload = launch.get('cpu_offload_gb') or None
 
     _log(f"Launching vLLM for '{job['model']}'")
@@ -324,6 +330,7 @@ async def _launch_phase(job):
         quantization=launch.get('quantization') or None,
         extra_args=extra,
         kv_cache_gb=int(launch.get('kv_cache_gb', 10)) if use_kv_gb else None,
+        nsys_profile=bool(launch.get('nsys_profile')),
     )
     try:
         port = vllm_service.launch_server(cpu_offload_gb=cpu_offload, **kwargs)

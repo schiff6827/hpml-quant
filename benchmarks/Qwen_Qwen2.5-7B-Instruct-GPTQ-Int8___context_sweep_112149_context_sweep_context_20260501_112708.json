@@ -1,0 +1,121 @@
+{
+  "type": "context_sweep",
+  "run_name": "Qwen_Qwen2.5-7B-Instruct-GPTQ-Int8___context_sweep_112149_context_sweep",
+  "timestamp": "2026-05-01T11:27:08.872688",
+  "max_context_tokens": 16384,
+  "probes": [
+    {
+      "n": 4096,
+      "success": true,
+      "ttft_ms": 507.2000320069492,
+      "kv_cache_pct_at_end": 0.0,
+      "error": null
+    },
+    {
+      "n": 8192,
+      "success": true,
+      "ttft_ms": 407.4771149898879,
+      "kv_cache_pct_at_end": 0.0,
+      "error": null
+    },
+    {
+      "n": 16384,
+      "success": true,
+      "ttft_ms": 836.0585859627463,
+      "kv_cache_pct_at_end": 0.0,
+      "error": null
+    },
+    {
+      "n": 32768,
+      "success": false,
+      "ttft_ms": null,
+      "kv_cache_pct_at_end": 17.511323818477052,
+      "error": "HTTP 500: {\"error\":{\"message\":\"EngineCore encountered an issue. See stack trace (above) for the root cause.\",\"type\":\"InternalServerError\",\"param\":null,\"code\":500}}"
+    },
+    {
+      "n": 24576,
+      "success": false,
+      "ttft_ms": null,
+      "kv_cache_pct_at_end": 17.511323818477052,
+      "error": "HTTP 500: {\"error\":{\"message\":\"EngineCore encountered an issue. See stack trace (above) for the root cause.\",\"type\":\"InternalServerError\",\"param\":null,\"code\":500}}"
+    },
+    {
+      "n": 20480,
+      "success": false,
+      "ttft_ms": null,
+      "kv_cache_pct_at_end": 17.511323818477052,
+      "error": "HTTP 500: {\"error\":{\"message\":\"EngineCore encountered an issue. See stack trace (above) for the root cause.\",\"type\":\"InternalServerError\",\"param\":null,\"code\":500}}"
+    }
+  ],
+  "raw": {
+    "max_context_tokens": 16384,
+    "probes": [
+      {
+        "n": 4096,
+        "success": true,
+        "ttft_ms": 507.2000320069492,
+        "kv_cache_pct_at_end": 0.0,
+        "error": null
+      },
+      {
+        "n": 8192,
+        "success": true,
+        "ttft_ms": 407.4771149898879,
+        "kv_cache_pct_at_end": 0.0,
+        "error": null
+      },
+      {
+        "n": 16384,
+        "success": true,
+        "ttft_ms": 836.0585859627463,
+        "kv_cache_pct_at_end": 0.0,
+        "error": null
+      },
+      {
+        "n": 32768,
+        "success": false,
+        "ttft_ms": null,
+        "kv_cache_pct_at_end": 17.511323818477052,
+        "error": "HTTP 500: {\"error\":{\"message\":\"EngineCore encountered an issue. See stack trace (above) for the root cause.\",\"type\":\"InternalServerError\",\"param\":null,\"code\":500}}"
+      },
+      {
+        "n": 24576,
+        "success": false,
+        "ttft_ms": null,
+        "kv_cache_pct_at_end": 17.511323818477052,
+        "error": "HTTP 500: {\"error\":{\"message\":\"EngineCore encountered an issue. See stack trace (above) for the root cause.\",\"type\":\"InternalServerError\",\"param\":null,\"code\":500}}"
+      },
+      {
+        "n": 20480,
+        "success": false,
+        "ttft_ms": null,
+        "kv_cache_pct_at_end": 17.511323818477052,
+        "error": "HTTP 500: {\"error\":{\"message\":\"EngineCore encountered an issue. See stack trace (above) for the root cause.\",\"type\":\"InternalServerError\",\"param\":null,\"code\":500}}"
+      }
+    ],
+    "run_name": "Qwen_Qwen2.5-7B-Instruct-GPTQ-Int8___context_sweep_112149_context_sweep",
+    "timestamp": "2026-05-01T11:27:08.442148"
+  },
+  "model_meta": {
+    "model_id": "Qwen/Qwen2.5-7B-Instruct-GPTQ-Int8",
+    "quantization": "GPTQ",
+    "parameters": 5405933568,
+    "size_bytes": 8863515048,
+    "dtype": "float16",
+    "weight_mem_gib": 8.31
+  },
+  "profile_csv": "metrics/run_Qwen_Qwen2.5-7B-Instruct-GPTQ-Int8___context_sweep_112149_20260501_112704.csv",
+  "profile_summary": {
+    "samples": 4,
+    "peak_gpu_mem_mb": 23760.0,
+    "avg_gpu_mem_mb": 23759.5,
+    "gpu_mem_total_mb": 97887.0,
+    "peak_gpu_util_pct": 100.0,
+    "avg_gpu_util_pct": 97.0,
+    "peak_gpu_temp_c": 53.0,
+    "peak_gpu_power_w": 300.31,
+    "avg_gpu_power_w": 219.3475,
+    "peak_cpu_rss_mb": 4601.25,
+    "peak_kv_cache_pct": 17.502777540381164
+  }
+}

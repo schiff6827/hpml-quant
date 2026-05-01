@@ -1,0 +1,37 @@
+model,category,total_ms,instances,pct_of_model,top_op
+7B-AWQ,AWQ dequant,3699.0,12656,31.4,"vllm::awq::dequantize_weights(int *, __half *, int *, __half *, int)"
+7B-AWQ,Flash attention,155.1,2268,1.3,"void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<(int)128, (int)64, "
+7B-AWQ,KV cache ops,24.5,5180,0.2,"void vllm::reshape_and_cache_flash_kernel<unsigned short, unsigned short, (vllm:"
+7B-AWQ,GEMM (cutlass),4658.7,13206,39.5,void cutlass::Kernel2<cutlass_80_tensorop_f16_s16816gemm_relu_f16_128x64_64x3_nn
+7B-AWQ,Sampling (topk/topp),157.2,575,1.3,_topk_topp_kernel
+7B-AWQ,Softmax / norm,122.6,7438,1.0,"void at::native::<unnamed>::cunn_SoftMaxForward<(int)4, float, float, float, at:"
+7B-AWQ,Triton/vLLM custom,155.4,6328,1.3,triton_poi_fused_mul_silu_slice_1
+7B-AWQ,Memory ops,2646.8,15730,22.4,[CUDA memcpy Host-to-Device]
+7B-AWQ,Other compute,174.3,27599,1.5,"void at::native::tensor_kernel_scan_innermost_dim<float, std::plus<float>>(T1 *,"
+14B-AWQ,AWQ dequant,6366.5,18048,37.3,"vllm::awq::dequantize_weights(int *, __half *, int *, __half *, int)"
+14B-AWQ,Flash attention,102.7,1968,0.6,"void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<(int)128, (int)64, "
+14B-AWQ,KV cache ops,36.4,6912,0.2,"void vllm::reshape_and_cache_flash_kernel<unsigned short, unsigned short, (vllm:"
+14B-AWQ,GEMM (cutlass),5544.2,17905,32.5,void cutlass::Kernel2<cutlass_80_tensorop_f16_s16816gemm_relu_f16_128x64_64x3_nn
+14B-AWQ,Sampling (topk/topp),13.0,1,0.1,_topk_topp_kernel
+14B-AWQ,Softmax / norm,134.5,9409,0.8,triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_2
+14B-AWQ,Triton/vLLM custom,126.1,9024,0.7,triton_poi_fused_mul_silu_slice_1
+14B-AWQ,Memory ops,4617.6,10293,27.1,[CUDA memcpy Host-to-Device]
+14B-AWQ,Other compute,107.7,20685,0.6,"void at::native::vectorized_elementwise_kernel<(int)4, at::native::FillFunctor<i"
+32B-AWQ,AWQ dequant,18723.2,28672,36.2,"vllm::awq::dequantize_weights(int *, __half *, int *, __half *, int)"
+32B-AWQ,Flash attention,614.0,5504,1.2,"void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<(int)128, (int)64, "
+32B-AWQ,KV cache ops,67.5,12160,0.1,"void vllm::reshape_and_cache_flash_kernel<unsigned short, unsigned short, (vllm:"
+32B-AWQ,GEMM (cutlass),21371.6,29059,41.3,void cutlass::Kernel2<cutlass_80_tensorop_f16_s16816gemm_relu_f16_128x64_64x3_nn
+32B-AWQ,Sampling (topk/topp),174.8,591,0.3,_topk_topp_kernel
+32B-AWQ,Softmax / norm,269.0,15627,0.5,triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_2
+32B-AWQ,Triton/vLLM custom,403.3,14336,0.8,triton_poi_fused_mul_silu_slice_1
+32B-AWQ,Memory ops,9785.2,24542,18.9,[CUDA memcpy Host-to-Device]
+32B-AWQ,Other compute,377.3,43293,0.7,"void at::native::elementwise_kernel<(int)128, (int)2, void at::native::gpu_kerne"
+72B-AWQ,AWQ dequant,40344.7,35520,34.5,"vllm::awq::dequantize_weights(int *, __half *, int *, __half *, int)"
+72B-AWQ,Flash attention,1080.4,6720,0.9,"void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<(int)128, (int)64, "
+72B-AWQ,KV cache ops,87.2,15040,0.1,"void vllm::reshape_and_cache_flash_kernel<unsigned short, unsigned short, (vllm:"
+72B-AWQ,GEMM (cutlass),50073.5,36294,42.9,void cutlass::Kernel2<cutlass_80_tensorop_f16_s16816gemm_relu_f16_128x64_64x3_nn
+72B-AWQ,Sampling (topk/topp),175.3,591,0.2,_topk_topp_kernel
+72B-AWQ,Softmax / norm,582.5,19228,0.5,triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_2
+72B-AWQ,Triton/vLLM custom,606.9,26640,0.5,triton_poi_fused_mul_silu_slice_1
+72B-AWQ,Memory ops,23170.6,28606,19.8,[CUDA memcpy Host-to-Device]
+72B-AWQ,Other compute,691.9,46625,0.6,"void at::native::elementwise_kernel<(int)128, (int)2, void at::native::gpu_kerne"

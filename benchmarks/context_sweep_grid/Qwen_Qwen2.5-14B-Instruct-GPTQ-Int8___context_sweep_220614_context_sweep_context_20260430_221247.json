@@ -1,0 +1,121 @@
+{
+  "type": "context_sweep",
+  "run_name": "Qwen_Qwen2.5-14B-Instruct-GPTQ-Int8___context_sweep_220614_context_sweep",
+  "timestamp": "2026-04-30T22:12:47.637082",
+  "max_context_tokens": 28672,
+  "probes": [
+    {
+      "n": 4096,
+      "success": true,
+      "ttft_ms": 848.8576189847663,
+      "kv_cache_pct_at_end": 0.0,
+      "error": null
+    },
+    {
+      "n": 8192,
+      "success": true,
+      "ttft_ms": 830.9543050127104,
+      "kv_cache_pct_at_end": 0.0,
+      "error": null
+    },
+    {
+      "n": 16384,
+      "success": true,
+      "ttft_ms": 1726.6201349557377,
+      "kv_cache_pct_at_end": 0.0,
+      "error": null
+    },
+    {
+      "n": 32768,
+      "success": false,
+      "ttft_ms": null,
+      "kv_cache_pct_at_end": 0.0,
+      "error": "HTTP 400: {\"error\":{\"message\":\"You passed 32768 input tokens and requested 16 output tokens. However, the model's context length is only 32768 tokens, resulting in a maximum input length of 32752 tokens. Please"
+    },
+    {
+      "n": 24576,
+      "success": true,
+      "ttft_ms": 1831.1033839709125,
+      "kv_cache_pct_at_end": 0.0,
+      "error": null
+    },
+    {
+      "n": 28672,
+      "success": true,
+      "ttft_ms": 1057.3360819835216,
+      "kv_cache_pct_at_end": 0.0,
+      "error": null
+    }
+  ],
+  "raw": {
+    "max_context_tokens": 28672,
+    "probes": [
+      {
+        "n": 4096,
+        "success": true,
+        "ttft_ms": 848.8576189847663,
+        "kv_cache_pct_at_end": 0.0,
+        "error": null
+      },
+      {
+        "n": 8192,
+        "success": true,
+        "ttft_ms": 830.9543050127104,
+        "kv_cache_pct_at_end": 0.0,
+        "error": null
+      },
+      {
+        "n": 16384,
+        "success": true,
+        "ttft_ms": 1726.6201349557377,
+        "kv_cache_pct_at_end": 0.0,
+        "error": null
+      },
+      {
+        "n": 32768,
+        "success": false,
+        "ttft_ms": null,
+        "kv_cache_pct_at_end": 0.0,
+        "error": "HTTP 400: {\"error\":{\"message\":\"You passed 32768 input tokens and requested 16 output tokens. However, the model's context length is only 32768 tokens, resulting in a maximum input length of 32752 tokens. Please"
+      },
+      {
+        "n": 24576,
+        "success": true,
+        "ttft_ms": 1831.1033839709125,
+        "kv_cache_pct_at_end": 0.0,
+        "error": null
+      },
+      {
+        "n": 28672,
+        "success": true,
+        "ttft_ms": 1057.3360819835216,
+        "kv_cache_pct_at_end": 0.0,
+        "error": null
+      }
+    ],
+    "run_name": "Qwen_Qwen2.5-14B-Instruct-GPTQ-Int8___context_sweep_220614_context_sweep",
+    "timestamp": "2026-04-30T22:12:46.801848"
+  },
+  "model_meta": {
+    "model_id": "Qwen/Qwen2.5-14B-Instruct-GPTQ-Int8",
+    "quantization": "GPTQ",
+    "parameters": 16656629760,
+    "size_bytes": 16646398568,
+    "dtype": "float16",
+    "weight_mem_gib": 15.67
+  },
+  "profile_csv": "metrics/run_Qwen_Qwen2.5-14B-Instruct-GPTQ-Int8___context_sweep_220614_20260430_221240.csv",
+  "profile_summary": {
+    "samples": 7,
+    "peak_gpu_mem_mb": 31166.0,
+    "avg_gpu_mem_mb": 31166.0,
+    "gpu_mem_total_mb": 97887.0,
+    "peak_gpu_util_pct": 100.0,
+    "avg_gpu_util_pct": 99.16666666666667,
+    "peak_gpu_temp_c": 61.0,
+    "peak_gpu_power_w": 303.14,
+    "avg_gpu_power_w": 254.53142857142856,
+    "peak_cpu_rss_mb": 4475.79296875,
+    "peak_kv_cache_pct": 52.52051582649473
+  }
+}

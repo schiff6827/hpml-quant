@@ -72,6 +72,10 @@ def content():
                     value='',
                     label='Quantization',
                 ).classes('w-36')
+                # 0 = use the model's native max_model_len (vLLM default behaviour).
+                # Set higher (e.g. 131072) to override for VRAM-bounded context-length sweeps;
+                # vLLM will allow longer sequences without re-training (RoPE extrapolation).
+                max_model_len_input = ui.number('Max model len (0=auto)', value=0, min=0, step=1024).classes('w-44')
             with ui.row().classes('gap-4'):
                 trust_remote_check = ui.checkbox('Trust remote code')
                 record_check = ui.checkbox('Record metrics to CSV')
@@ -152,7 +156,9 @@ def content():
             copy_log_btn.visible = False
             token = app.storage.general.get('hf_token', '')
             try:
-                extra = ['--trust-remote-code'] if trust_remote else None
+                extra = ['--trust-remote-code'] if trust_remote else []
+                if int(max_model_len_input.value or 0) > 0:
+                    extra.extend(['--max-model-len', str(int(max_model_len_input.value))])
                 use_kv_gb = cache_mode.value == 'KV Cache (GB)'
                 port = vllm_service.launch_server(
                     model=model,
@@ -160,7 +166,7 @@ def content():
                     gpu_mem_util=gpu_slider.value,
                     dtype=dtype_select.value,
                     quantization=quant_select.value or None,
-                    extra_args=extra,
+                    extra_args=extra or None,
                     token=token or None,
                     kv_cache_gb=int(kv_cache_input.value) if use_kv_gb else None,
                     nsys_profile=nsys_check.value,
@@ -270,6 +276,8 @@ def content():
                 'dtype': dtype_select.value,
                 'quantization': quant_select.value or '',
                 'trust_remote_code': bool(trust_remote_check.value),
+                'nsys_profile': bool(nsys_check.value),
+                'max_model_len': int(max_model_len_input.value or 0),
             }
             try:
                 queue_service.add_model(real_model, launch_cfg, name=model)
