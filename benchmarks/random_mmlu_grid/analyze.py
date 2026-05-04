@@ -1,17 +1,15 @@
-"""Analyze the sharegpt_gsm8k grid: pareto chart + profile (GPU/VRAM/power) table.
+"""Analyze the random_mmlu grid: pareto chart + profile (GPU/VRAM/power) table.
 
 Run from the app/ directory:
-    /opt/hpml_project/hpml_env/bin/python benchmarks/sharegpt_gsm8k_grid/analyze.py
+    /opt/hpml_project/hpml_env/bin/python benchmarks/random_mmlu_grid/analyze.py
 
-Note on gsm8k metric:
-    parse_quality_result() in benchmark_service.py has a name-collision bug —
-    both `exact_match,strict-match` and `exact_match,flexible-extract` get
-    written to the same `exact_match` key, so the second (flexible) overwrites
-    the first. flexible-extract grabs the last number from the model output,
-    which is sensitive to post-answer formatting and dramatically under-scores
-    runs whose models continue generating after the `#### N` marker.
-    This script reads `exact_match,strict-match` directly from raw.results.gsm8k
-    instead, which is the standard gsm8k metric and gives correct numbers.
+Companion to sharegpt_gsm8k_grid/analyze.py — same plots, swapped workload (random)
+and quality task (mmlu).
+
+Note on the mmlu metric:
+    Unlike gsm8k (which has a strict/flex name collision in parse_quality_result),
+    MMLU emits a single `acc,none` aggregate. We read it from raw.results.mmlu
+    directly so we can also surface stderr (which the saved tasks[] strips).
 """
 import os, sys, glob, re, json
 import matplotlib
@@ -27,7 +25,7 @@ from services import benchmark_service
 benchmark_service.BENCHMARKS_DIR = GRID_DIR  # scope build_pareto_dataset to this folder
 
 # ---------- match runs to their profile CSVs ----------
-# run_name embeds a `__<jobname>_HHMMSS` token (e.g. `__perf_quality_192337`),
+# run_name embeds a `__<jobname>_HHMMSS` token (e.g. `__perf_quality_020120`),
 # which is shared between the result JSON and the profile CSV in metrics/.
 _token_re = re.compile(r'(perf_quality_\d{6}|perf_\d{6}|quality_\d{6})')
 
@@ -35,15 +33,15 @@ def _job_token(name):
     m = _token_re.search(name or '')
     return m.group(1) if m else None
 
-# ---------- pull strict-match scores directly from raw lm_eval results ----------
-def _strict_score(qual_json_path):
+# ---------- pull mmlu acc directly from raw lm_eval results ----------
+def _mmlu_score(qual_json_path):
     d = json.load(open(qual_json_path))
-    res = d.get('raw', {}).get('results', {}).get('gsm8k', {})
-    return res.get('exact_match,strict-match'), res.get('exact_match,flexible-extract')
+    res = d.get('raw', {}).get('results', {}).get('mmlu', {})
+    return res.get('acc,none'), res.get('acc_stderr,none')
 
 
 # ---------- assemble dataset ----------
-rows = benchmark_service.build_pareto_dataset('gsm8k')
+rows = benchmark_service.build_pareto_dataset('mmlu')
 
 # Filename globs aren't reliable here because job names contain `perf_quality_HHMMSS`,
 # so a perf JSON's filename matches `*quality*` too. Filter by data['type'] instead.
@@ -130,11 +128,11 @@ for f in glob.glob(os.path.join(GRID_DIR, '*.json')):
 for r in rows:
     qf = qual_files_by_run.get(r['run_name'])
     if qf:
-        s, fl = _strict_score(qf)
-        r['gsm8k_strict'] = s
-        r['gsm8k_flex'] = fl
+        acc, stderr = _mmlu_score(qf)
+        r['mmlu_acc'] = acc
+        r['mmlu_stderr'] = stderr
     else:
-        r['gsm8k_strict'] = r['gsm8k_flex'] = None
+        r['mmlu_acc'] = r['mmlu_stderr'] = None
     pm = perf_meta_by_run.get(r['run_name'], {})
     csv_path = _find_csv_strict(pm.get('token'), pm.get('model_id') or r.get('model_id'))
     r['profile_csv'] = csv_path
@@ -145,7 +143,7 @@ for r in rows:
 rows.sort(key=lambda r: ((r.get('quantization') or 'ZZZ'), r.get('parameters') or 0))
 
 # ---------- table ----------
-hdr = f'{"Run":<55}{"Quant":<8}{"P(B)":<7}{"Tput":<9}{"strict":<9}{"flex":<9}{"VRAM_GB":<10}{"avgUtil%":<10}{"avgPow_W":<10}{"peakPow_W"}'
+hdr = f'{"Run":<55}{"Quant":<8}{"P(B)":<7}{"Tput":<9}{"mmlu":<9}{"±se":<9}{"VRAM_GB":<10}{"avgUtil%":<10}{"avgPow_W":<10}{"peakPow_W"}'
 print('\n' + hdr); print('-' * len(hdr))
 for r in rows:
     p = r.get('profile') or {}
@@ -153,8 +151,8 @@ for r in rows:
           f'{(r["quantization"] or "")[:7]:<8}'
           f'{(r.get("parameters_b") or 0):<7.1f}'
           f'{(r.get("throughput_tps") or float("nan")):<9.0f}'
-          f'{(r.get("gsm8k_strict") if r.get("gsm8k_strict") is not None else float("nan")):<9.3f}'
-          f'{(r.get("gsm8k_flex")   if r.get("gsm8k_flex")   is not None else float("nan")):<9.3f}'
+          f'{(r.get("mmlu_acc")    if r.get("mmlu_acc")    is not None else float("nan")):<9.3f}'
+          f'{(r.get("mmlu_stderr") if r.get("mmlu_stderr") is not None else float("nan")):<9.3f}'
           f'{(p.get("peak_gpu_mem_mb",0)/1024):<10.2f}'
           f'{p.get("avg_gpu_util_pct",0):<10.1f}'
           f'{p.get("avg_gpu_power_w",0):<10.1f}'
@@ -165,7 +163,7 @@ if missing_csv:
     print(f'\nNo profile CSV matched for: {missing_csv}')
 
 
-# ---------- pareto frontier (corrected to strict-match) ----------
+# ---------- pareto frontier ----------
 def pareto(points):
     front = []
     for i, p in enumerate(points):
@@ -211,34 +209,39 @@ def _scatter(ax, plottable, xkey, ykey, xlabel, ylabel, title, ylim=None):
     return front
 
 
-# Chart 1: gsm8k (strict) vs throughput
-plot1 = [r for r in rows if r.get('throughput_tps') is not None and r.get('gsm8k_strict') is not None]
-for r in plot1:
-    r['_q'] = r['gsm8k_strict']
+# MMLU axis range — matches the gsm8k pareto charts (0.5–1.0) for visual parity
+# across the two grids. Scores cluster ~0.75–0.90 for this Qwen family.
+MMLU_YLIM = (0.5, 1.0)
+WORKLOAD_LABEL = 'random in=512 out=256 n=500, conc=64'
+EVAL_LABEL = 'mmlu (5-shot, full 57 subtasks)'
+
+
+# Chart 1: mmlu acc vs throughput
+plot1 = [r for r in rows if r.get('throughput_tps') is not None and r.get('mmlu_acc') is not None]
 fig, ax = plt.subplots(figsize=(10, 7))
-front1 = _scatter(ax, [{**r, 'tput': r['throughput_tps'], 'q': r['gsm8k_strict']} for r in plot1],
+front1 = _scatter(ax, [{**r, 'tput': r['throughput_tps'], 'q': r['mmlu_acc']} for r in plot1],
                   'tput', 'q',
-                  'Throughput (output tok/s, sharegpt n=500, conc=64)',
-                  'gsm8k exact_match (strict-match, n-shot=8, limit=250)',
-                  'Pareto: gsm8k vs Throughput - Qwen2.5-Instruct grid', ylim=(0.5, 1))
-out1 = os.path.join(GRID_DIR, 'pareto_gsm8k_vs_throughput.png')
+                  f'Throughput (output tok/s, {WORKLOAD_LABEL})',
+                  f'MMLU acc ({EVAL_LABEL})',
+                  'Pareto: MMLU vs Throughput - Qwen2.5-Instruct grid', ylim=MMLU_YLIM)
+out1 = os.path.join(GRID_DIR, 'pareto_mmlu_vs_throughput.png')
 fig.savefig(out1, dpi=140, bbox_inches='tight')
-print(f'\nPareto frontier (gsm8k strict vs throughput):')
-for p in front1: print(f'  tput={p[0]:7.0f}  gsm8k={p[1]:.3f}  {p[2]}')
+print(f'\nPareto frontier (mmlu vs throughput):')
+for p in front1: print(f'  tput={p[0]:7.0f}  mmlu={p[1]:.3f}  {p[2]}')
 print(f'Saved: {out1}')
 
-# Chart 2: gsm8k (strict) vs peak VRAM (efficiency)
-plot2 = [r for r in rows if (r.get('profile') or {}).get('peak_gpu_mem_mb') and r.get('gsm8k_strict') is not None]
+# Chart 2: mmlu acc vs peak VRAM (efficiency)
+plot2 = [r for r in rows if (r.get('profile') or {}).get('peak_gpu_mem_mb') and r.get('mmlu_acc') is not None]
 for r in plot2:
     r['_vram'] = r['profile']['peak_gpu_mem_mb'] / 1024.0
 fig2, ax2 = plt.subplots(figsize=(10, 7))
-front2 = _scatter(ax2, [{**r, 'vram': r['_vram'], 'q': r['gsm8k_strict']} for r in plot2],
+front2 = _scatter(ax2, [{**r, 'vram': r['_vram'], 'q': r['mmlu_acc']} for r in plot2],
                   'vram', 'q',
                   'Peak GPU VRAM (GB)',
-                  'gsm8k exact_match (strict-match)',
-                  'Quality vs VRAM cost - lower-left dominated, upper-left ideal', ylim=(0.5, 1))
+                  f'MMLU acc ({EVAL_LABEL})',
+                  'Quality vs VRAM cost - lower-left dominated, upper-left ideal', ylim=MMLU_YLIM)
 ax2.invert_xaxis()  # left = less VRAM = better; pareto front is upper-left
-out2 = os.path.join(GRID_DIR, 'pareto_gsm8k_vs_vram.png')
+out2 = os.path.join(GRID_DIR, 'pareto_mmlu_vs_vram.png')
 fig2.savefig(out2, dpi=140, bbox_inches='tight')
 print(f'Saved: {out2}')
 
@@ -297,7 +300,7 @@ ax4.legend(handles=seen, loc='upper right')
 ax4.axhline(1.0, color='#888', linestyle='--', linewidth=1, alpha=0.6)
 ax4.text(len(labels) - 0.5, 1.02, 'KV = weights', fontsize=8, color='#666', ha='right')
 ax4.set_ylabel('Peak KV cache size / model weight size (ratio)')
-ax4.set_title('KV cache vs weight memory at peak — sharegpt n=500, conc=64')
+ax4.set_title(f'KV cache vs weight memory at peak — {WORKLOAD_LABEL}')
 ax4.tick_params(axis='x', rotation=45)
 ax4.grid(True, alpha=0.3, axis='y')
 plt.tight_layout()
@@ -363,7 +366,7 @@ ax6.bar(x,                   p90, w, label='p90', color='#f58518', edgecolor='bl
 ax6.bar([xi + w for xi in x], p99, w, label='p99', color='#e45756', edgecolor='black', linewidth=0.5)
 ax6.set_xticks(x); ax6.set_xticklabels(labels, rotation=45, ha='right')
 ax6.set_ylabel('Time to first token (ms)')
-ax6.set_title('TTFT latency distribution per model — sharegpt n=500, conc=64')
+ax6.set_title(f'TTFT latency distribution per model — {WORKLOAD_LABEL}')
 ax6.set_yscale('log')   # TTFT spans 100ms - 10s+, log makes the cluster legible
 ax6.grid(True, alpha=0.3, axis='y', which='both')
 ax6.legend(loc='upper left', framealpha=0.95)
@@ -374,7 +377,7 @@ print(f'Saved: {out6}')
 
 
 # ------------------------------------------------------------------
-# Headline single-number bars (gsm8k accuracy, throughput, energy/token)
+# Headline single-number bars (mmlu accuracy, throughput, energy/token)
 # ------------------------------------------------------------------
 
 def _bar_chart(rows_in, value_fn, ylabel, title, fmt, fname, ylim=None,
@@ -415,18 +418,18 @@ def _bar_chart(rows_in, value_fn, ylabel, title, fmt, fname, ylim=None,
     print(f'Saved: {out}')
 
 
-# Chart 7: gsm8k accuracy (strict-match)
-_bar_chart(rows, lambda r: r.get('gsm8k_strict'),
-           ylabel='gsm8k exact_match (strict-match)',
-           title='GSM8K reasoning accuracy per model — n-shot=8, limit=250',
-           fmt='{:.3f}', fname='gsm8k_accuracy.png', ylim=(0, 1.0),
+# Chart 7: mmlu accuracy
+_bar_chart(rows, lambda r: r.get('mmlu_acc'),
+           ylabel='MMLU acc (5-shot, full)',
+           title='MMLU accuracy per model — 5-shot, all 57 subtasks',
+           fmt='{:.3f}', fname='mmlu_accuracy.png', ylim=(0, 1.0),
            legend_loc='lower right')
 
 
 # Chart 8: decode throughput
 _bar_chart(rows, lambda r: r.get('throughput_tps'),
            ylabel='Output throughput (decode tok/s)',
-           title='Decode throughput per model — sharegpt n=500, conc=64',
+           title=f'Decode throughput per model — {WORKLOAD_LABEL}',
            fmt='{:.0f}', fname='throughput_bar.png',
            legend_loc='upper right')
 
@@ -529,7 +532,7 @@ for qi in range(len(QUANTS_FACET)):
     for si in range(len(SIZES_FACET)):
         if not axes10[qi][si].lines:
             axes10[qi][si].set_visible(False)
-fig10.suptitle('KV cache occupancy over time per run — sharegpt n=500, conc=64', y=0.995)
+fig10.suptitle(f'KV cache occupancy over time per run — {WORKLOAD_LABEL}', y=0.995)
 fig10.supxlabel('Elapsed time within active window (s)')
 fig10.supylabel('KV cache used (% of capacity)')
 plt.figure(fig10.number); plt.tight_layout()
@@ -600,7 +603,7 @@ if plot12:
     ax12.plot([0, all_max], [0, all_max], '--', color='#888', alpha=0.4, label='y = x')
 ax12.set_xlabel('Prefill throughput (input tok/s; derived = total_input / (mean_TTFT × completed))')
 ax12.set_ylabel('Decode throughput (output tok/s)')
-ax12.set_title('Decode vs Prefill throughput per run — sharegpt n=500, conc=64')
+ax12.set_title(f'Decode vs Prefill throughput per run — {WORKLOAD_LABEL}')
 ax12.legend(loc='upper left', framealpha=0.95)
 ax12.grid(True, alpha=0.3)
 plt.tight_layout()
