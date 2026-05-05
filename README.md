@@ -9,10 +9,10 @@
 
 - **Team Name:** Scaling vs. Precision
 - **Members:**
-  - Benjamin Benscher (UNI TBD) — *models, quantization, benchmark execution*
-  - Theodore Schiffman (UNI TBD) — *infrastructure, remote GPU environment, profiling*
-  - Christian Montgomery (UNI TBD) — *benchmark harness, performance analysis, visualizations*
-  - Armand Link (UNI TBD) — *evaluation suite, quality benchmarks, results analysis*
+  - Benjamin Benscher (beb2181) — *models, quantization, benchmark execution*
+  - Theodore Schiffman (tcs2154) — *infrastructure, remote GPU environment, profiling*
+  - Christian Montgomery (cm4521) — *benchmark harness, performance analysis, visualizations*
+  - Armand Link (al4570) — *evaluation suite, quality benchmarks, results analysis*
 
 ## Submission
 
@@ -221,28 +221,33 @@ Representative figures:
 - Model checkpoints are not committed because of size; they were cached on the shared workstation.
 - Secrets and Hugging Face tokens, if needed, should be provided through environment variables.
 
-### AI Use Disclosure
+### AI Usage Disclosure
 
-**Did your team use any AI tool in completing this project?**
+We used AI to assist with many facets of this project.
 
-- [ ] No, we did not use any AI tool.
-- [x] Yes, we used AI assistance as described below.
+**Tools used:** Claude Code, Codex, Claude, Gemini, ChatGPT.
 
-**Tool(s) used:** ChatGPT / Codex.
+**Purposes:**
 
-**Specific purpose:** Assistance with README/dashboard organization, methodology prose, and code navigation/debugging support for repository presentation.
+- Claude Code was used extensively to create the HPML Model Manager GUI, which was the main tool we used to execute all procedural facets of the project.
+- Codex was used for code review.
+- Claude, Gemini, and ChatGPT were used to find relevant published research on our project topic and to research and assist in selecting the LLM serving platform, quantization packages, and performance benchmarks.
 
-**Sections affected:** README, dashboard export under `results/dashboard/`, and prose drafts for the methodology/discussion narrative.
+**Questions/Sections affected:** The final presentation and written report are our own work, with the exception of the included charts, which were created using AI-written code.
 
-**How we verified correctness:** Reported quantitative results are taken from the committed benchmark JSON files, metric CSVs, and generated plots. The team manually ran the experiments and checked the resulting dashboard and figures against the raw artifacts.
+**How we verified correctness:** We tested functionality and inspected output. We ran an adversarial code review with Codex using this prompt:
 
-By submitting this project, the team confirms that the analysis, interpretations, and conclusions are our own, and that any AI assistance is fully disclosed above. The same disclosure block should appear as an appendix in the final report.
+```text
+/codex:adversarial-review --base main Correctness-only review. Verify whether this code performs its stated intent. Specifically, review all code for the GUI, and verify that execution matches the labels and options in the GUI. Review all plotting code and the code that generates the data used by the plotting code to verify the data being generated and plotted matches the intent. This review should not cover any other topics, including security, race conditions, style, maintainability, performance, dependency issues, and speculative edge cases unless they directly cause incorrect output. Read all files in the project directory (not just code) to infer the intended behavior. Produce a report with: 1. Summary verdict, 2. Intended behavior, 3. Evidence checked, 4. Correctness issues, 5. Output mismatches. Do not modify files.
+```
+
+By submitting this assignment, we confirm that the analysis, interpretations, and conclusions are our own, and that any AI assistance is fully disclosed above.
 
 ### License
 
 Released under the MIT License. See [`LICENSE`](LICENSE).
 
-### Citation
+<!-- ### Citation
 
 If you build on this work, please cite:
 
@@ -254,7 +259,7 @@ If you build on this work, please cite:
   note = {HPML Spring 2026 Final Project, Columbia University},
   url = {https://github.com/schiff6827/hpml-quant}
 }
-```
+``` -->
 
 ### Contact
 
