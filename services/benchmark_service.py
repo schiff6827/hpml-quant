@@ -362,7 +362,8 @@ def run_perf_benchmark(port, model, dataset, num_prompts, request_rate,
 _CTX_SWEEP_SCRIPT = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'scripts', 'run_context_sweep.py')
 
 
-def run_context_sweep(port, model, result_dir, run_name, upper_bound, step):
+def run_context_sweep(port, model, result_dir, run_name, upper_bound, step,
+                      kv_cache_gb=None, gpu_mem_util=None, dtype=None, quantization=None):
     """Launch a context-length sweep as a subprocess that streams probe results."""
     global _active_proc
     os.makedirs(result_dir, exist_ok=True)
@@ -375,6 +376,14 @@ def run_context_sweep(port, model, result_dir, run_name, upper_bound, step):
         '--result-dir', result_dir,
         '--run-name', run_name,
     ]
+    if kv_cache_gb is not None:
+        cmd += ['--kv-cache-gb', str(kv_cache_gb)]
+    if gpu_mem_util is not None:
+        cmd += ['--gpu-mem-util', str(gpu_mem_util)]
+    if dtype:
+        cmd += ['--dtype', dtype]
+    if quantization:
+        cmd += ['--quantization', quantization]
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     _active_proc = proc
     return proc

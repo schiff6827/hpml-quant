@@ -1,5 +1,5 @@
-"""Determine VRAM-bounded max context length for a model under a given launch
-config by reading what vLLM reports at startup, instead of probing.
+"""Determine KV cache capacity for a model under a given launch config by
+reading what vLLM reports at startup, instead of probing.
 
 The old version of this script probed an already-running vLLM server with
 gradually-larger prompts and binary-searched for the failure boundary. That
@@ -133,7 +133,7 @@ def launch_and_extract(args):
                     # cap is what limits a single request in practice.
                     extracted['max_context_tokens'] = extracted['kv_pool_tokens']
                     extracted['source'] = 'kv_pool_tokens'
-                    print(f'detected| GPU KV cache size: {m.group(1)} tokens (== VRAM-bounded max single-request context)', flush=True)
+                    print(f'detected| GPU KV cache size: {m.group(1)} tokens', flush=True)
                     break
 
             # Backstop: if Uvicorn comes up before we see the KV pool line for
@@ -255,7 +255,7 @@ def main():
         json.dump(result, f, indent=2)
 
     if result['max_context_tokens']:
-        print(f'\nMax VRAM-bounded context: {result["max_context_tokens"]:,} tokens '
+        print(f'\nKV cache capacity: {result["max_context_tokens"]:,} tokens '
               f'(source: {result["source"]})', flush=True)
     else:
         print(f'\nFAILED to determine max context: {result["launch_error"]}', flush=True)
