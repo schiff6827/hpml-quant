@@ -1,0 +1,893 @@
+---
+title: "Qwen 2.5 Inference Benchmark Charts"
+format:
+  html:
+    code-fold: true
+    toc: true
+execute:
+  warning: false
+  message: false
+---
+
+## Setup
+
+```{r setup}
+library(tidyverse)
+library(jsonlite)
+library(patchwork)
+library(ggrepel)
+library(scales)
+library(zoo)
+
+APP_DIR <- normalizePath("..")
+
+# -- Color palettes (matching Python analyze scripts) --
+ctx_colors  <- c(Normal = "#1f77b4", GPTQ = "#ff7f0e", AWQ = "#2ca02c", BnB = "#d62728")
+grid_colors <- c(BFLOAT16 = "#1f77b4", GPTQ = "#ff7f0e", AWQ = "#2ca02c", BITSANDBYTES = "#d62728")
+vram_colors <- c(weights = "#4c78a8", kv_used = "#f58518", kv_headroom = "#ffbf79", other = "#b0b0b0")
+ttft_colors <- c(p50 = "#4c78a8", p90 = "#f58518", p99 = "#e45756")
+nsys_colors <- c(
+  "AWQ dequant" = "#2ca02c", "GPTQ dequant" = "#ff7f0e", "GEMM (cutlass)" = "#1f77b4",
+  "Flash attention" = "#9467bd", "KV cache ops" = "#bcbd22", "Softmax / norm" = "#17becf",
+  "Sampling (topk/topp)" = "#7f7f7f", "Triton/vLLM custom" = "#8c564b",
+  "Memory ops" = "#e377c2", "Other compute" = "#aec7e8"
+)
+
+SIZE_LEVELS  <- c("7B", "14B", "32B", "72B")
+QUANT_LEVELS <- c("BFLOAT16", "GPTQ", "AWQ", "BITSANDBYTES")
+SHORT_QUANT  <- c(BFLOAT16 = "BF16", GPTQ = "GPTQ", AWQ = "AWQ", BITSANDBYTES = "BnB")
+PEAK_FP16_TFLOPS <- 290
+QWEN_MAX_CTX     <- 32768
+
+nominal_size <- function(model_id) {
+  s <- str_extract(model_id, "\\d+(?=B)")
+  if_else(is.na(s), "?", paste0(s, "B"))
+}
+
+canonical_run_name <- function(rn) str_remove(rn, "_(perf|quality|context_sweep)$")
+
+pareto_frontier <- function(df, xcol, ycol) {
+  x <- df[[xcol]]; y <- df[[ycol]]; n <- length(x)
+  keep <- rep(TRUE, n)
+  for (i in seq_len(n)) for (j in seq_len(n))
+    if (i != j && x[j] >= x[i] && y[j] >= y[i] && (x[j] > x[i] || y[j] > y[i])) {
+      keep[i] <- FALSE; break
+    }
+  df[keep, ] |> arrange(.data[[xcol]])
+}
+
+theme_set(theme_minimal(base_size = 12) + theme(panel.grid.minor = element_blank()))
+```
+
+
+## Context Sweep
+
+```{r load-context-sweep}
+ctx_dir <- file.path(APP_DIR, "benchmarks", "context_sweep_grid")
+ctx_files <- list.files(ctx_dir, "^context_sweep_.*\\.json$", full.names = TRUE)
+
+ctx_df <- map_dfr(sort(ctx_files), \(f) {
+  d <- fromJSON(f, simplifyVector = FALSE)
+  if (is.null(d$launch)) return(NULL)
+  model <- d$launch$model %||% ""
+  size <- nominal_size(model)
+  quant <- case_when(
+    str_detect(model, "BNB|BnB")  ~ "BnB",
+    str_detect(model, "GPTQ")     ~ "GPTQ",
+    str_detect(model, "AWQ")      ~ "AWQ",
+    TRUE                          ~ "Normal"
+  )
+  tibble(size = size, quant = quant, max_ctx = d$max_context_tokens)
+}) |>
+  filter(size != "?") |>
+  group_by(size, quant) |>
+  slice_tail(n = 1) |>
+  ungroup() |>
+  mutate(size  = factor(size, SIZE_LEVELS),
+         quant = factor(quant, c("Normal", "GPTQ", "AWQ", "BnB")))
+
+# Weight memory from vLLM logs (GiB), used for the scatter chart
+weight_tbl <- tribble(
+  ~size,  ~quant,    ~weight_gib,
+  "7B",   "Normal",  14.2,   "14B",  "Normal",  27.6,  "32B",  "Normal",  61.0,
+  "7B",   "GPTQ",     8.3,   "14B",  "GPTQ",    15.7,  "32B",  "GPTQ",    32.8,  "72B",  "GPTQ",  71.8,
+  "7B",   "AWQ",      5.2,   "14B",  "AWQ",      9.4,  "32B",  "AWQ",     18.1,  "72B",  "AWQ",   38.8,
+  "7B",   "BnB",      5.5,   "14B",  "BnB",      9.9,  "32B",  "BnB",     19.4,  "72B",  "BnB",   41.5
+) |> mutate(size = factor(size, SIZE_LEVELS),
+            quant = factor(quant, c("Normal", "GPTQ", "AWQ", "BnB")))
+```
+
+
+### Max VRAM-Bounded Context per Model
+
+```{r ctx-bar, fig.width=11, fig.height=6.5}
+plot_df <- ctx_df |>
+  complete(size, quant) |>
+  mutate(label = case_when(
+    !is.na(max_ctx)                        ~ comma(max_ctx),
+    size == "72B" & quant == "Normal"       ~ "OOM",
+    TRUE                                   ~ "—"
+  ))
+ggplot(plot_df |> filter(!is.na(max_ctx)),
+       aes(size, max_ctx, fill = quant)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7,
+           color = "black", linewidth = 0.4) +
+  geom_text(aes(label = comma(max_ctx)),
+            position = position_dodge(width = 0.8), vjust = -0.3,
+            size = 2.8, angle = 90, hjust = 0) +
+  geom_text(data = plot_df |> filter(is.na(max_ctx)),
+            aes(size, y = 1.3e4, label = label, group = quant),
+            position = position_dodge(width = 0.8),
+            size = 3, color = "#888", vjust = 0) +
+  geom_hline(yintercept = QWEN_MAX_CTX, linetype = "dashed",
+             color = "black", alpha = 0.7, linewidth = 1) +
+  annotate("text", x = 4.5, y = QWEN_MAX_CTX * 1.15,
+           label = paste0("Qwen2.5 trained max (", comma(QWEN_MAX_CTX), ")"),
+           size = 3, color = "black", hjust = 1) +
+  scale_y_log10(labels = comma) +
+  coord_cartesian(ylim = c(1e4, 5e6)) +
+  scale_fill_manual(values = ctx_colors) +
+  labs(x = "Model size", y = "Max VRAM-bounded KV context (tokens, log scale)",
+       fill = "Quantization",
+       title = "Max KV Cache Size — gpu_mem_util=0.95") +
+  theme(panel.grid.major.x = element_blank())
+```
+
+
+### Context Capacity vs Weight Footprint
+
+```{r ctx-scatter, fig.width=11, fig.height=6}
+scatter_df <- ctx_df |>
+  inner_join(weight_tbl, by = c("size", "quant")) |>
+  filter(!is.na(max_ctx))
+
+ggplot(scatter_df, aes(weight_gib, max_ctx, color = quant, fill = quant)) +
+  geom_point(size = 4, shape = 21, stroke = 0.5, color = "black") +
+  geom_text_repel(aes(label = size, color = quant), size = 3.5,
+                  nudge_x = 1, nudge_y = 0.05, show.legend = FALSE) +
+  geom_hline(yintercept = QWEN_MAX_CTX, linetype = "dashed",
+             color = "red", alpha = 0.7, linewidth = 1) +
+  scale_y_log10(limits = c(1e4, 5e6), labels = comma) +
+  scale_fill_manual(values = ctx_colors) +
+  scale_color_manual(values = ctx_colors) +
+  labs(x = "Model weight memory (GiB)", y = "Max VRAM-bounded context (tokens)",
+       fill = "Quantization", color = "Quantization",
+       title = "Context capacity vs weight footprint — every GB of weights is GB less for KV") +
+  guides(color = "none")
+```
+
+
+## Benchmark Grid (MMLU + GSM8K)
+
+```{r load-grid-data}
+load_grid <- function(grid_dir, task_name, metric_key) {
+  jsons <- map(sort(list.files(grid_dir, "\\.json$", full.names = TRUE)),
+               \(f) fromJSON(f, simplifyVector = FALSE))
+
+  perf_list  <- keep(jsons, \(d) identical(d$type, "perf"))
+  qual_list  <- keep(jsons, \(d) identical(d$type, "quality"))
+
+  perf_df <- map_dfr(perf_list, \(d) {
+    mm  <- d$model_meta  %||% list()
+    raw <- d$raw          %||% list()
+    ps  <- d$profile_summary %||% list()
+    tibble(
+      canonical        = canonical_run_name(d$run_name),
+      model_id         = mm$model_id     %||% NA_character_,
+      quantization     = toupper(mm$quantization %||% ""),
+      parameters       = mm$parameters   %||% NA_real_,
+      throughput_tps   = d$output_throughput  %||% NA_real_,
+      prefill_tps      = d$prefill_throughput %||% NA_real_,
+      p50_ttft_ms      = raw$p50_ttft_ms %||% NA_real_,
+      p90_ttft_ms      = raw$p90_ttft_ms %||% NA_real_,
+      p99_ttft_ms      = raw$p99_ttft_ms %||% NA_real_,
+      duration         = raw$duration    %||% NA_real_,
+      total_output_tokens = raw$total_output_tokens %||% NA_real_,
+      total_input_tokens  = raw$total_input_tokens  %||% NA_real_,
+      peak_gpu_mem_mb  = ps$peak_gpu_mem_mb  %||% NA_real_,
+      avg_gpu_power_w  = ps$avg_gpu_power_w  %||% NA_real_,
+      profile_csv_rel  = d$profile_csv       %||% NA_character_
+    )
+  })
+
+  qual_df <- map_dfr(qual_list, \(d) {
+    score <- tryCatch(d[["raw"]][["results"]][[task_name]][[metric_key]],
+                      error = function(e) NA_real_)
+    tibble(canonical = canonical_run_name(d$run_name),
+           quality_score = score %||% NA_real_)
+  })
+
+  left_join(perf_df, qual_df, by = "canonical")
+}
+
+# Load both grids
+mmlu_raw  <- load_grid(file.path(APP_DIR, "benchmarks", "random_mmlu_grid"),
+                       "mmlu", "acc,none")       |> mutate(dataset = "mmlu")
+gsm8k_raw <- load_grid(file.path(APP_DIR, "benchmarks", "sharegpt_gsm8k_grid"),
+                       "gsm8k", "exact_match,strict-match") |> mutate(dataset = "gsm8k")
+
+# Extract memory breakdown from profile CSVs
+extract_mem <- function(csv_rel) {
+  path <- file.path(APP_DIR, csv_rel)
+  if (is.na(csv_rel) || !file.exists(path))
+    return(tibble(weight_gib = NA, kv_capacity_gib = NA, peak_kv_pct = NA,
+                  peak_total_vram_gib = NA, peak_kv_used_gib = NA, kv_to_weight = NA))
+  csv <- read_csv(path, show_col_types = FALSE,
+                  col_select = c(weight_mem_gib, kv_cache_pct,
+                                 kv_cache_capacity_gib, gpu_mem_used_mb))
+  w     <- max(csv$weight_mem_gib,       na.rm = TRUE)
+  kv_p  <- max(csv$kv_cache_pct,         na.rm = TRUE)
+  kv_c  <- max(csv$kv_cache_capacity_gib, na.rm = TRUE)
+  total <- max(csv$gpu_mem_used_mb,       na.rm = TRUE) / 1024
+  if (!is.finite(kv_c) || kv_c <= 0) kv_c <- 10.0
+  if (!is.finite(w))    w     <- NA_real_
+  if (!is.finite(kv_p)) kv_p  <- 0
+  if (!is.finite(total)) total <- NA_real_
+  kv_used <- kv_p / 100 * kv_c
+  tibble(weight_gib = w, kv_capacity_gib = kv_c, peak_kv_pct = kv_p,
+         peak_total_vram_gib = total, peak_kv_used_gib = kv_used,
+         kv_to_weight = if (is.na(w) || w == 0) NA_real_ else kv_used / w)
+}
+
+add_derived <- function(df) {
+  mem <- map_dfr(df$profile_csv_rel, extract_mem)
+  df <- bind_cols(df, mem) |>
+    mutate(
+      size        = factor(nominal_size(model_id), SIZE_LEVELS),
+      quant       = factor(quantization, QUANT_LEVELS),
+      short_quant = SHORT_QUANT[quantization],
+      model_label = paste0(size, "-", short_quant),
+      peak_vram_gb = peak_gpu_mem_mb / 1024,
+      energy_per_tok = if_else(
+        !is.na(avg_gpu_power_w) & !is.na(duration) & !is.na(total_output_tokens) &
+          total_output_tokens > 0,
+        avg_gpu_power_w * duration / total_output_tokens, NA_real_)
+    ) |>
+    arrange(quant, size) |>
+    mutate(model_label = fct_inorder(model_label))
+  df
+}
+
+grid_df <- bind_rows(add_derived(mmlu_raw), add_derived(gsm8k_raw))
+```
+
+
+### Pareto: Quality vs Throughput
+
+```{r pareto-tput, fig.width=16, fig.height=7}
+make_pareto_scatter <- function(data, xcol, ycol, xlab, ylab, title, ylim_range = NULL,
+                                invert_x = FALSE) {
+  data <- data |> filter(!is.na(.data[[xcol]]), !is.na(.data[[ycol]]))
+  front <- pareto_frontier(data, xcol, ycol)
+  data$on_front <- paste(data[[xcol]], data[[ycol]]) %in% paste(front[[xcol]], front[[ycol]])
+  p <- ggplot(data, aes(.data[[xcol]], .data[[ycol]])) +
+    geom_point(aes(fill = quant), size = 3, stroke = 0.5, shape = 21, color = "black") +
+    geom_text_repel(data = ~ filter(.x, !on_front),
+                    aes(label = size, color = quant), size = 4.8, show.legend = FALSE) +
+    geom_label_repel(data = ~ filter(.x, on_front),
+                     aes(label = size, color = quant), size = 4.8, fontface = "bold",
+                     show.legend = FALSE) +
+    scale_fill_manual(values = grid_colors) +
+    scale_color_manual(values = grid_colors) +
+    labs(x = xlab, y = ylab, title = title, fill = "Quantization") +
+    guides(color = "none") +
+    theme(legend.position = "bottom",
+          panel.border = element_rect(color = "lightgray", fill = NA),
+          plot.title = element_text(size = 17))
+  if (nrow(front) >= 2)
+    p <- p + geom_path(data = front, aes(.data[[xcol]], .data[[ycol]]),
+                       inherit.aes = FALSE, linetype = "dashed", color = "#888",
+                       linewidth = 0.8)
+  if (!is.null(ylim_range)) p <- p + ylim(ylim_range[1], ylim_range[2])
+  if (invert_x) p <- p + scale_x_reverse()
+  p
+}
+p_mmlu <- make_pareto_scatter(
+  grid_df |> filter(dataset == "mmlu"),
+  "throughput_tps", "quality_score",
+  "Throughput (output tok/s)",
+  "Accuracy",
+  "MMLU, 5-shot, full 57 subtasks",
+  ylim_range = c(0.5, 1))
+p_gsm8k <- make_pareto_scatter(
+  grid_df |> filter(dataset == "gsm8k"),
+  "throughput_tps", "quality_score",
+  "Throughput (output tok/s)",
+  "Accuracy",
+  "GSM8K, exact match",
+  ylim_range = c(0.5, 1))
+p_mmlu + p_gsm8k + plot_layout(guides = "collect", axis_titles = "collect") +
+  plot_annotation(title = "Accuracy vs. Throughput Pareto",
+                  theme = theme(plot.title = element_text(hjust = 0.5, size = 21))) &
+  theme(legend.position = "bottom", text = element_text(size = 16))
+```
+
+
+### Quality vs VRAM Cost
+
+```{r pareto-vram, fig.width=16, fig.height=7}
+p1 <- make_pareto_scatter(
+  grid_df |> filter(dataset == "mmlu"),
+  "peak_vram_gb", "quality_score",
+  "Peak GPU VRAM (GB)", "MMLU acc",
+  "Quality vs VRAM cost — upper-left ideal", c(0.5, 1), invert_x = TRUE)
+p2 <- make_pareto_scatter(
+  grid_df |> filter(dataset == "gsm8k"),
+  "peak_vram_gb", "quality_score",
+  "Peak GPU VRAM (GB)", "gsm8k exact_match",
+  "Quality vs VRAM cost — upper-left ideal", c(0.5, 1), invert_x = TRUE)
+p1 + p2 + plot_layout(guides = "collect") & theme(legend.position = "bottom")
+```
+
+
+### Throughput vs Power Draw
+
+```{r tput-power, fig.width=16, fig.height=7}
+p1 <- make_pareto_scatter(
+  grid_df |> filter(dataset == "mmlu"),
+  "avg_gpu_power_w", "throughput_tps",
+  "Avg GPU power (W)", "Throughput (output tok/s)",
+  "Throughput vs Power draw (MMLU workload)")
+p2 <- make_pareto_scatter(
+  grid_df |> filter(dataset == "gsm8k"),
+  "avg_gpu_power_w", "throughput_tps",
+  "Avg GPU power (W)", "Throughput (output tok/s)",
+  "Throughput vs Power draw (GSM8K workload)")
+p1 #+ p2 + plot_layout(guides = "collect") & theme(legend.position = "bottom")
+```
+
+
+### Peak KV Cache to Weight Ratio
+
+```{r kv-ratio, fig.width=16, fig.height=6}
+make_kv_bar <- function(data, title) {
+  data <- data |> filter(!is.na(kv_to_weight), kv_to_weight > 0)
+  ggplot(data, aes(model_label, kv_to_weight, fill = quant)) +
+    geom_col(color = "black", linewidth = 0.5) +
+    geom_text(aes(label = sprintf("%.2f", kv_to_weight)), vjust = -0.3, size = 4.1) +
+    geom_hline(yintercept = 1.0, linetype = "dashed", color = "#888", alpha = 0.6) +
+    annotate("text", x = Inf, y = 1.02, label = "KV = weights",
+             hjust = 1.1, size = 4.1, color = "#666") +
+    scale_fill_manual(values = grid_colors) +
+    scale_x_discrete(labels = ~ sub("-.*", "", .)) +
+    labs(x = NULL, y = "Peak KV cache / model weight (ratio)",
+         fill = "Quantization", title = title) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1),
+          legend.position = "bottom",
+          panel.border = element_rect(color = "lightgray", fill = NA),
+          plot.title = element_text(size = 21, hjust = 0.5),
+          text = element_text(size = 16))
+}
+make_kv_bar(grid_df |> filter(dataset == "gsm8k"),
+            "KV cache vs weight at peak — sharegpt n=500, conc=64")
+```
+
+
+### VRAM Breakdown at Peak
+
+```{r vram-breakdown, fig.width=16, fig.height=7}
+make_vram_bar <- function(data, title) {
+  data <- data |> filter(!is.na(weight_gib))
+  long <- data |>
+    mutate(
+      kv_headroom = pmax(0, kv_capacity_gib - peak_kv_used_gib),
+      other       = pmax(0, peak_total_vram_gib - weight_gib - kv_capacity_gib)
+    ) |>
+    select(model_label, quant, peak_total_vram_gib,
+           weights = weight_gib, kv_used = peak_kv_used_gib,
+           kv_headroom, other) |>
+    pivot_longer(c(weights, kv_used, kv_headroom, other),
+                 names_to = "component", values_to = "gib") |>
+    mutate(component = factor(component,
+           levels = c("weights", "kv_used", "kv_headroom", "other"),
+           labels = c("Model weights", "KV cache (used at peak)",
+                      "KV cache (headroom)", "Activations / framework")))
+  totals <- data |> select(model_label, peak_total_vram_gib)
+  ggplot(long, aes(model_label, gib, fill = component)) +
+    geom_col(color = "black", linewidth = 0.3, position = position_stack(reverse = TRUE)) +
+    geom_text(data = totals,
+              aes(model_label, peak_total_vram_gib,
+                  label = sprintf("%.0f", peak_total_vram_gib)),
+              inherit.aes = FALSE, vjust = -0.3, size = 4.1, color = "#333") +
+    geom_hline(yintercept = 96, linetype = "dashed", color = "red", alpha = 0.7) +
+    annotate("text", x = 0.5, y = 97, label = "96 GB GPU budget",
+             hjust = 0, size = 4.1, color = "red") +
+    scale_fill_manual(values = c("Model weights" = "#4c78a8",
+                                 "KV cache (used at peak)" = "#f58518",
+                                 "KV cache (headroom)" = "#ffbf79",
+                                 "Activations / framework" = "#b0b0b0")) +
+    ylim(0, 105) +
+    labs(x = NULL, y = "Peak VRAM (GiB)", fill = NULL, title = title) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1),
+          legend.position = "bottom",
+          panel.border = element_rect(color = "lightgray", fill = NA),
+          plot.title = element_text(size = 21, hjust = 0.5),
+          text = element_text(size = 16))
+}
+make_vram_bar(grid_df |> filter(dataset == "gsm8k"),
+              "Peak VRAM breakdown (GSM8K workload)")
+```
+
+
+### TTFT Latency Distribution
+
+```{r ttft, fig.width=16, fig.height=7}
+make_ttft <- function(data, title) {
+  data <- data |> filter(!is.na(p50_ttft_ms))
+  long <- data |>
+    select(model_label, p50 = p50_ttft_ms, p90 = p90_ttft_ms, p99 = p99_ttft_ms) |>
+    pivot_longer(c(p50, p90, p99), names_to = "pct", values_to = "ms") |>
+    mutate(pct = factor(pct, c("p50", "p90", "p99")))
+  ggplot(long, aes(model_label, ms, fill = pct)) +
+    geom_col(position = position_dodge(width = 0.8), width = 0.7,
+             color = "black", linewidth = 0.4) +
+    scale_y_log10(labels = comma) +
+    scale_fill_manual(values = ttft_colors) +
+    labs(x = NULL, y = "Time to first token (ms)", fill = NULL, title = title) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1),
+          legend.position = "bottom",
+          panel.border = element_rect(color = "lightgray", fill = NA),
+          plot.title = element_text(size = 21, hjust = 0.5),
+          text = element_text(size = 16))
+}
+p2 <- make_ttft(grid_df |> filter(dataset == "gsm8k"),
+                "TTFT latency per model — sharegpt n=500, conc=64")
+p2
+```
+
+
+### Quality Accuracy per Model
+
+```{r accuracy, fig.width=16, fig.height=6}
+make_metric_bar <- function(data, ycol, ylabel, title, fmt = "%.3f",
+                            ylim_range = NULL) {
+  data <- data |> filter(!is.na(.data[[ycol]]))
+  data <- data |>
+    mutate(size_n = as.numeric(sub("B-.*", "", model_label))) |>
+    arrange(quant, size_n) |>
+    mutate(model_label = factor(model_label, levels = unique(model_label)))
+  p <- ggplot(data, aes(model_label, .data[[ycol]], fill = quant)) +
+    geom_col(color = "black", linewidth = 0.5) +
+    geom_text(aes(label = sub("^0", "", sprintf(fmt, .data[[ycol]]))),
+              vjust = -0.3, size = 4.1) +
+    scale_fill_manual(values = grid_colors) +
+    scale_x_discrete(labels = ~ sub("-.*", "", .)) +
+    labs(x = NULL, y = ylabel, fill = "Quantization", title = title) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1),
+          legend.position = "bottom",
+          panel.border = element_rect(color = "lightgray", fill = NA),
+          plot.title = element_text(size = 17))
+  if (!is.null(ylim_range)) p <- p + ylim(ylim_range[1], ylim_range[2])
+  p
+}
+p1 <- make_metric_bar(grid_df |> filter(dataset == "mmlu"),
+       "quality_score", "Accuracy",
+       "MMLU, 5-shot, full 57 subtasks", "%.3f", c(0, 1))
+p2 <- make_metric_bar(grid_df |> filter(dataset == "gsm8k"),
+       "quality_score", "Accuracy",
+       "GSM8K, exact match", "%.3f", c(0, 1))
+p1 + p2 + plot_layout(guides = "collect", axis_titles = "collect") +
+  plot_annotation(title = "Accuracy by Model",
+                  theme = theme(plot.title = element_text(hjust = 0.5, size = 21))) &
+  theme(legend.position = "bottom", text = element_text(size = 16))
+```
+
+
+### Decode Throughput per Model
+
+```{r throughput-bar, fig.width=16, fig.height=6}
+make_metric_bar <- function(data, ycol, ylabel, title, fmt = "%.3f",
+                            ylim_range = NULL) {
+  data <- data |> filter(!is.na(.data[[ycol]]))
+  data <- data |>
+    mutate(size_n = as.numeric(sub("B-.*", "", model_label))) |>
+    arrange(quant, size_n) |>
+    mutate(model_label = factor(model_label, levels = unique(model_label)))
+  p <- ggplot(data, aes(model_label, .data[[ycol]], fill = quant)) +
+    geom_col(color = "black", linewidth = 0.5) +
+    geom_text(aes(label = sub("^0", "", sprintf(fmt, .data[[ycol]]))),
+              vjust = -0.3, size = 4.1) +
+    scale_fill_manual(values = grid_colors) +
+    scale_x_discrete(labels = ~ sub("-.*", "", .)) +
+    labs(x = NULL, y = ylabel, fill = "Quantization", title = title) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1),
+          legend.position = "bottom",
+          panel.border = element_rect(color = "lightgray", fill = NA),
+          plot.title = element_text(size = 17))
+  if (!is.null(ylim_range)) p <- p + ylim(ylim_range[1], ylim_range[2])
+  p
+}
+p2 <- make_metric_bar(grid_df |> filter(dataset == "gsm8k"),
+       "throughput_tps", "Output throughput (decode tok/s)",
+       "Decode throughput — sharegpt n=500, conc=64", "%.0f")
+p2 + theme(text = element_text(size = 16), legend.position = "bottom")
+```
+
+
+### Energy Efficiency
+
+```{r energy, fig.width=16, fig.height=6}
+p1 <- make_metric_bar(grid_df |> filter(dataset == "mmlu"),
+       "energy_per_tok", "Energy per output token (J / tok)",
+       "Energy efficiency (MMLU workload)", "%.2f")
+p2 <- make_metric_bar(grid_df |> filter(dataset == "gsm8k"),
+       "energy_per_tok", "Energy per output token (J / tok)",
+       "Energy efficiency (GSM8K workload)", "%.2f")
+p1 + p2 + plot_layout(guides = "collect") & theme(legend.position = "bottom")
+```
+
+
+### Time-Series Data
+
+```{r load-timeseries}
+read_ts <- function(csv_rel) {
+  path <- file.path(APP_DIR, csv_rel)
+  if (is.na(csv_rel) || !file.exists(path)) return(NULL)
+  raw <- read_csv(path, show_col_types = FALSE,
+                  col_select = c(timestamp, kv_cache_pct, gen_tokens_total))
+
+  raw <- raw |>
+    mutate(timestamp = as.POSIXct(timestamp),
+           kv_cache_pct = replace_na(as.numeric(kv_cache_pct), 0),
+           gen_tokens_total = replace_na(as.numeric(gen_tokens_total), 0))
+
+  # Start at first nonzero KV activity
+  first_active <- which(raw$kv_cache_pct > 0)[1]
+  if (is.na(first_active)) return(NULL)
+  raw <- raw[first_active:nrow(raw), ]
+
+  # Truncate at phase boundary (gen_tokens counter drops by >100)
+  diffs <- diff(raw$gen_tokens_total)
+  phase_end <- which(diffs < -100)[1]
+  if (!is.na(phase_end)) raw <- raw[1:phase_end, ]
+  if (nrow(raw) < 2) return(NULL)
+
+  raw |>
+    mutate(elapsed_s = as.numeric(difftime(timestamp, timestamp[1], units = "secs")))
+}
+
+ts_list <- grid_df |>
+  distinct(dataset, canonical, model_label, size, quant, quantization,
+           profile_csv_rel) |>
+  mutate(ts_data = map(profile_csv_rel, read_ts))
+
+ts_df <- ts_list |>
+  filter(!map_lgl(ts_data, is.null)) |>
+  unnest(ts_data)
+
+# Smoothed throughput rate (5-sample moving average of delta gen_tokens / delta t)
+rate_df <- ts_df |>
+  group_by(dataset, canonical) |>
+  mutate(
+    dt  = c(NA, diff(elapsed_s)),
+    dg  = c(NA, diff(gen_tokens_total)),
+    raw_rate = if_else(dt > 0, dg / dt, NA_real_),
+    tok_rate = rollmeanr(raw_rate, k = 5, fill = NA)
+  ) |>
+  filter(!is.na(tok_rate)) |>
+  ungroup()
+```
+
+
+### KV Cache Growth Over Time (MMLU)
+
+```{r kv-growth-mmlu, fig.width=14, fig.height=10}
+ts_df |>
+  filter(dataset == "mmlu") |>
+  ggplot(aes(elapsed_s, kv_cache_pct, color = quant, fill = quant)) +
+  geom_line(linewidth = 0.8) +
+  geom_area(alpha = 0.2) +
+  facet_grid(quant ~ size, scales = "free_x",
+             labeller = labeller(quant = SHORT_QUANT)) +
+  scale_color_manual(values = grid_colors) +
+  scale_fill_manual(values = grid_colors) +
+  labs(x = "Elapsed time (s)", y = "KV cache used (% of capacity)",
+       title = "KV cache occupancy over time — random n=500, conc=64") +
+  theme(legend.position = "none",
+        strip.text = element_text(size = 9))
+```
+
+
+### KV Cache Growth Over Time (GSM8K)
+
+```{r kv-growth-gsm8k, fig.width=14, fig.height=10}
+ts_df |>
+  filter(dataset == "gsm8k") |>
+  ggplot(aes(elapsed_s, kv_cache_pct, color = quant, fill = quant)) +
+  geom_line(linewidth = 0.8) +
+  geom_area(alpha = 0.2) +
+  facet_grid(quant ~ size, scales = "free_x",
+             labeller = labeller(quant = SHORT_QUANT)) +
+  scale_color_manual(values = grid_colors) +
+  scale_fill_manual(values = grid_colors) +
+  labs(x = "Elapsed time (s)", y = "KV cache used (% of capacity)",
+       title = "KV cache occupancy over time — sharegpt n=500, conc=64") +
+  theme(legend.position = "none",
+        strip.text = element_text(size = 9))
+```
+
+
+### Throughput Over Time (MMLU)
+
+```{r tput-time-mmlu, fig.width=14, fig.height=10}
+rate_df |>
+  filter(dataset == "mmlu") |>
+  ggplot(aes(elapsed_s, tok_rate, color = quant)) +
+  geom_line(linewidth = 0.8) +
+  facet_grid(quant ~ size, scales = "free",
+             labeller = labeller(quant = SHORT_QUANT)) +
+  scale_color_manual(values = grid_colors) +
+  labs(x = "Elapsed time (s)", y = "Decode tok/s",
+       title = "Instantaneous output throughput (Δgen_tokens / Δt, 5-sample MA) — MMLU") +
+  theme(legend.position = "none",
+        strip.text = element_text(size = 9))
+```
+
+
+### Throughput Over Time (GSM8K)
+
+```{r tput-time-gsm8k, fig.width=14, fig.height=10}
+rate_df |>
+  filter(dataset == "gsm8k") |>
+  ggplot(aes(elapsed_s, tok_rate, color = quant, fill = quant)) +
+  geom_area(alpha = 0.2, color = NA) +
+  geom_line(linewidth = 0.8) +
+  facet_grid(quant ~ size, scales = "free",
+             labeller = labeller(quant = SHORT_QUANT)) +
+  scale_color_manual(values = grid_colors) +
+  scale_fill_manual(values = grid_colors) +
+  labs(x = "Elapsed time (s)", y = "Decode tok/s",
+       title = "Instantaneous output throughput (Δgen_tokens / Δt, 5-sample MA) — GSM8K") +
+  theme(legend.position = "none",
+        strip.text = element_text(size = 9),
+        panel.border = element_rect(color = "gray30", fill = NA),
+        panel.spacing = unit(0.4, "lines"),
+        text = element_text(size = 16),
+        plot.title = element_text(size = 21, hjust = 0.5))
+```
+
+
+### Decode vs Prefill Throughput
+
+```{r decode-prefill, fig.width=16, fig.height=7}
+make_decode_prefill <- function(data, title) {
+  data <- data |> filter(!is.na(throughput_tps), !is.na(prefill_tps))
+  lim <- max(c(data$throughput_tps, data$prefill_tps), na.rm = TRUE)
+  ggplot(data, aes(prefill_tps, throughput_tps)) +
+    geom_abline(slope = 1, intercept = 0, linetype = "dashed",
+                color = "#888", alpha = 0.4) +
+    geom_point(aes(fill = quant), size = 3, stroke = 0.5,
+               shape = 21, color = "black") +
+    geom_text_repel(aes(label = size, color = quant), size = 3, show.legend = FALSE) +
+    scale_fill_manual(values = grid_colors) +
+    scale_color_manual(values = grid_colors) +
+    labs(x = "Prefill throughput (input tok/s)",
+         y = "Decode throughput (output tok/s)",
+         fill = "Quantization", title = title) +
+    guides(color = "none") +
+    theme(legend.position = "bottom")
+}
+
+p1 <- make_decode_prefill(grid_df |> filter(dataset == "mmlu"),
+        "Decode vs Prefill — random n=500, conc=64")
+p2 <- make_decode_prefill(grid_df |> filter(dataset == "gsm8k"),
+        "Decode vs Prefill — sharegpt n=500, conc=64")
+p1 + p2 + plot_layout(guides = "collect") & theme(legend.position = "bottom")
+```
+
+
+## Nsys Kernel Profiling
+
+```{r load-nsys}
+nsys_dir <- file.path(APP_DIR, "benchmarks", "nsys")
+
+# -- Kernel breakdown CSV (pre-aggregated) --
+nsys_breakdown <- read_csv(file.path(nsys_dir, "kernel_breakdown.csv"),
+                           show_col_types = FALSE)
+
+nsys_model_order <- c("7B-AWQ", "14B-AWQ", "32B-AWQ", "72B-AWQ",
+                      "7B-GPTQ", "14B-GPTQ", "32B-GPTQ", "72B-GPTQ",
+                      "7B-BF16", "14B-BF16", "32B-BF16", "72B-BF16",
+                      "7B-BnB", "14B-BnB", "32B-BnB", "72B-BnB")
+
+nsys_cat_order <- c("AWQ dequant", "GPTQ dequant", "Flash attention",
+                    "KV cache ops", "GEMM (cutlass)", "Sampling (topk/topp)",
+                    "Softmax / norm", "Triton/vLLM custom", "Memory ops",
+                    "Other compute")
+
+nsys_breakdown <- nsys_breakdown |>
+  mutate(model    = factor(model, levels = intersect(nsys_model_order,
+                                                     unique(model))),
+         category = factor(category, levels = intersect(nsys_cat_order,
+                                                        unique(category))))
+
+# -- Per-kernel stats from top_kernels.txt files --
+parse_top_kernels <- function(path) {
+  lines <- readLines(path)
+  model <- str_remove(basename(path), "_top_kernels\\.txt$")
+  # Data starts after the dash separator (line 5), fixed-width columns
+  data_lines <- lines[-(1:5)]
+  data_lines <- data_lines[nchar(trimws(data_lines)) > 0]
+  if (length(data_lines) == 0) return(NULL)
+
+  # Column positions from the Python format string:
+  # {:>7.1f}  {:>11.1f}  {:>8d}  {:>10.1f}  {:>10.1f}  {:>10.1f}  {:>6.2f}  {:<14}  {}
+  pos <- fwf_positions(
+    start     = c( 1, 10, 23, 33, 45, 57, 69, 77, 93),
+    end       = c( 7, 20, 30, 42, 54, 66, 74, 90, NA),
+    col_names = c("time_pct", "total_ms", "calls", "avg_us",
+                  "p50_us", "p99_us", "cv", "category", "operation")
+  )
+
+  df <- read_fwf(I(paste(data_lines, collapse = "\n")), col_positions = pos,
+                 show_col_types = FALSE, trim_ws = TRUE) |>
+    mutate(model = model,
+           across(c(time_pct, total_ms, avg_us, p50_us, p99_us, cv), as.numeric),
+           calls = as.integer(calls),
+           category = trimws(category),
+           operation = trimws(operation))
+  df
+}
+
+txt_files <- list.files(nsys_dir, "_top_kernels\\.txt$", full.names = TRUE)
+nsys_topk <- map_dfr(txt_files, parse_top_kernels) |>
+  mutate(model = factor(model, levels = intersect(nsys_model_order, unique(model))))
+```
+
+
+### GPU Time by Kernel Category
+
+```{r nsys-stacked, fig.width=12, fig.height=7}
+totals <- nsys_breakdown |>
+  group_by(model) |>
+  summarise(total_s = sum(total_ms) / 1000)
+
+ggplot(nsys_breakdown, aes(model, total_ms / 1000, fill = category)) +
+  geom_col(color = "black", linewidth = 0.3) +
+  geom_text(data = totals, aes(model, total_s, label = sprintf("%.1fs", total_s)),
+            inherit.aes = FALSE, vjust = -0.3, size = 3.5) +
+  scale_fill_manual(values = nsys_colors) +
+  labs(x = NULL, y = "GPU time (seconds)", fill = NULL,
+       title = "GPU time by kernel category — sharegpt n=100, conc=64") +
+  theme(legend.position = "right")
+```
+
+
+### Compute vs Memory-Op Time
+
+```{r nsys-compute-mem, fig.width=10, fig.height=6}
+nsys_cm <- nsys_breakdown |>
+  mutate(type = if_else(category == "Memory ops", "Memory ops", "Compute")) |>
+  group_by(model, type) |>
+  summarise(total_s = sum(total_ms) / 1000, .groups = "drop")
+
+ratios <- nsys_cm |>
+  pivot_wider(names_from = type, values_from = total_s, values_fill = 0) |>
+  mutate(ratio_label = if_else(`Memory ops` > 0,
+                               sprintf("%.1f×", Compute / `Memory ops`),
+                               "∞"),
+         y_pos = pmax(Compute, `Memory ops`) + 0.3)
+
+ggplot(nsys_cm, aes(model, total_s, fill = type)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7,
+           color = "black", linewidth = 0.4) +
+  geom_text(data = ratios, aes(model, y_pos, label = ratio_label),
+            inherit.aes = FALSE, size = 3.5, color = "#444") +
+  scale_fill_manual(values = c(Compute = "#1f77b4", "Memory ops" = "#e377c2")) +
+  labs(x = NULL, y = "GPU time (seconds)", fill = NULL,
+       title = "Compute vs Memory-op time (label = compute/memory ratio)") +
+  theme(legend.position = "top")
+```
+
+
+### Latency Variance Hotspots
+
+```{r nsys-cv, fig.width=11, fig.height=6.5}
+nsys_cv <- nsys_topk |>
+  filter(calls >= 50, time_pct >= 0.5, avg_us > 0) |>
+  group_by(model) |>
+  arrange(desc(cv)) |>
+  mutate(rank = paste0("#", row_number())) |>
+  filter(row_number() <= 5) |>
+  ungroup()
+
+ggplot(nsys_cv, aes(rank, cv, fill = model)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7,
+           color = "black", linewidth = 0.4) +
+  labs(x = "Top-N kernels by execution-time variance (per model)",
+       y = "Coefficient of variation (stddev / mean)", fill = NULL,
+       title = "Latency variance hotspots — high CV ≈ cache/scheduling unpredictability") +
+  theme(legend.position = "right")
+```
+
+
+### Top Kernel Per-Call Latency Distribution
+
+```{r nsys-top-latency, fig.width=11, fig.height=6}
+nsys_top1 <- nsys_topk |>
+  filter(category != "Memory ops") |>
+  group_by(model) |>
+  slice_head(n = 1) |>
+  ungroup() |>
+  mutate(op_short = str_trunc(operation, 30))
+
+long_lat <- nsys_top1 |>
+  select(model, op_short, p50_us, avg_us, p99_us) |>
+  pivot_longer(c(p50_us, avg_us, p99_us), names_to = "stat", values_to = "us") |>
+  mutate(stat = factor(stat, levels = c("p50_us", "avg_us", "p99_us"),
+                       labels = c("median", "mean", "max (tail proxy)")),
+         xlabel = paste0(model, "\n", op_short, "..."))
+
+ggplot(long_lat, aes(xlabel, us, fill = stat)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7,
+           color = "black", linewidth = 0.4) +
+  scale_y_log10(labels = comma) +
+  scale_fill_manual(values = c("median" = "#4c78a8", "mean" = "#f58518",
+                                "max (tail proxy)" = "#e45756")) +
+  labs(x = NULL, y = expression("Per-call kernel latency (" * mu * "s)"),
+       fill = NULL,
+       title = "Top compute kernel: per-call latency distribution per model") +
+  theme(axis.text.x = element_text(size = 8),
+        legend.position = "top")
+```
+
+
+### Achieved vs Peak FP16 Compute
+
+```{r nsys-roofline, fig.width=10, fig.height=6}
+# Match nsys models to perf JSONs for params, tokens, duration
+nsys_models <- levels(nsys_topk$model)
+
+find_perf_json <- function(label) {
+  parts <- str_split_1(label, "-")
+  size <- parts[1]; qt <- parts[2]
+  pat <- case_when(
+    qt == "BF16" ~ paste0("Qwen_Qwen2.5-", size, "-Instruct___"),
+    qt == "AWQ"  ~ paste0("Qwen_Qwen2.5-", size, "-Instruct-AWQ___"),
+    qt == "GPTQ" ~ paste0("Qwen_Qwen2.5-", size, "-Instruct-GPTQ-Int8___"),
+    qt == "BnB"  ~ paste0("Qwen2.5-", size, "-Instruct-BNB-NF4-DQ___"),
+    TRUE         ~ NA_character_
+  )
+  if (is.na(pat)) return(NULL)
+  candidates <- list.files(file.path(APP_DIR, "benchmarks"), "\\.json$",
+                           full.names = TRUE, recursive = TRUE)
+  hits <- candidates[str_detect(basename(candidates), fixed(pat)) &
+                     str_detect(basename(candidates), "perf")]
+  # Prefer perf-only runs over perf_quality
+  perf_only <- hits[str_detect(basename(hits), "__perf_") &
+                    !str_detect(basename(hits), "__perf_quality_")]
+  pick <- if (length(perf_only) > 0) tail(sort(perf_only), 1) else
+          if (length(hits) > 0) tail(sort(hits), 1) else NULL
+  pick
+}
+
+util_df <- map_dfr(nsys_models, \(lab) {
+  pj <- find_perf_json(lab)
+  if (is.null(pj)) return(NULL)
+  d <- fromJSON(pj, simplifyVector = FALSE)
+  params  <- d$model_meta$parameters %||% 0
+  in_tok  <- d$raw$total_input_tokens  %||% 0
+  out_tok <- d$raw$total_output_tokens %||% 0
+  dur     <- d$raw$duration %||% 0
+  if (params == 0 || (in_tok + out_tok) == 0 || dur == 0) return(NULL)
+  achieved <- 2 * params * (in_tok + out_tok) / dur / 1e12
+  tibble(model = lab, achieved_tflops = achieved,
+         util_pct = achieved / PEAK_FP16_TFLOPS * 100)
+}) |> mutate(model = factor(model, levels = intersect(nsys_model_order, model)))
+
+if (nrow(util_df) > 0) {
+  ggplot(util_df, aes(model, achieved_tflops)) +
+    geom_col(fill = "#4c78a8", color = "black", linewidth = 0.5) +
+    geom_hline(yintercept = PEAK_FP16_TFLOPS, linetype = "dashed",
+               color = "red", linewidth = 1.2) +
+    geom_text(aes(label = sprintf("%.1f TFLOPS\n(%.1f%% peak)",
+                                  achieved_tflops, util_pct)),
+              vjust = -0.3, size = 3.5) +
+    annotate("text", x = Inf, y = PEAK_FP16_TFLOPS + 5,
+             label = paste0("Peak FP16 (", PEAK_FP16_TFLOPS, " TFLOPS, dense)"),
+             hjust = 1.1, size = 3, color = "red") +
+    ylim(0, PEAK_FP16_TFLOPS * 1.15) +
+    labs(x = NULL, y = "Achieved compute (TFLOPS, FP16)",
+         title = "Tier-1 roofline: achieved compute vs RTX PRO 6000 peak FP16")
+}
+```
