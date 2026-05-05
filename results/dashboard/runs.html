@@ -1,0 +1,1378 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HPML Quantization Run List</title>
+  <style>
+    :root { --bg:#f6f7f9; --panel:#fff; --text:#17202a; --muted:#5f6b7a; --border:#d8dee6; --accent:#1769aa; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; line-height:1.45; }
+    header { background:#101820; color:white; padding:28px 24px; }
+    header h1 { margin:0 0 8px; font-size:28px; letter-spacing:0; }
+    header p { margin:0; color:#cdd6df; max-width:1050px; }
+    nav { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+    nav a { color:white; text-decoration:none; border:1px solid #5d7284; padding:7px 10px; border-radius:6px; }
+    nav a.active { background:white; color:#101820; border-color:white; }
+    main { max-width:1280px; margin:0 auto; padding:24px; }
+    .panel { background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:18px; }
+    .controls { display:flex; flex-wrap:wrap; gap:12px; align-items:end; }
+    label { display:grid; gap:5px; color:var(--muted); font-size:13px; }
+    select, input { min-height:36px; border:1px solid var(--border); border-radius:6px; padding:6px 8px; font:inherit; background:white; }
+    table { width:100%; border-collapse:collapse; background:white; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+    th, td { border-bottom:1px solid var(--border); padding:9px 10px; text-align:left; vertical-align:top; font-size:14px; }
+    th { background:#eef2f6; color:#2a3744; position:sticky; top:0; z-index:1; }
+    td.num { text-align:right; font-variant-numeric:tabular-nums; }
+    .link-button { border:0; padding:0; background:transparent; color:var(--accent); cursor:pointer; font:inherit; text-align:left; }
+    .link-button:hover { text-decoration:underline; }
+    .detail-row td { background:#fbfcfd; }
+    .detail-card { display:grid; gap:16px; }
+    .detail-card h3 { margin:0 0 6px; font-size:18px; }
+    .detail-card p { margin:5px 0; color:#344252; }
+    code { background:#eef2f6; padding:1px 4px; border-radius:4px; font-family:"SFMono-Regular",Consolas,monospace; font-size:0.92em; }
+    .metrics-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; }
+    .metrics-grid div { border:1px solid var(--border); border-radius:6px; background:white; padding:10px; }
+    .metrics-grid span { display:block; color:var(--muted); font-size:12px; margin-bottom:4px; }
+    .metrics-grid strong { display:block; font-size:17px; }
+    .metrics-grid em { display:block; color:var(--muted); font-size:12px; font-style:normal; margin-top:2px; }
+    a { color:var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Experiment Run List</h1>
+    <p>Static browser for the primary Qwen2.5 grid runs. Each row represents a model/precision cell within one paired sweep and links to the raw perf and quality JSON records copied into this export.</p>
+    <nav>
+      <a href="charts.html">Charts</a>
+      <a href="runs.html" class="active">Run List</a>
+    </nav>
+  </header>
+  <main>
+    <section class="panel">
+      <div class="controls">
+        <label>Grid
+          <select id="gridFilter">
+            <option value="">All grids</option>
+            <option value="sharegpt_gsm8k">ShareGPT + GSM8K</option>
+            <option value="random_mmlu">Random 512/256 + MMLU</option>
+          </select>
+        </label>
+        <label>Model size
+          <select id="sizeFilter">
+            <option value="">All sizes</option>
+            <option>7B</option><option>14B</option><option>32B</option><option>72B</option>
+          </select>
+        </label>
+        <label>Precision
+          <select id="quantFilter">
+            <option value="">All formats</option>
+            <option>Normal/BF16</option><option>GPTQ-Int8</option><option>AWQ-Int4</option><option>BnB-NF4</option>
+          </select>
+        </label>
+        <label>Search
+          <input id="searchBox" placeholder="model, run key, quantization">
+        </label>
+      </div>
+    </section>
+
+    <table id="runTable">
+      <thead>
+        <tr>
+          <th>Run</th><th>Grid</th><th>Size</th><th>Precision</th><th>Output tok/s</th><th>Quality</th><th>Peak VRAM GiB</th><th>Avg W</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+      <tr class="run-row" data-grid="random_mmlu" data-size="7B" data-quant="Normal/BF16">
+        <td><button class="link-button" data-target="run-1">Qwen_Qwen2.5-7B-Instruct___perf_quality_020120</button></td>
+        <td>Random 512/256 + MMLU</td>
+        <td>7B</td>
+        <td>Normal/BF16</td>
+        <td class="num">2,276</td>
+        <td class="num">0.782</td>
+        <td class="num">28.4</td>
+        <td class="num">266.9</td>
+      </tr>
+      <tr id="run-1" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>7B Normal/BF16 - Random 512/256 + MMLU</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-7B-Instruct</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-7B-Instruct___perf_quality_020120</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-7B-Instruct___perf_quality_020120_perf_perf_20260503_020426.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-7B-Instruct___perf_quality_020120_quality_quality_20260503_020630.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-7B-Instruct___perf_quality_020120_20260503_020324.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-7B-Instruct___perf_quality_020120_20260503_020324.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>2,276 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>8.89 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>447 tok/s</strong></div>
+              <div><span>MMLU</span><strong>0.782</strong><em>stderr=0.024</em></div>
+              <div><span>Mean TTFT</span><strong>1146.0 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>2404.2 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>23.15 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>7503.7 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>28.42 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>266.9 W</strong></div>
+              <div><span>Avg GPU util</span><strong>98.8%</strong></div>
+              <div><span>Peak KV cache</span><strong>26.25%</strong></div>
+              <div><span>Weight memory</span><strong>14.25 GiB</strong></div>
+              <div><span>Input tokens</span><strong>256,000</strong></div>
+              <div><span>Output tokens</span><strong>128,000</strong></div>
+              <div><span>Duration</span><strong>56.2 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="random_mmlu" data-size="7B" data-quant="GPTQ-Int8">
+        <td><button class="link-button" data-target="run-2">Qwen_Qwen2.5-7B-Instruct-GPTQ-Int8___perf_quality_020120</button></td>
+        <td>Random 512/256 + MMLU</td>
+        <td>7B</td>
+        <td>GPTQ-Int8</td>
+        <td class="num">1,761</td>
+        <td class="num">0.782</td>
+        <td class="num">23.2</td>
+        <td class="num">276.2</td>
+      </tr>
+      <tr id="run-2" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>7B GPTQ-Int8 - Random 512/256 + MMLU</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-7B-Instruct-GPTQ-Int8</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-7B-Instruct-GPTQ-Int8___perf_quality_020120</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-7B-Instruct-GPTQ-Int8___perf_quality_020120_perf_perf_20260503_022430.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-7B-Instruct-GPTQ-Int8___perf_quality_020120_quality_quality_20260503_022635.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-7B-Instruct-GPTQ-Int8___perf_quality_020120_20260503_022311.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-7B-Instruct-GPTQ-Int8___perf_quality_020120_20260503_022311.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>1,761 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>6.88 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>386 tok/s</strong></div>
+              <div><span>MMLU</span><strong>0.782</strong><em>stderr=0.024</em></div>
+              <div><span>Mean TTFT</span><strong>1326.7 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>2673.0 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>30.52 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>9525.5 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>23.20 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>276.2 W</strong></div>
+              <div><span>Avg GPU util</span><strong>99.0%</strong></div>
+              <div><span>Peak KV cache</span><strong>26.25%</strong></div>
+              <div><span>Weight memory</span><strong>8.31 GiB</strong></div>
+              <div><span>Input tokens</span><strong>256,000</strong></div>
+              <div><span>Output tokens</span><strong>128,000</strong></div>
+              <div><span>Duration</span><strong>72.7 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="random_mmlu" data-size="7B" data-quant="AWQ-Int4">
+        <td><button class="link-button" data-target="run-3">Qwen_Qwen2.5-7B-Instruct-AWQ___perf_quality_020120</button></td>
+        <td>Random 512/256 + MMLU</td>
+        <td>7B</td>
+        <td>AWQ-Int4</td>
+        <td class="num">1,059</td>
+        <td class="num">0.768</td>
+        <td class="num">20.2</td>
+        <td class="num">284.5</td>
+      </tr>
+      <tr id="run-3" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>7B AWQ-Int4 - Random 512/256 + MMLU</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-7B-Instruct-AWQ</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-7B-Instruct-AWQ___perf_quality_020120</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-7B-Instruct-AWQ___perf_quality_020120_perf_perf_20260503_031555.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-7B-Instruct-AWQ___perf_quality_020120_quality_quality_20260503_031813.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-7B-Instruct-AWQ___perf_quality_020120_20260503_031351.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-7B-Instruct-AWQ___perf_quality_020120_20260503_031351.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>1,059 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>4.13 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>327 tok/s</strong></div>
+              <div><span>MMLU</span><strong>0.768</strong><em>stderr=0.024</em></div>
+              <div><span>Mean TTFT</span><strong>1567.8 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>3101.6 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>53.22 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>15962.6 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>20.21 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>284.5 W</strong></div>
+              <div><span>Avg GPU util</span><strong>100.0%</strong></div>
+              <div><span>Peak KV cache</span><strong>26.25%</strong></div>
+              <div><span>Weight memory</span><strong>5.20 GiB</strong></div>
+              <div><span>Input tokens</span><strong>256,000</strong></div>
+              <div><span>Output tokens</span><strong>128,000</strong></div>
+              <div><span>Duration</span><strong>120.9 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="random_mmlu" data-size="7B" data-quant="BnB-NF4">
+        <td><button class="link-button" data-target="run-4">Qwen2.5-7B-Instruct-BNB-NF4-DQ___perf_quality_020120</button></td>
+        <td>Random 512/256 + MMLU</td>
+        <td>7B</td>
+        <td>BnB-NF4</td>
+        <td class="num">1,044</td>
+        <td class="num">0.754</td>
+        <td class="num">20.4</td>
+        <td class="num">285.2</td>
+      </tr>
+      <tr id="run-4" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>7B BnB-NF4 - Random 512/256 + MMLU</h3>
+              <p><strong>Model:</strong> <code>/opt/hpml_project/models/local/Qwen2.5-7B-Instruct-BNB-NF4-DQ</code></p>
+              <p><strong>Run key:</strong> <code>Qwen2.5-7B-Instruct-BNB-NF4-DQ___perf_quality_020120</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen2.5-7B-Instruct-BNB-NF4-DQ___perf_quality_020120_perf_perf_20260503_042736.json">perf JSON</a> · <a href="run_artifacts/json/Qwen2.5-7B-Instruct-BNB-NF4-DQ___perf_quality_020120_quality_quality_20260503_042949.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen2.5-7B-Instruct-BNB-NF4-DQ___perf_quality_020120_20260503_042530.csv">metric trace CSV</a> <code>metrics/run_Qwen2.5-7B-Instruct-BNB-NF4-DQ___perf_quality_020120_20260503_042530.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>1,044 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>4.08 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>374 tok/s</strong></div>
+              <div><span>MMLU</span><strong>0.754</strong><em>stderr=0.025</em></div>
+              <div><span>Mean TTFT</span><strong>1368.9 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>2741.3 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>54.79 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>16048.6 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>20.38 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>285.2 W</strong></div>
+              <div><span>Avg GPU util</span><strong>99.2%</strong></div>
+              <div><span>Peak KV cache</span><strong>26.25%</strong></div>
+              <div><span>Weight memory</span><strong>5.46 GiB</strong></div>
+              <div><span>Input tokens</span><strong>256,000</strong></div>
+              <div><span>Output tokens</span><strong>128,000</strong></div>
+              <div><span>Duration</span><strong>122.6 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="random_mmlu" data-size="14B" data-quant="Normal/BF16">
+        <td><button class="link-button" data-target="run-5">Qwen_Qwen2.5-14B-Instruct___perf_quality_020120</button></td>
+        <td>Random 512/256 + MMLU</td>
+        <td>14B</td>
+        <td>Normal/BF16</td>
+        <td class="num">1,094</td>
+        <td class="num">0.825</td>
+        <td class="num">41.5</td>
+        <td class="num">285.6</td>
+      </tr>
+      <tr id="run-5" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>14B Normal/BF16 - Random 512/256 + MMLU</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-14B-Instruct</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-14B-Instruct___perf_quality_020120</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-14B-Instruct___perf_quality_020120_perf_perf_20260503_020914.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-14B-Instruct___perf_quality_020120_quality_quality_20260503_021206.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-14B-Instruct___perf_quality_020120_20260503_020713.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-14B-Instruct___perf_quality_020120_20260503_020713.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>1,094 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>4.28 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>225 tok/s</strong></div>
+              <div><span>MMLU</span><strong>0.825</strong><em>stderr=0.022</em></div>
+              <div><span>Mean TTFT</span><strong>2276.1 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>4283.3 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>48.58 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>15670.0 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>41.55 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>285.6 W</strong></div>
+              <div><span>Avg GPU util</span><strong>99.8%</strong></div>
+              <div><span>Peak KV cache</span><strong>90.04%</strong></div>
+              <div><span>Weight memory</span><strong>27.57 GiB</strong></div>
+              <div><span>Input tokens</span><strong>256,000</strong></div>
+              <div><span>Output tokens</span><strong>128,000</strong></div>
+              <div><span>Duration</span><strong>117.0 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="random_mmlu" data-size="14B" data-quant="GPTQ-Int8">
+        <td><button class="link-button" data-target="run-6">Qwen_Qwen2.5-14B-Instruct-GPTQ-Int8___perf_quality_020120</button></td>
+        <td>Random 512/256 + MMLU</td>
+        <td>14B</td>
+        <td>GPTQ-Int8</td>
+        <td class="num">865</td>
+        <td class="num">0.825</td>
+        <td class="num">30.5</td>
+        <td class="num">287.5</td>
+      </tr>
+      <tr id="run-6" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>14B GPTQ-Int8 - Random 512/256 + MMLU</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-14B-Instruct-GPTQ-Int8</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-14B-Instruct-GPTQ-Int8___perf_quality_020120</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-14B-Instruct-GPTQ-Int8___perf_quality_020120_perf_perf_20260503_022946.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-14B-Instruct-GPTQ-Int8___perf_quality_020120_quality_quality_20260503_023240.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-14B-Instruct-GPTQ-Int8___perf_quality_020120_20260503_022716.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-14B-Instruct-GPTQ-Int8___perf_quality_020120_20260503_022716.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>865 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>3.38 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>199 tok/s</strong></div>
+              <div><span>MMLU</span><strong>0.825</strong><em>stderr=0.022</em></div>
+              <div><span>Mean TTFT</span><strong>2579.2 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>4860.1 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>62.65 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>19779.9 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>30.46 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>287.5 W</strong></div>
+              <div><span>Avg GPU util</span><strong>99.6%</strong></div>
+              <div><span>Peak KV cache</span><strong>90.04%</strong></div>
+              <div><span>Weight memory</span><strong>15.67 GiB</strong></div>
+              <div><span>Input tokens</span><strong>256,000</strong></div>
+              <div><span>Output tokens</span><strong>128,000</strong></div>
+              <div><span>Duration</span><strong>148.0 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="random_mmlu" data-size="14B" data-quant="AWQ-Int4">
+        <td><button class="link-button" data-target="run-7">Qwen_Qwen2.5-14B-Instruct-AWQ___perf_quality_020120</button></td>
+        <td>Random 512/256 + MMLU</td>
+        <td>14B</td>
+        <td>AWQ-Int4</td>
+        <td class="num">514</td>
+        <td class="num">0.814</td>
+        <td class="num">24.0</td>
+        <td class="num">292.2</td>
+      </tr>
+      <tr id="run-7" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>14B AWQ-Int4 - Random 512/256 + MMLU</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-14B-Instruct-AWQ</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-14B-Instruct-AWQ___perf_quality_020120</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-14B-Instruct-AWQ___perf_quality_020120_perf_perf_20260503_032303.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-14B-Instruct-AWQ___perf_quality_020120_quality_quality_20260503_032626.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-14B-Instruct-AWQ___perf_quality_020120_20260503_031854.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-14B-Instruct-AWQ___perf_quality_020120_20260503_031854.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>514 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>2.01 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>158 tok/s</strong></div>
+              <div><span>MMLU</span><strong>0.814</strong><em>stderr=0.022</em></div>
+              <div><span>Mean TTFT</span><strong>3250.2 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>6054.2 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>109.46 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>32462.6 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>23.97 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>292.2 W</strong></div>
+              <div><span>Avg GPU util</span><strong>100.0%</strong></div>
+              <div><span>Peak KV cache</span><strong>90.04%</strong></div>
+              <div><span>Weight memory</span><strong>9.38 GiB</strong></div>
+              <div><span>Input tokens</span><strong>256,000</strong></div>
+              <div><span>Output tokens</span><strong>128,000</strong></div>
+              <div><span>Duration</span><strong>248.9 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="random_mmlu" data-size="14B" data-quant="BnB-NF4">
+        <td><button class="link-button" data-target="run-8">Qwen2.5-14B-Instruct-BNB-NF4-DQ___perf_quality_020120</button></td>
+        <td>Random 512/256 + MMLU</td>
+        <td>14B</td>
+        <td>BnB-NF4</td>
+        <td class="num">520</td>
+        <td class="num">0.800</td>
+        <td class="num">24.7</td>
+        <td class="num">293.3</td>
+      </tr>
+      <tr id="run-8" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>14B BnB-NF4 - Random 512/256 + MMLU</h3>
+              <p><strong>Model:</strong> <code>/opt/hpml_project/models/local/Qwen2.5-14B-Instruct-BNB-NF4-DQ</code></p>
+              <p><strong>Run key:</strong> <code>Qwen2.5-14B-Instruct-BNB-NF4-DQ___perf_quality_020120</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen2.5-14B-Instruct-BNB-NF4-DQ___perf_quality_020120_perf_perf_20260503_043440.json">perf JSON</a> · <a href="run_artifacts/json/Qwen2.5-14B-Instruct-BNB-NF4-DQ___perf_quality_020120_quality_quality_20260503_043750.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen2.5-14B-Instruct-BNB-NF4-DQ___perf_quality_020120_20260503_043034.csv">metric trace CSV</a> <code>metrics/run_Qwen2.5-14B-Instruct-BNB-NF4-DQ___perf_quality_020120_20260503_043034.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>520 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>2.03 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>181 tok/s</strong></div>
+              <div><span>MMLU</span><strong>0.800</strong><em>stderr=0.023</em></div>
+              <div><span>Mean TTFT</span><strong>2825.9 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>4972.9 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>109.85 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>32142.1 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>24.66 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>293.3 W</strong></div>
+              <div><span>Avg GPU util</span><strong>99.9%</strong></div>
+              <div><span>Peak KV cache</span><strong>90.04%</strong></div>
+              <div><span>Weight memory</span><strong>9.90 GiB</strong></div>
+              <div><span>Input tokens</span><strong>256,000</strong></div>
+              <div><span>Output tokens</span><strong>128,000</strong></div>
+              <div><span>Duration</span><strong>246.3 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="random_mmlu" data-size="32B" data-quant="Normal/BF16">
+        <td><button class="link-button" data-target="run-9">Qwen_Qwen2.5-32B-Instruct___perf_quality_020120</button></td>
+        <td>Random 512/256 + MMLU</td>
+        <td>32B</td>
+        <td>Normal/BF16</td>
+        <td class="num">461</td>
+        <td class="num">0.863</td>
+        <td class="num">76.0</td>
+        <td class="num">292.4</td>
+      </tr>
+      <tr id="run-9" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>32B Normal/BF16 - Random 512/256 + MMLU</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-32B-Instruct</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-32B-Instruct___perf_quality_020120</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-32B-Instruct___perf_quality_020120_perf_perf_20260503_021754.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-32B-Instruct___perf_quality_020120_quality_quality_20260503_022242.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-32B-Instruct___perf_quality_020120_20260503_021317.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-32B-Instruct___perf_quality_020120_20260503_021317.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>461 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>1.80 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>98 tok/s</strong></div>
+              <div><span>MMLU</span><strong>0.863</strong><em>stderr=0.020</em></div>
+              <div><span>Mean TTFT</span><strong>5229.3 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>10977.6 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>112.80 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>47814.9 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>75.98 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>292.4 W</strong></div>
+              <div><span>Avg GPU util</span><strong>100.0%</strong></div>
+              <div><span>Peak KV cache</span><strong>100.00%</strong></div>
+              <div><span>Weight memory</span><strong>61.04 GiB</strong></div>
+              <div><span>Input tokens</span><strong>256,000</strong></div>
+              <div><span>Output tokens</span><strong>128,000</strong></div>
+              <div><span>Duration</span><strong>277.8 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="random_mmlu" data-size="32B" data-quant="GPTQ-Int8">
+        <td><button class="link-button" data-target="run-10">Qwen_Qwen2.5-32B-Instruct-GPTQ-Int8___perf_quality_020120</button></td>
+        <td>Random 512/256 + MMLU</td>
+        <td>32B</td>
+        <td>GPTQ-Int8</td>
+        <td class="num">340</td>
+        <td class="num">0.863</td>
+        <td class="num">48.6</td>
+        <td class="num">295.3</td>
+      </tr>
+      <tr id="run-10" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>32B GPTQ-Int8 - Random 512/256 + MMLU</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-32B-Instruct-GPTQ-Int8</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-32B-Instruct-GPTQ-Int8___perf_quality_020120</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-32B-Instruct-GPTQ-Int8___perf_quality_020120_perf_perf_20260503_024000.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-32B-Instruct-GPTQ-Int8___perf_quality_020120_quality_quality_20260503_024522.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-32B-Instruct-GPTQ-Int8___perf_quality_020120_20260503_023347.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-32B-Instruct-GPTQ-Int8___perf_quality_020120_20260503_023347.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>340 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>1.33 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>84 tok/s</strong></div>
+              <div><span>MMLU</span><strong>0.863</strong><em>stderr=0.019</em></div>
+              <div><span>Mean TTFT</span><strong>6120.7 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>15392.5 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>158.73 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>64847.8 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>48.64 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>295.3 W</strong></div>
+              <div><span>Avg GPU util</span><strong>99.6%</strong></div>
+              <div><span>Peak KV cache</span><strong>100.00%</strong></div>
+              <div><span>Weight memory</span><strong>32.84 GiB</strong></div>
+              <div><span>Input tokens</span><strong>256,000</strong></div>
+              <div><span>Output tokens</span><strong>128,000</strong></div>
+              <div><span>Duration</span><strong>377.0 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="random_mmlu" data-size="32B" data-quant="AWQ-Int4">
+        <td><button class="link-button" data-target="run-11">Qwen_Qwen2.5-32B-Instruct-AWQ___perf_quality_020120</button></td>
+        <td>Random 512/256 + MMLU</td>
+        <td>32B</td>
+        <td>AWQ-Int4</td>
+        <td class="num">198</td>
+        <td class="num">0.860</td>
+        <td class="num">33.9</td>
+        <td class="num">297.2</td>
+      </tr>
+      <tr id="run-11" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>32B AWQ-Int4 - Random 512/256 + MMLU</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-32B-Instruct-AWQ</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-32B-Instruct-AWQ___perf_quality_020120</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-32B-Instruct-AWQ___perf_quality_020120_perf_perf_20260503_033806.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-32B-Instruct-AWQ___perf_quality_020120_quality_quality_20260503_034421.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-32B-Instruct-AWQ___perf_quality_020120_20260503_032733.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-32B-Instruct-AWQ___perf_quality_020120_20260503_032733.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>198 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>0.77 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>67 tok/s</strong></div>
+              <div><span>MMLU</span><strong>0.860</strong><em>stderr=0.020</em></div>
+              <div><span>Mean TTFT</span><strong>7632.3 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>25828.8 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>272.85 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>106050.4 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>33.90 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>297.2 W</strong></div>
+              <div><span>Avg GPU util</span><strong>100.0%</strong></div>
+              <div><span>Peak KV cache</span><strong>100.00%</strong></div>
+              <div><span>Weight memory</span><strong>18.14 GiB</strong></div>
+              <div><span>Input tokens</span><strong>256,000</strong></div>
+              <div><span>Output tokens</span><strong>128,000</strong></div>
+              <div><span>Duration</span><strong>647.9 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="random_mmlu" data-size="32B" data-quant="BnB-NF4">
+        <td><button class="link-button" data-target="run-12">Qwen2.5-32B-Instruct-BNB-NF4-DQ___perf_quality_020120</button></td>
+        <td>Random 512/256 + MMLU</td>
+        <td>32B</td>
+        <td>BnB-NF4</td>
+        <td class="num">189</td>
+        <td class="num">0.867</td>
+        <td class="num">36.4</td>
+        <td class="num">297.3</td>
+      </tr>
+      <tr id="run-12" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>32B BnB-NF4 - Random 512/256 + MMLU</h3>
+              <p><strong>Model:</strong> <code>/opt/hpml_project/models/local/Qwen2.5-32B-Instruct-BNB-NF4-DQ</code></p>
+              <p><strong>Run key:</strong> <code>Qwen2.5-32B-Instruct-BNB-NF4-DQ___perf_quality_020120</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen2.5-32B-Instruct-BNB-NF4-DQ___perf_quality_020120_perf_perf_20260503_045003.json">perf JSON</a> · <a href="run_artifacts/json/Qwen2.5-32B-Instruct-BNB-NF4-DQ___perf_quality_020120_quality_quality_20260503_045536.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen2.5-32B-Instruct-BNB-NF4-DQ___perf_quality_020120_20260503_043901.csv">metric trace CSV</a> <code>metrics/run_Qwen2.5-32B-Instruct-BNB-NF4-DQ___perf_quality_020120_20260503_043901.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>189 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>0.74 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>75 tok/s</strong></div>
+              <div><span>MMLU</span><strong>0.867</strong><em>stderr=0.020</em></div>
+              <div><span>Mean TTFT</span><strong>6786.5 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>28784.6 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>291.46 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>113274.7 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>36.37 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>297.3 W</strong></div>
+              <div><span>Avg GPU util</span><strong>100.0%</strong></div>
+              <div><span>Peak KV cache</span><strong>100.00%</strong></div>
+              <div><span>Weight memory</span><strong>19.39 GiB</strong></div>
+              <div><span>Input tokens</span><strong>256,000</strong></div>
+              <div><span>Output tokens</span><strong>128,000</strong></div>
+              <div><span>Duration</span><strong>677.2 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="random_mmlu" data-size="72B" data-quant="GPTQ-Int8">
+        <td><button class="link-button" data-target="run-13">Qwen_Qwen2.5-72B-Instruct-GPTQ-Int8___perf_quality_020120</button></td>
+        <td>Random 512/256 + MMLU</td>
+        <td>72B</td>
+        <td>GPTQ-Int8</td>
+        <td class="num">132</td>
+        <td class="num">0.891</td>
+        <td class="num">88.1</td>
+        <td class="num">298.1</td>
+      </tr>
+      <tr id="run-13" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>72B GPTQ-Int8 - Random 512/256 + MMLU</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-72B-Instruct-GPTQ-Int8</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-72B-Instruct-GPTQ-Int8___perf_quality_020120</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-72B-Instruct-GPTQ-Int8___perf_quality_020120_perf_perf_20260503_030256.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-72B-Instruct-GPTQ-Int8___perf_quality_020120_quality_quality_20260503_031321.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-72B-Instruct-GPTQ-Int8___perf_quality_020120_20260503_024712.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-72B-Instruct-GPTQ-Int8___perf_quality_020120_20260503_024712.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>132 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>0.52 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>21 tok/s</strong></div>
+              <div><span>MMLU</span><strong>0.891</strong><em>stderr=0.018</em></div>
+              <div><span>Mean TTFT</span><strong>24787.8 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>99640.5 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>376.42 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>188234.1 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>88.07 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>298.1 W</strong></div>
+              <div><span>Avg GPU util</span><strong>100.0%</strong></div>
+              <div><span>Peak KV cache</span><strong>100.00%</strong></div>
+              <div><span>Weight memory</span><strong>71.84 GiB</strong></div>
+              <div><span>Input tokens</span><strong>256,000</strong></div>
+              <div><span>Output tokens</span><strong>128,000</strong></div>
+              <div><span>Duration</span><strong>967.3 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="random_mmlu" data-size="72B" data-quant="AWQ-Int4">
+        <td><button class="link-button" data-target="run-14">Qwen_Qwen2.5-72B-Instruct-AWQ___perf_quality_020120</button></td>
+        <td>Random 512/256 + MMLU</td>
+        <td>72B</td>
+        <td>AWQ-Int4</td>
+        <td class="num">80</td>
+        <td class="num">0.877</td>
+        <td class="num">54.9</td>
+        <td class="num">299.0</td>
+      </tr>
+      <tr id="run-14" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>72B AWQ-Int4 - Random 512/256 + MMLU</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-72B-Instruct-AWQ</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-72B-Instruct-AWQ___perf_quality_020120</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-72B-Instruct-AWQ___perf_quality_020120_perf_perf_20260503_041211.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-72B-Instruct-AWQ___perf_quality_020120_quality_quality_20260503_042458.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-72B-Instruct-AWQ___perf_quality_020120_20260503_034622.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-72B-Instruct-AWQ___perf_quality_020120_20260503_034622.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>80 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>0.31 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>14 tok/s</strong></div>
+              <div><span>MMLU</span><strong>0.877</strong><em>stderr=0.019</em></div>
+              <div><span>Mean TTFT</span><strong>35357.0 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>160815.5 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>630.22 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>307448.8 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>54.92 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>299.0 W</strong></div>
+              <div><span>Avg GPU util</span><strong>99.9%</strong></div>
+              <div><span>Peak KV cache</span><strong>100.00%</strong></div>
+              <div><span>Weight memory</span><strong>38.76 GiB</strong></div>
+              <div><span>Input tokens</span><strong>256,000</strong></div>
+              <div><span>Output tokens</span><strong>128,000</strong></div>
+              <div><span>Duration</span><strong>1594.5 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="random_mmlu" data-size="72B" data-quant="BnB-NF4">
+        <td><button class="link-button" data-target="run-15">Qwen2.5-72B-Instruct-BNB-NF4-DQ___perf_quality_020120</button></td>
+        <td>Random 512/256 + MMLU</td>
+        <td>72B</td>
+        <td>BnB-NF4</td>
+        <td class="num">74</td>
+        <td class="num">0.902</td>
+        <td class="num">59.8</td>
+        <td class="num">299.0</td>
+      </tr>
+      <tr id="run-15" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>72B BnB-NF4 - Random 512/256 + MMLU</h3>
+              <p><strong>Model:</strong> <code>/opt/hpml_project/models/local/Qwen2.5-72B-Instruct-BNB-NF4-DQ</code></p>
+              <p><strong>Run key:</strong> <code>Qwen2.5-72B-Instruct-BNB-NF4-DQ___perf_quality_020120</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen2.5-72B-Instruct-BNB-NF4-DQ___perf_quality_020120_perf_perf_20260503_052539.json">perf JSON</a> · <a href="run_artifacts/json/Qwen2.5-72B-Instruct-BNB-NF4-DQ___perf_quality_020120_quality_quality_20260503_054604.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen2.5-72B-Instruct-BNB-NF4-DQ___perf_quality_020120_20260503_045741.csv">metric trace CSV</a> <code>metrics/run_Qwen2.5-72B-Instruct-BNB-NF4-DQ___perf_quality_020120_20260503_045741.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>74 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>0.29 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>15 tok/s</strong></div>
+              <div><span>MMLU</span><strong>0.902</strong><em>stderr=0.017</em></div>
+              <div><span>Mean TTFT</span><strong>34641.2 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>176217.2 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>710.84 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>336262.9 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>59.83 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>299.0 W</strong></div>
+              <div><span>Avg GPU util</span><strong>100.0%</strong></div>
+              <div><span>Peak KV cache</span><strong>100.00%</strong></div>
+              <div><span>Weight memory</span><strong>41.55 GiB</strong></div>
+              <div><span>Input tokens</span><strong>256,000</strong></div>
+              <div><span>Output tokens</span><strong>128,000</strong></div>
+              <div><span>Duration</span><strong>1729.4 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="sharegpt_gsm8k" data-size="7B" data-quant="Normal/BF16">
+        <td><button class="link-button" data-target="run-16">Qwen_Qwen2.5-7B-Instruct___perf_quality_192337</button></td>
+        <td>ShareGPT + GSM8K</td>
+        <td>7B</td>
+        <td>Normal/BF16</td>
+        <td class="num">1,573</td>
+        <td class="num">0.852</td>
+        <td class="num">28.1</td>
+        <td class="num">179.7</td>
+      </tr>
+      <tr id="run-16" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>7B Normal/BF16 - ShareGPT + GSM8K</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-7B-Instruct</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-7B-Instruct___perf_quality_192337</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-7B-Instruct___perf_quality_192337_perf_perf_20260426_192822.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-7B-Instruct___perf_quality_192337_quality_quality_20260426_192937.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-7B-Instruct___perf_quality_192337_20260426_192710.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-7B-Instruct___perf_quality_192337_20260426_192710.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>1,573 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>7.23 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>63 tok/s</strong></div>
+              <div><span>GSM8K</span><strong>0.852</strong><em>flex=0.872</em></div>
+              <div><span>Mean TTFT</span><strong>3266.6 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>25208.4 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>23.57 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>37711.4 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>28.08 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>179.7 W</strong></div>
+              <div><span>Avg GPU util</span><strong>96.9%</strong></div>
+              <div><span>Peak KV cache</span><strong>14.48%</strong></div>
+              <div><span>Weight memory</span><strong>14.25 GiB</strong></div>
+              <div><span>Input tokens</span><strong>103,437</strong></div>
+              <div><span>Output tokens</span><strong>108,772</strong></div>
+              <div><span>Duration</span><strong>69.2 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="sharegpt_gsm8k" data-size="7B" data-quant="GPTQ-Int8">
+        <td><button class="link-button" data-target="run-17">Qwen_Qwen2.5-7B-Instruct-GPTQ-Int8___perf_quality_190843</button></td>
+        <td>ShareGPT + GSM8K</td>
+        <td>7B</td>
+        <td>GPTQ-Int8</td>
+        <td class="num">3,372</td>
+        <td class="num">0.832</td>
+        <td class="num">27.6</td>
+        <td class="num">248.7</td>
+      </tr>
+      <tr id="run-17" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>7B GPTQ-Int8 - ShareGPT + GSM8K</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-7B-Instruct-GPTQ-Int8</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-7B-Instruct-GPTQ-Int8___perf_quality_190843</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-7B-Instruct-GPTQ-Int8___perf_quality_190843_perf_perf_20260426_191520.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-7B-Instruct-GPTQ-Int8___perf_quality_190843_quality_quality_20260426_191642.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-7B-Instruct-GPTQ-Int8___perf_quality_190843_20260426_191444.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-7B-Instruct-GPTQ-Int8___perf_quality_190843_20260426_191444.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>3,372 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>15.63 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>906 tok/s</strong></div>
+              <div><span>GSM8K</span><strong>0.832</strong><em>flex=0.868</em></div>
+              <div><span>Mean TTFT</span><strong>228.3 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>1633.2 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>17.41 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>12508.8 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>27.63 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>248.7 W</strong></div>
+              <div><span>Avg GPU util</span><strong>96.3%</strong></div>
+              <div><span>Peak KV cache</span><strong>14.94%</strong></div>
+              <div><span>Weight memory</span><strong>8.24 GiB</strong></div>
+              <div><span>Input tokens</span><strong>103,437</strong></div>
+              <div><span>Output tokens</span><strong>107,855</strong></div>
+              <div><span>Duration</span><strong>32.0 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="sharegpt_gsm8k" data-size="7B" data-quant="AWQ-Int4">
+        <td><button class="link-button" data-target="run-18">Qwen_Qwen2.5-7B-Instruct-AWQ___perf_quality_192337</button></td>
+        <td>ShareGPT + GSM8K</td>
+        <td>7B</td>
+        <td>AWQ-Int4</td>
+        <td class="num">4,474</td>
+        <td class="num">0.776</td>
+        <td class="num">19.5</td>
+        <td class="num">230.0</td>
+      </tr>
+      <tr id="run-18" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>7B AWQ-Int4 - ShareGPT + GSM8K</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-7B-Instruct-AWQ</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-7B-Instruct-AWQ___perf_quality_192337</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-7B-Instruct-AWQ___perf_quality_192337_perf_perf_20260426_192444.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-7B-Instruct-AWQ___perf_quality_192337_quality_quality_20260426_192552.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-7B-Instruct-AWQ___perf_quality_192337_20260426_192413.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-7B-Instruct-AWQ___perf_quality_192337_20260426_192413.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>4,474 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>20.63 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>1,163 tok/s</strong></div>
+              <div><span>GSM8K</span><strong>0.776</strong><em>flex=0.812</em></div>
+              <div><span>Mean TTFT</span><strong>177.8 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>1205.6 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>13.31 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>9663.7 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>19.46 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>230.0 W</strong></div>
+              <div><span>Avg GPU util</span><strong>98.8%</strong></div>
+              <div><span>Peak KV cache</span><strong>14.77%</strong></div>
+              <div><span>Weight memory</span><strong>5.20 GiB</strong></div>
+              <div><span>Input tokens</span><strong>103,437</strong></div>
+              <div><span>Output tokens</span><strong>108,405</strong></div>
+              <div><span>Duration</span><strong>24.2 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="sharegpt_gsm8k" data-size="7B" data-quant="BnB-NF4">
+        <td><button class="link-button" data-target="run-19">Qwen2.5-7B-Instruct-BNB-NF4-DQ___perf_quality_190843</button></td>
+        <td>ShareGPT + GSM8K</td>
+        <td>7B</td>
+        <td>BnB-NF4</td>
+        <td class="num">901</td>
+        <td class="num">0.824</td>
+        <td class="num">42.1</td>
+        <td class="num">278.8</td>
+      </tr>
+      <tr id="run-19" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>7B BnB-NF4 - ShareGPT + GSM8K</h3>
+              <p><strong>Model:</strong> <code>/opt/hpml_project/models/local/Qwen2.5-7B-Instruct-BNB-NF4-DQ</code></p>
+              <p><strong>Run key:</strong> <code>Qwen2.5-7B-Instruct-BNB-NF4-DQ___perf_quality_190843</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen2.5-7B-Instruct-BNB-NF4-DQ___perf_quality_190843_perf_perf_20260426_191246.json">perf JSON</a> · <a href="run_artifacts/json/Qwen2.5-7B-Instruct-BNB-NF4-DQ___perf_quality_190843_quality_quality_20260426_191419.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen2.5-7B-Instruct-BNB-NF4-DQ___perf_quality_190843_20260426_191045.csv">metric trace CSV</a> <code>metrics/run_Qwen2.5-7B-Instruct-BNB-NF4-DQ___perf_quality_190843_20260426_191045.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>901 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>4.15 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>265 tok/s</strong></div>
+              <div><span>GSM8K</span><strong>0.824</strong><em>flex=0.832</em></div>
+              <div><span>Mean TTFT</span><strong>782.0 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>5123.0 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>56.71 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>42719.9 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>42.08 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>278.8 W</strong></div>
+              <div><span>Avg GPU util</span><strong>99.2%</strong></div>
+              <div><span>Peak KV cache</span><strong>15.20%</strong></div>
+              <div><span>Weight memory</span><strong>5.46 GiB</strong></div>
+              <div><span>Input tokens</span><strong>103,437</strong></div>
+              <div><span>Output tokens</span><strong>108,383</strong></div>
+              <div><span>Duration</span><strong>120.4 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="sharegpt_gsm8k" data-size="14B" data-quant="Normal/BF16">
+        <td><button class="link-button" data-target="run-20">Qwen_Qwen2.5-14B-Instruct___perf_quality_192337</button></td>
+        <td>ShareGPT + GSM8K</td>
+        <td>14B</td>
+        <td>Normal/BF16</td>
+        <td class="num">1,172</td>
+        <td class="num">0.848</td>
+        <td class="num">41.4</td>
+        <td class="num">273.2</td>
+      </tr>
+      <tr id="run-20" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>14B Normal/BF16 - ShareGPT + GSM8K</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-14B-Instruct</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-14B-Instruct___perf_quality_192337</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-14B-Instruct___perf_quality_192337_perf_perf_20260426_202937.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-14B-Instruct___perf_quality_192337_quality_quality_20260426_203154.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-14B-Instruct___perf_quality_192337_20260426_202801.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-14B-Instruct___perf_quality_192337_20260426_202801.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>1,172 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>5.35 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>545 tok/s</strong></div>
+              <div><span>GSM8K</span><strong>0.848</strong><em>flex=0.576</em></div>
+              <div><span>Mean TTFT</span><strong>379.4 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>2261.5 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>48.68 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>36220.2 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>41.39 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>273.2 W</strong></div>
+              <div><span>Avg GPU util</span><strong>98.5%</strong></div>
+              <div><span>Peak KV cache</span><strong>51.64%</strong></div>
+              <div><span>Weight memory</span><strong>27.57 GiB</strong></div>
+              <div><span>Input tokens</span><strong>103,437</strong></div>
+              <div><span>Output tokens</span><strong>109,571</strong></div>
+              <div><span>Duration</span><strong>93.5 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="sharegpt_gsm8k" data-size="14B" data-quant="GPTQ-Int8">
+        <td><button class="link-button" data-target="run-21">Qwen_Qwen2.5-14B-Instruct-GPTQ-Int8___perf_quality_161638</button></td>
+        <td>ShareGPT + GSM8K</td>
+        <td>14B</td>
+        <td>GPTQ-Int8</td>
+        <td class="num">998</td>
+        <td class="num">0.872</td>
+        <td class="num">30.4</td>
+        <td class="num">279.7</td>
+      </tr>
+      <tr id="run-21" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>14B GPTQ-Int8 - ShareGPT + GSM8K</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-14B-Instruct-GPTQ-Int8</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-14B-Instruct-GPTQ-Int8___perf_quality_161638</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-14B-Instruct-GPTQ-Int8___perf_quality_161638_perf_perf_20260430_162724.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-14B-Instruct-GPTQ-Int8___perf_quality_161638_quality_quality_20260430_162937.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-14B-Instruct-GPTQ-Int8___perf_quality_161638_20260430_162525.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-14B-Instruct-GPTQ-Int8___perf_quality_161638_20260430_162525.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>998 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>4.56 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>487 tok/s</strong></div>
+              <div><span>GSM8K</span><strong>0.872</strong><em>flex=0.588</em></div>
+              <div><span>Mean TTFT</span><strong>424.6 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>2393.9 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>58.70 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>44183.8 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>30.44 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>279.7 W</strong></div>
+              <div><span>Avg GPU util</span><strong>99.8%</strong></div>
+              <div><span>Peak KV cache</span><strong>51.67%</strong></div>
+              <div><span>Weight memory</span><strong>15.67 GiB</strong></div>
+              <div><span>Input tokens</span><strong>103,437</strong></div>
+              <div><span>Output tokens</span><strong>109,515</strong></div>
+              <div><span>Duration</span><strong>109.7 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="sharegpt_gsm8k" data-size="14B" data-quant="AWQ-Int4">
+        <td><button class="link-button" data-target="run-22">Qwen_Qwen2.5-14B-Instruct-AWQ___perf_quality_161638</button></td>
+        <td>ShareGPT + GSM8K</td>
+        <td>14B</td>
+        <td>AWQ-Int4</td>
+        <td class="num">514</td>
+        <td class="num">0.880</td>
+        <td class="num">24.0</td>
+        <td class="num">285.2</td>
+      </tr>
+      <tr id="run-22" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>14B AWQ-Int4 - ShareGPT + GSM8K</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-14B-Instruct-AWQ</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-14B-Instruct-AWQ___perf_quality_161638</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-14B-Instruct-AWQ___perf_quality_161638_perf_perf_20260430_162214.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-14B-Instruct-AWQ___perf_quality_161638_quality_quality_20260430_162448.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-14B-Instruct-AWQ___perf_quality_161638_20260430_161832.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-14B-Instruct-AWQ___perf_quality_161638_20260430_161832.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>514 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>2.35 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>230 tok/s</strong></div>
+              <div><span>GSM8K</span><strong>0.880</strong><em>flex=0.880</em></div>
+              <div><span>Mean TTFT</span><strong>900.1 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>5409.5 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>100.25 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>75591.7 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>23.95 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>285.2 W</strong></div>
+              <div><span>Avg GPU util</span><strong>100.0%</strong></div>
+              <div><span>Peak KV cache</span><strong>51.47%</strong></div>
+              <div><span>Weight memory</span><strong>9.38 GiB</strong></div>
+              <div><span>Input tokens</span><strong>103,437</strong></div>
+              <div><span>Output tokens</span><strong>109,313</strong></div>
+              <div><span>Duration</span><strong>212.5 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="sharegpt_gsm8k" data-size="14B" data-quant="BnB-NF4">
+        <td><button class="link-button" data-target="run-23">Qwen2.5-14B-Instruct-BNB-NF4-DQ___perf_quality_192337</button></td>
+        <td>ShareGPT + GSM8K</td>
+        <td>14B</td>
+        <td>BnB-NF4</td>
+        <td class="num">468</td>
+        <td class="num">0.876</td>
+        <td class="num">24.7</td>
+        <td class="num">289.0</td>
+      </tr>
+      <tr id="run-23" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>14B BnB-NF4 - ShareGPT + GSM8K</h3>
+              <p><strong>Model:</strong> <code>/opt/hpml_project/models/local/Qwen2.5-14B-Instruct-BNB-NF4-DQ</code></p>
+              <p><strong>Run key:</strong> <code>Qwen2.5-14B-Instruct-BNB-NF4-DQ___perf_quality_192337</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen2.5-14B-Instruct-BNB-NF4-DQ___perf_quality_192337_perf_perf_20260426_193412.json">perf JSON</a> · <a href="run_artifacts/json/Qwen2.5-14B-Instruct-BNB-NF4-DQ___perf_quality_192337_quality_quality_20260426_193649.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen2.5-14B-Instruct-BNB-NF4-DQ___perf_quality_192337_20260426_193029.csv">metric trace CSV</a> <code>metrics/run_Qwen2.5-14B-Instruct-BNB-NF4-DQ___perf_quality_192337_20260426_193029.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>468 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>2.14 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>335 tok/s</strong></div>
+              <div><span>GSM8K</span><strong>0.876</strong><em>flex=0.616</em></div>
+              <div><span>Mean TTFT</span><strong>618.1 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>2600.5 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>111.71 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>85052.9 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>24.68 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>289.0 W</strong></div>
+              <div><span>Avg GPU util</span><strong>99.9%</strong></div>
+              <div><span>Peak KV cache</span><strong>52.14%</strong></div>
+              <div><span>Weight memory</span><strong>9.90 GiB</strong></div>
+              <div><span>Input tokens</span><strong>103,437</strong></div>
+              <div><span>Output tokens</span><strong>109,040</strong></div>
+              <div><span>Duration</span><strong>233.1 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="sharegpt_gsm8k" data-size="32B" data-quant="Normal/BF16">
+        <td><button class="link-button" data-target="run-24">Qwen_Qwen2.5-32B-Instruct___perf_quality_192337</button></td>
+        <td>ShareGPT + GSM8K</td>
+        <td>32B</td>
+        <td>Normal/BF16</td>
+        <td class="num">551</td>
+        <td class="num">0.844</td>
+        <td class="num">75.9</td>
+        <td class="num">285.3</td>
+      </tr>
+      <tr id="run-24" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>32B Normal/BF16 - ShareGPT + GSM8K</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-32B-Instruct</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-32B-Instruct___perf_quality_192337</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-32B-Instruct___perf_quality_192337_perf_perf_20260426_214232.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-32B-Instruct___perf_quality_192337_quality_quality_20260426_214648.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-32B-Instruct___perf_quality_192337_20260426_213921.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-32B-Instruct___perf_quality_192337_20260426_213921.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>551 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>2.55 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>255 tok/s</strong></div>
+              <div><span>GSM8K</span><strong>0.844</strong><em>flex=0.852</em></div>
+              <div><span>Mean TTFT</span><strong>812.2 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>5011.6 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>100.86 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>74419.5 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>75.85 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>285.3 W</strong></div>
+              <div><span>Avg GPU util</span><strong>99.6%</strong></div>
+              <div><span>Peak KV cache</span><strong>71.04%</strong></div>
+              <div><span>Weight memory</span><strong>61.04 GiB</strong></div>
+              <div><span>Input tokens</span><strong>103,437</strong></div>
+              <div><span>Output tokens</span><strong>107,859</strong></div>
+              <div><span>Duration</span><strong>195.9 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="sharegpt_gsm8k" data-size="32B" data-quant="GPTQ-Int8">
+        <td><button class="link-button" data-target="run-25">Qwen_Qwen2.5-32B-Instruct-GPTQ-Int8___perf_quality_192337</button></td>
+        <td>ShareGPT + GSM8K</td>
+        <td>32B</td>
+        <td>GPTQ-Int8</td>
+        <td class="num">789</td>
+        <td class="num">0.844</td>
+        <td class="num">47.7</td>
+        <td class="num">280.9</td>
+      </tr>
+      <tr id="run-25" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>32B GPTQ-Int8 - ShareGPT + GSM8K</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-32B-Instruct-GPTQ-Int8</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-32B-Instruct-GPTQ-Int8___perf_quality_192337</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-32B-Instruct-GPTQ-Int8___perf_quality_192337_perf_perf_20260426_215649.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-32B-Instruct-GPTQ-Int8___perf_quality_192337_quality_quality_20260426_220128.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-32B-Instruct-GPTQ-Int8___perf_quality_192337_20260426_215432.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-32B-Instruct-GPTQ-Int8___perf_quality_192337_20260426_215432.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>789 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>3.66 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>190 tok/s</strong></div>
+              <div><span>GSM8K</span><strong>0.844</strong><em>flex=0.840</em></div>
+              <div><span>Mean TTFT</span><strong>1088.7 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>6941.0 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>73.46 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>54114.0 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>47.72 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>280.9 W</strong></div>
+              <div><span>Avg GPU util</span><strong>99.7%</strong></div>
+              <div><span>Peak KV cache</span><strong>69.36%</strong></div>
+              <div><span>Weight memory</span><strong>32.61 GiB</strong></div>
+              <div><span>Input tokens</span><strong>103,437</strong></div>
+              <div><span>Output tokens</span><strong>107,792</strong></div>
+              <div><span>Duration</span><strong>136.6 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="sharegpt_gsm8k" data-size="32B" data-quant="AWQ-Int4">
+        <td><button class="link-button" data-target="run-26">Qwen_Qwen2.5-32B-Instruct-AWQ___perf_quality_192337</button></td>
+        <td>ShareGPT + GSM8K</td>
+        <td>32B</td>
+        <td>AWQ-Int4</td>
+        <td class="num">1,040</td>
+        <td class="num">0.856</td>
+        <td class="num">32.9</td>
+        <td class="num">275.5</td>
+      </tr>
+      <tr id="run-26" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>32B AWQ-Int4 - ShareGPT + GSM8K</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-32B-Instruct-AWQ</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-32B-Instruct-AWQ___perf_quality_192337</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-32B-Instruct-AWQ___perf_quality_192337_perf_perf_20260426_214933.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-32B-Instruct-AWQ___perf_quality_192337_quality_quality_20260426_215329.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-32B-Instruct-AWQ___perf_quality_192337_20260426_214746.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-32B-Instruct-AWQ___perf_quality_192337_20260426_214746.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>1,040 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>4.79 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>242 tok/s</strong></div>
+              <div><span>GSM8K</span><strong>0.856</strong><em>flex=0.816</em></div>
+              <div><span>Mean TTFT</span><strong>854.1 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>5431.5 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>56.81 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>42158.2 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>32.89 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>275.5 W</strong></div>
+              <div><span>Avg GPU util</span><strong>99.9%</strong></div>
+              <div><span>Peak KV cache</span><strong>67.92%</strong></div>
+              <div><span>Weight memory</span><strong>18.14 GiB</strong></div>
+              <div><span>Input tokens</span><strong>103,437</strong></div>
+              <div><span>Output tokens</span><strong>108,612</strong></div>
+              <div><span>Duration</span><strong>104.5 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="sharegpt_gsm8k" data-size="32B" data-quant="BnB-NF4">
+        <td><button class="link-button" data-target="run-27">Qwen2.5-32B-Instruct-BNB-NF4-DQ___perf_quality_192337</button></td>
+        <td>ShareGPT + GSM8K</td>
+        <td>32B</td>
+        <td>BnB-NF4</td>
+        <td class="num">189</td>
+        <td class="num">0.868</td>
+        <td class="num">36.2</td>
+        <td class="num">295.4</td>
+      </tr>
+      <tr id="run-27" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>32B BnB-NF4 - ShareGPT + GSM8K</h3>
+              <p><strong>Model:</strong> <code>/opt/hpml_project/models/local/Qwen2.5-32B-Instruct-BNB-NF4-DQ</code></p>
+              <p><strong>Run key:</strong> <code>Qwen2.5-32B-Instruct-BNB-NF4-DQ___perf_quality_192337</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen2.5-32B-Instruct-BNB-NF4-DQ___perf_quality_192337_perf_perf_20260426_194705.json">perf JSON</a> · <a href="run_artifacts/json/Qwen2.5-32B-Instruct-BNB-NF4-DQ___perf_quality_192337_quality_quality_20260426_195224.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen2.5-32B-Instruct-BNB-NF4-DQ___perf_quality_192337_20260426_193808.csv">metric trace CSV</a> <code>metrics/run_Qwen2.5-32B-Instruct-BNB-NF4-DQ___perf_quality_192337_20260426_193808.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>189 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>0.87 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>145 tok/s</strong></div>
+              <div><span>GSM8K</span><strong>0.868</strong><em>flex=0.876</em></div>
+              <div><span>Mean TTFT</span><strong>1430.9 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>5765.0 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>275.72 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>207194.9 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>36.24 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>295.4 W</strong></div>
+              <div><span>Avg GPU util</span><strong>99.9%</strong></div>
+              <div><span>Peak KV cache</span><strong>68.31%</strong></div>
+              <div><span>Weight memory</span><strong>19.39 GiB</strong></div>
+              <div><span>Input tokens</span><strong>103,437</strong></div>
+              <div><span>Output tokens</span><strong>108,045</strong></div>
+              <div><span>Duration</span><strong>571.5 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="sharegpt_gsm8k" data-size="72B" data-quant="GPTQ-Int8">
+        <td><button class="link-button" data-target="run-28">Qwen_Qwen2.5-72B-Instruct-GPTQ-Int8___perf_quality_192337</button></td>
+        <td>ShareGPT + GSM8K</td>
+        <td>72B</td>
+        <td>GPTQ-Int8</td>
+        <td class="num">375</td>
+        <td class="num">0.932</td>
+        <td class="num">86.5</td>
+        <td class="num">287.5</td>
+      </tr>
+      <tr id="run-28" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>72B GPTQ-Int8 - ShareGPT + GSM8K</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-72B-Instruct-GPTQ-Int8</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-72B-Instruct-GPTQ-Int8___perf_quality_192337</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-72B-Instruct-GPTQ-Int8___perf_quality_192337_perf_perf_20260426_203825.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-72B-Instruct-GPTQ-Int8___perf_quality_192337_quality_quality_20260426_204851.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-72B-Instruct-GPTQ-Int8___perf_quality_192337_20260426_203348.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-72B-Instruct-GPTQ-Int8___perf_quality_192337_20260426_203348.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>375 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>1.74 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>87 tok/s</strong></div>
+              <div><span>GSM8K</span><strong>0.932</strong><em>flex=0.884</em></div>
+              <div><span>Mean TTFT</span><strong>2378.1 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>15117.2 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>153.44 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>112512.5 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>86.54 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>287.5 W</strong></div>
+              <div><span>Avg GPU util</span><strong>99.6%</strong></div>
+              <div><span>Peak KV cache</span><strong>86.76%</strong></div>
+              <div><span>Weight memory</span><strong>71.33 GiB</strong></div>
+              <div><span>Input tokens</span><strong>103,437</strong></div>
+              <div><span>Output tokens</span><strong>107,377</strong></div>
+              <div><span>Duration</span><strong>286.7 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="sharegpt_gsm8k" data-size="72B" data-quant="AWQ-Int4">
+        <td><button class="link-button" data-target="run-29">Qwen_Qwen2.5-72B-Instruct-AWQ___perf_quality_192337</button></td>
+        <td>ShareGPT + GSM8K</td>
+        <td>72B</td>
+        <td>AWQ-Int4</td>
+        <td class="num">491</td>
+        <td class="num">0.952</td>
+        <td class="num">53.9</td>
+        <td class="num">287.7</td>
+      </tr>
+      <tr id="run-29" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>72B AWQ-Int4 - ShareGPT + GSM8K</h3>
+              <p><strong>Model:</strong> <code>Qwen/Qwen2.5-72B-Instruct-AWQ</code></p>
+              <p><strong>Run key:</strong> <code>Qwen_Qwen2.5-72B-Instruct-AWQ___perf_quality_192337</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen_Qwen2.5-72B-Instruct-AWQ___perf_quality_192337_perf_perf_20260426_205350.json">perf JSON</a> · <a href="run_artifacts/json/Qwen_Qwen2.5-72B-Instruct-AWQ___perf_quality_192337_quality_quality_20260426_210120.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen_Qwen2.5-72B-Instruct-AWQ___perf_quality_192337_20260426_205017.csv">metric trace CSV</a> <code>metrics/run_Qwen_Qwen2.5-72B-Instruct-AWQ___perf_quality_192337_20260426_205017.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>491 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>2.26 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>110 tok/s</strong></div>
+              <div><span>GSM8K</span><strong>0.952</strong><em>flex=0.872</em></div>
+              <div><span>Mean TTFT</span><strong>1889.0 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>11902.9 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>120.48 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>89285.9 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>53.86 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>287.7 W</strong></div>
+              <div><span>Avg GPU util</span><strong>100.0%</strong></div>
+              <div><span>Peak KV cache</span><strong>87.20%</strong></div>
+              <div><span>Weight memory</span><strong>38.76 GiB</strong></div>
+              <div><span>Input tokens</span><strong>103,437</strong></div>
+              <div><span>Output tokens</span><strong>108,695</strong></div>
+              <div><span>Duration</span><strong>221.5 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="run-row" data-grid="sharegpt_gsm8k" data-size="72B" data-quant="BnB-NF4">
+        <td><button class="link-button" data-target="run-30">Qwen2.5-72B-Instruct-BNB-NF4-DQ___perf_quality_192337</button></td>
+        <td>ShareGPT + GSM8K</td>
+        <td>72B</td>
+        <td>BnB-NF4</td>
+        <td class="num">83</td>
+        <td class="num">0.924</td>
+        <td class="num">59.6</td>
+        <td class="num">297.9</td>
+      </tr>
+      <tr id="run-30" class="detail-row" hidden>
+        <td colspan="8">
+          <div class="detail-card">
+            <div>
+              <h3>72B BnB-NF4 - ShareGPT + GSM8K</h3>
+              <p><strong>Model:</strong> <code>/opt/hpml_project/models/local/Qwen2.5-72B-Instruct-BNB-NF4-DQ</code></p>
+              <p><strong>Run key:</strong> <code>Qwen2.5-72B-Instruct-BNB-NF4-DQ___perf_quality_192337</code></p>
+              <p><strong>Artifacts:</strong> <a href="run_artifacts/json/Qwen2.5-72B-Instruct-BNB-NF4-DQ___perf_quality_192337_perf_perf_20260426_201453.json">perf JSON</a> · <a href="run_artifacts/json/Qwen2.5-72B-Instruct-BNB-NF4-DQ___perf_quality_192337_quality_quality_20260426_202710.json">quality JSON</a></p>
+              <p><strong>Profile CSV:</strong> <a href="run_artifacts/metrics/run_Qwen2.5-72B-Instruct-BNB-NF4-DQ___perf_quality_192337_20260426_195440.csv">metric trace CSV</a> <code>metrics/run_Qwen2.5-72B-Instruct-BNB-NF4-DQ___perf_quality_192337_20260426_195440.csv</code></p>
+            </div>
+            <div class="metrics-grid">
+              <div><span>Output throughput</span><strong>83 tok/s</strong></div>
+              <div><span>Request throughput</span><strong>0.38 req/s</strong></div>
+              <div><span>Prefill throughput</span><strong>65 tok/s</strong></div>
+              <div><span>GSM8K</span><strong>0.924</strong><em>flex=0.876</em></div>
+              <div><span>Mean TTFT</span><strong>3193.5 ms</strong></div>
+              <div><span>p99 TTFT</span><strong>12586.8 ms</strong></div>
+              <div><span>Mean TPOT</span><strong>629.86 ms</strong></div>
+              <div><span>p99 E2E latency</span><strong>479314.8 ms</strong></div>
+              <div><span>Peak VRAM</span><strong>59.57 GiB</strong></div>
+              <div><span>Avg GPU power</span><strong>297.9 W</strong></div>
+              <div><span>Avg GPU util</span><strong>100.0%</strong></div>
+              <div><span>Peak KV cache</span><strong>87.74%</strong></div>
+              <div><span>Weight memory</span><strong>41.55 GiB</strong></div>
+              <div><span>Input tokens</span><strong>103,437</strong></div>
+              <div><span>Output tokens</span><strong>108,244</strong></div>
+              <div><span>Duration</span><strong>1300.8 s</strong></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      </tbody>
+    </table>
+  </main>
+  <script>
+    const gridFilter = document.getElementById('gridFilter');
+    const sizeFilter = document.getElementById('sizeFilter');
+    const quantFilter = document.getElementById('quantFilter');
+    const searchBox = document.getElementById('searchBox');
+    const rows = Array.from(document.querySelectorAll('tr.run-row'));
+
+    document.querySelectorAll('.link-button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const detail = document.getElementById(btn.dataset.target);
+        detail.hidden = !detail.hidden;
+      });
+    });
+
+    function applyFilters() {
+      const g = gridFilter.value;
+      const s = sizeFilter.value;
+      const q = quantFilter.value;
+      const text = searchBox.value.trim().toLowerCase();
+      rows.forEach(row => {
+        const detail = document.getElementById(row.querySelector('button').dataset.target);
+        const ok = (!g || row.dataset.grid === g) && (!s || row.dataset.size === s) && (!q || row.dataset.quant === q) && (!text || row.innerText.toLowerCase().includes(text) || detail.innerText.toLowerCase().includes(text));
+        row.hidden = !ok;
+        if (!ok) detail.hidden = true;
+      });
+    }
+    [gridFilter, sizeFilter, quantFilter, searchBox].forEach(el => el.addEventListener('input', applyFilters));
+  </script>
+</body>
+</html>

@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HPML Quantization Results Dashboard</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --text: #17202a;
+      --muted: #5f6b7a;
+      --border: #d8dee6;
+      --accent: #1769aa;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+    header {
+      background: #101820;
+      color: white;
+      padding: 32px 24px;
+    }
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      letter-spacing: 0;
+    }
+    header p {
+      max-width: 980px;
+      margin: 0;
+      color: #cdd6df;
+      font-size: 15px;
+    }
+    nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      border: 1px solid #5d7284;
+      padding: 7px 10px;
+      border-radius: 6px;
+    }
+    nav a.active {
+      background: white;
+      color: #101820;
+      border-color: white;
+    }
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    section {
+      margin: 0 0 28px;
+    }
+    h2 {
+      margin: 0 0 10px;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+    .note {
+      background: #eaf3fb;
+      border: 1px solid #bfd9ef;
+      color: #20384f;
+      padding: 14px 16px;
+      border-radius: 6px;
+      margin-bottom: 22px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 18px;
+    }
+    figure {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin: 0;
+      padding: 14px;
+      box-shadow: 0 1px 2px rgba(16, 24, 32, 0.05);
+    }
+    figure.wide {
+      grid-column: 1 / -1;
+    }
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid #edf0f3;
+      border-radius: 4px;
+      background: white;
+    }
+    figcaption {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    a {
+      color: var(--accent);
+    }
+    code {
+      background: #eef2f6;
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 0.95em;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Scaling vs. Precision: Qwen2.5 Results Dashboard</h1>
+    <p>Static export of the 96 GB VRAM scale/precision experiment. The full runnable grid contains 15 cells per primary sweep: Qwen2.5-Instruct 7B, 14B, 32B, and 72B across unquantized 16-bit, GPTQ-Int8, AWQ-Int4, and BnB-NF4, excluding unquantized 72B because it does not fit in memory.</p>
+    <nav>
+      <a href="charts.html" class="active">Charts</a>
+      <a href="runs.html">Run List</a>
+    </nav>
+  </header>
+  <main>
+    <div class="note">
+      Primary paired sweeps are ShareGPT performance with GSM8K quality, and random 512/256 performance with MMLU quality. System metrics are recorded for the full grid; Nsight Systems charts are representative kernel-level profiling slices.
+    </div>
+
+    <section>
+      <h2>ShareGPT + GSM8K</h2>
+      <p>ShareGPT performance uses 500 prompts, infinite request rate, and max concurrency 64. GSM8K quality uses 8-shot prompting with a 250-example limit and strict exact-match accuracy.</p>
+      <div class="grid">
+        <figure class="wide">
+          <h3>Pareto Frontier</h3>
+          <img src="sharegpt_gsm8k/pareto_gsm8k_vs_throughput.png" alt="GSM8K quality versus throughput Pareto frontier">
+          <figcaption>Main quality-throughput frontier for chatbot-shaped prompts.</figcaption>
+        </figure>
+        <figure>
+          <h3>Accuracy</h3>
+          <img src="sharegpt_gsm8k/gsm8k_accuracy.png" alt="GSM8K accuracy by model and quantization">
+          <figcaption>Strict GSM8K exact-match accuracy for each runnable cell.</figcaption>
+        </figure>
+        <figure>
+          <h3>Decode Throughput</h3>
+          <img src="sharegpt_gsm8k/throughput_bar.png" alt="ShareGPT output throughput by model and quantization">
+          <figcaption>Output-token throughput from vLLM bench.</figcaption>
+        </figure>
+        <figure>
+          <h3>TTFT Distribution</h3>
+          <img src="sharegpt_gsm8k/ttft_percentiles.png" alt="ShareGPT TTFT percentiles">
+          <figcaption>Time-to-first-token percentiles on a log scale.</figcaption>
+        </figure>
+        <figure>
+          <h3>VRAM Breakdown</h3>
+          <img src="sharegpt_gsm8k/vram_breakdown.png" alt="ShareGPT VRAM breakdown">
+          <figcaption>Observed peak VRAM composition: weights, KV cache, and framework overhead.</figcaption>
+        </figure>
+        <figure>
+          <h3>KV to Weight Ratio</h3>
+          <img src="sharegpt_gsm8k/kv_to_weight_ratio.png" alt="ShareGPT KV to weight memory ratio">
+          <figcaption>Peak KV-cache memory relative to model weight memory.</figcaption>
+        </figure>
+        <figure>
+          <h3>Quality vs. VRAM</h3>
+          <img src="sharegpt_gsm8k/pareto_gsm8k_vs_vram.png" alt="GSM8K quality versus peak VRAM">
+          <figcaption>Quality plotted against observed peak VRAM.</figcaption>
+        </figure>
+        <figure>
+          <h3>Throughput Over Time</h3>
+          <img src="sharegpt_gsm8k/throughput_over_time.png" alt="ShareGPT throughput over time">
+          <figcaption>Instantaneous decode throughput from vLLM generated-token counters.</figcaption>
+        </figure>
+        <figure>
+          <h3>KV Growth Over Time</h3>
+          <img src="sharegpt_gsm8k/kv_growth_over_time.png" alt="ShareGPT KV cache growth over time">
+          <figcaption>KV-cache occupancy during the active ShareGPT performance window.</figcaption>
+        </figure>
+        <figure>
+          <h3>Decode vs. Prefill</h3>
+          <img src="sharegpt_gsm8k/decode_vs_prefill.png" alt="ShareGPT decode versus prefill throughput">
+          <figcaption>Compares derived prefill throughput with measured decode throughput.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>Random 512/256 + MMLU</h2>
+      <p>Random performance uses 500 requests with 512 input tokens and 256 output tokens. MMLU quality uses 5-shot prompting across all 57 subtasks with a limit of 5 examples per subtask.</p>
+      <div class="grid">
+        <figure class="wide">
+          <h3>Pareto Frontier</h3>
+          <img src="random_mmlu/pareto_mmlu_vs_throughput.png" alt="MMLU quality versus throughput Pareto frontier">
+          <figcaption>Main quality-throughput frontier for fixed-shape random prompts.</figcaption>
+        </figure>
+        <figure>
+          <h3>Accuracy</h3>
+          <img src="random_mmlu/mmlu_accuracy.png" alt="MMLU accuracy by model and quantization">
+          <figcaption>Aggregate MMLU accuracy for each runnable cell.</figcaption>
+        </figure>
+        <figure>
+          <h3>Decode Throughput</h3>
+          <img src="random_mmlu/throughput_bar.png" alt="Random workload output throughput">
+          <figcaption>Output-token throughput from vLLM bench.</figcaption>
+        </figure>
+        <figure>
+          <h3>TTFT Distribution</h3>
+          <img src="random_mmlu/ttft_percentiles.png" alt="Random workload TTFT percentiles">
+          <figcaption>Time-to-first-token percentiles on a log scale.</figcaption>
+        </figure>
+        <figure>
+          <h3>VRAM Breakdown</h3>
+          <img src="random_mmlu/vram_breakdown.png" alt="Random workload VRAM breakdown">
+          <figcaption>Observed peak VRAM composition for the random workload sweep.</figcaption>
+        </figure>
+        <figure>
+          <h3>KV to Weight Ratio</h3>
+          <img src="random_mmlu/kv_to_weight_ratio.png" alt="Random workload KV to weight memory ratio">
+          <figcaption>Peak KV-cache memory relative to model weight memory.</figcaption>
+        </figure>
+        <figure>
+          <h3>Quality vs. VRAM</h3>
+          <img src="random_mmlu/pareto_mmlu_vs_vram.png" alt="MMLU quality versus peak VRAM">
+          <figcaption>Quality plotted against observed peak VRAM.</figcaption>
+        </figure>
+        <figure>
+          <h3>Throughput Over Time</h3>
+          <img src="random_mmlu/throughput_over_time.png" alt="Random workload throughput over time">
+          <figcaption>Instantaneous decode throughput from vLLM generated-token counters.</figcaption>
+        </figure>
+        <figure>
+          <h3>KV Growth Over Time</h3>
+          <img src="random_mmlu/kv_growth_over_time.png" alt="Random workload KV cache growth over time">
+          <figcaption>KV-cache occupancy during the active random performance window.</figcaption>
+        </figure>
+        <figure>
+          <h3>Decode vs. Prefill</h3>
+          <img src="random_mmlu/decode_vs_prefill.png" alt="Random workload decode versus prefill throughput">
+          <figcaption>Compares derived prefill throughput with measured decode throughput.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>Context Capacity</h2>
+      <p>Context-capacity runs are separate from the fixed 10 GiB KV-cache performance sweeps. These runs use GPU memory utilization 0.95 and read vLLM's reported GPU KV-cache token capacity.</p>
+      <div class="grid">
+        <figure>
+          <h3>Max Context by Cell</h3>
+          <img src="context_capacity/max_context_per_model.png" alt="Maximum context capacity by model and quantization">
+          <figcaption>Maximum KV-cache capacity per model configuration.</figcaption>
+        </figure>
+        <figure>
+          <h3>Context vs. Weights</h3>
+          <img src="context_capacity/context_vs_weight.png" alt="Context capacity versus model weight footprint">
+          <figcaption>Shows how reduced weight memory leaves more VRAM available for KV cache.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>Nsight Systems Profiling</h2>
+      <p>Selected representative runs were profiled with Nsight Systems to explain hardware behavior. These figures summarize kernel categories and achieved compute utilization.</p>
+      <div class="grid">
+        <figure class="wide">
+          <h3>Achieved vs. Peak Compute</h3>
+          <img src="nsys/achieved_vs_peak_compute.png" alt="Achieved compute versus peak compute">
+          <figcaption>Estimated achieved TFLOPS compared with peak FP16 throughput.</figcaption>
+        </figure>
+        <figure>
+          <h3>Kernel Breakdown</h3>
+          <img src="nsys/kernel_breakdown.png" alt="GPU time by kernel category">
+          <figcaption>GPU time grouped into GEMM, dequantization, attention, KV-cache, and other categories.</figcaption>
+        </figure>
+        <figure>
+          <h3>Compute vs. Memory Ops</h3>
+          <img src="nsys/compute_vs_memory.png" alt="Compute versus memory operation time">
+          <figcaption>Nsight Systems kernel and memory-operation time split.</figcaption>
+        </figure>
+        <figure>
+          <h3>Top Kernel Latency</h3>
+          <img src="nsys/top_kernel_latency.png" alt="Top kernel latency distribution">
+          <figcaption>Per-call latency distribution for the dominant kernels.</figcaption>
+        </figure>
+        <figure>
+          <h3>Latency Variance</h3>
+          <img src="nsys/latency_variance.png" alt="Latency variance hotspots">
+          <figcaption>Kernel execution-time variance used as a directional scheduling/cache signal.</figcaption>
+        </figure>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
