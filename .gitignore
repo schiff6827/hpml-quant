@@ -2,3 +2,6 @@ __pycache__/
 .webui_secret_key
 .nicegui/
 benchmarks/queue/
+benchmarks/nsys/*.nsys-rep
+benchmarks/nsys/*.sqlite
+benchmarks/nsys/legacy/

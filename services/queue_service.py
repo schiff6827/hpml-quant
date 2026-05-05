@@ -398,10 +398,15 @@ def _run_one_subprocess(bench_type, script_cfg, port, model, run_name, result_di
         return proc, lambda extras: benchmark_service.parse_quality_result(result_dir, run_name, extras=extras)
     if bench_type == 'context_sweep':
         ctx = script_cfg.get('context_sweep', {})
+        lc = launch_config or {}
         proc = benchmark_service.run_context_sweep(
             port=port, model=model, result_dir=result_dir, run_name=run_name,
             upper_bound=int(ctx.get('upper_bound', 32768)),
             step=int(ctx.get('step', 1024)),
+            kv_cache_gb=lc.get('kv_cache_gb'),
+            gpu_mem_util=lc.get('gpu_mem_util'),
+            dtype=lc.get('dtype'),
+            quantization=lc.get('quantization'),
         )
         return proc, lambda extras: benchmark_service.parse_context_sweep_result(result_dir, run_name, extras=extras)
     raise ValueError(f'unknown bench type: {bench_type}')
@@ -438,12 +443,8 @@ async def _bench_phase(job, port):
             run_name = f'{_safe(job["name"])}_{bench_type}'
             result_dir = os.path.join('/tmp', f'queue_{job["id"]}_{bench_type}')
 
-            # Quality uses lm-eval's in-process vllm backend (avoids the
-            # local-completions HTTP client deadlock seen in lm-eval 0.4.x).
-            # It loads its own model, so the externally-launched vLLM server
-            # must be torn down first to free the GPU.
-            if bench_type == 'quality' and vllm_service.is_alive(port):
-                _log(f'  stopping perf vLLM on port {port} before in-process quality run')
+            if bench_type in ('quality', 'context_sweep') and vllm_service.is_alive(port):
+                _log(f'  stopping vLLM on port {port} before {bench_type} run')
                 vllm_service.stop_server(port)
                 await asyncio.sleep(5)
 
@@ -453,7 +454,7 @@ async def _bench_phase(job, port):
 
             proc, parser = _run_one_subprocess(
                 bench_type, script_cfg, port, job['model'], run_name, result_dir,
-                launch_config=job.get('launch') if bench_type == 'quality' else None,
+                launch_config=job.get('launch') if bench_type in ('quality', 'context_sweep') else None,
             )
             drain_thread = threading.Thread(
                 target=_drain_proc_stdout, args=(proc,), daemon=True,

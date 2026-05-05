@@ -1,4 +1,4 @@
-"""Visualize max VRAM-bounded context per model.
+"""Visualize KV cache capacity per model.
 
 Reads the new-format context_sweep JSONs (those with a `launch` field, written
 by the rewritten scripts/run_context_sweep.py). Skips the older bottlenecked
@@ -111,9 +111,9 @@ ax.set_xticks(x_centers)
 ax.set_xticklabels(SIZES)
 ax.set_yscale('log')
 ax.set_ylim(1e4, 5e6)
-ax.set_ylabel('Max VRAM-bounded context (tokens, log scale)')
+ax.set_ylabel('KV cache capacity (tokens, log scale)')
 ax.set_xlabel('Model size')
-ax.set_title('Max single-request context per model — gpu_mem_util=0.95, max_model_len ≤ 131,072')
+ax.set_title('KV cache capacity per model — gpu_mem_util=0.95')
 ax.legend(loc='upper right', framealpha=0.95, fontsize=9)
 ax.grid(True, alpha=0.3, axis='y', which='both')
 
@@ -158,7 +158,7 @@ for quant in QUANTS:
 ax2.axhline(QWEN25_TRAINED_MAX, color='red', linestyle='--', linewidth=1.2,
             label=f"Qwen2.5 trained max ({QWEN25_TRAINED_MAX:,})", alpha=0.7)
 ax2.set_xlabel('Model weight memory (GiB)')
-ax2.set_ylabel('Max VRAM-bounded context (tokens)')
+ax2.set_ylabel('KV cache capacity (tokens)')
 ax2.set_yscale('log')
 ax2.set_ylim(1e4, 5e6)
 ax2.set_title('Context capacity vs weight footprint — every GB of weights is GB less for KV')
