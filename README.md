@@ -72,7 +72,7 @@ The project is a Pareto-frontier study rather than a single baseline-to-optimize
 ```text
 .
 ├── README.md
-├── app.py                         # Streamlit app entry point
+├── app.py                         # NiceGUI app entry point
 ├── config.py                      # Local model/cache/server configuration
 ├── model.yaml                     # Model registry and precision metadata
 ├── benchmarks/                    # Raw benchmark JSONs, plots, and analysis scripts
@@ -82,7 +82,7 @@ The project is a Pareto-frontier study rather than a single baseline-to-optimize
 │   ├── nsys/                      # Nsight Systems summaries and plots
 │   └── scripts/                   # Saved benchmark presets
 ├── metrics/                       # Per-run sampled GPU/vLLM/CPU CSV traces
-├── pages/                         # Streamlit UI pages
+├── pages/                         # NiceGUI UI pages
 ├── results/
 │   └── dashboard/                 # Static dashboard export for submission
 ├── scripts/                       # Quantization, context sweep, profiling helpers
@@ -96,19 +96,39 @@ The project is a Pareto-frontier study rather than a single baseline-to-optimize
 
 ### A. Environment Setup
 
-The original experiments were run on a shared workstation with the following observed environment in the lm-eval output artifacts: Python 3.11.14, PyTorch 2.10.0+cu128, Transformers 4.57.1, lm-eval-harness 0.4.11, Ubuntu 24.04.4, and NVIDIA driver 582.16.
+The main Python environment runs the NiceGUI app, launches vLLM/lm-eval benchmarks, and regenerates the Python analysis charts. The original experiments were run on a shared workstation with the following observed environment in the lm-eval output artifacts: Python 3.11.14, PyTorch 2.10.0+cu128, Transformers 4.57.1, lm-eval-harness 0.4.11, Ubuntu 24.04.4, and NVIDIA driver 582.16.
 
 ```bash
 git clone https://github.com/schiff6827/hpml-quant.git
 cd hpml-quant
 
-# Recommended: create a clean environment, then install the inference/eval stack.
-python3 -m venv .venv
+# Recommended: create a clean Python 3.11 environment.
+python3.11 -m venv .venv
 source .venv/bin/activate
-pip install vllm lm-eval transformers bitsandbytes huggingface_hub psutil streamlit matplotlib
+python -m pip install --upgrade pip
+
+# If needed, install the PyTorch CUDA wheel appropriate for the TA machine first.
+# See https://pytorch.org/get-started/locally/ for the exact command.
+
+python -m pip install -r requirements.txt
+
+# Optional but recommended: create local runtime configuration.
+cp .env.example .env
+# Edit `.env` if you need a different model cache path, host, or port.
 ```
 
-Full-grid reproduction requires a GPU with enough VRAM for the selected model/precision cell. The reported full matrix was run on a 96 GB GPU. Model weights are not committed to this repository.
+Full-grid reproduction requires a Linux/NVIDIA GPU environment with enough VRAM for the selected model/precision cell, plus system tools such as `nvidia-smi`. Nsight profiling additionally requires NVIDIA Nsight Systems (`nsys`) and, for real roofline analysis, Nsight Compute (`ncu`). The reported full matrix was run on a 96 GB GPU. Model weights are not committed to this repository.
+
+The static dashboard can be inspected without the GPU environment; see the next section.
+
+Runtime configuration is loaded from environment variables and, if present, a local `.env` file. Start from `.env.example`; the most important values for TA runs are:
+
+- `MODEL_CACHE_DIR` / `LOCAL_MODELS_DIR`: where Hugging Face downloads and locally quantized models are stored.
+- `APP_HOST`, `APP_PORT`, `APP_HOSTNAME`: NiceGUI bind address, port, and displayed hostname.
+- `STORAGE_SECRET`: NiceGUI storage secret; set this to any non-empty local value.
+- `VLLM_PORT_START`, `DEFAULT_GPU_MEM_UTIL`, `DEFAULT_DTYPE`: default serving settings used by the app and queue.
+
+Secrets should not be committed. Hugging Face tokens for gated models can be entered in the app under **Settings**, or exported as `HF_TOKEN` in the shell for command-line scripts.
 
 ### B. Experiment Tracking Dashboard
 
@@ -155,10 +175,10 @@ This project does not train or fine-tune models. It is an inference benchmarking
 
 ### E. Evaluation
 
-The Streamlit application can be launched with:
+The NiceGUI application can be launched with:
 
 ```bash
-streamlit run app.py
+python app.py
 ```
 
 The benchmark queue and saved presets under `benchmarks/scripts/` were used to run paired performance and quality sweeps. The key benchmark settings are documented in:
@@ -202,7 +222,7 @@ The dashboard opens to the run list. Use the Charts tab for Pareto, latency, mem
 - **Quantization moves the frontier on chatbot-shaped workloads:** On ShareGPT/GSM8K, 7B AWQ reaches 4,474 output tok/s, a 2.84x throughput gain over 7B Normal/BF16, at the cost of lower strict GSM8K accuracy.
 - **Larger quantized models can beat smaller full-precision models:** 72B AWQ reaches 0.952 GSM8K strict accuracy while staying within the 96 GB budget; 72B Normal/BF16 does not fit.
 - **The frontier depends on workload:** On random 512/256 + MMLU, 7B Normal/BF16 remains the throughput leader, while 72B BnB-NF4 is the highest-quality point.
-- **Inference is memory-bound:** The Nsight-derived achieved compute estimates are far below theoretical FP16 peak, explaining why reducing weight bytes can improve throughput even after dequantization overhead.
+- **Inference behavior is dominated by serving kernels and memory movement:** Nsight Systems profiling shows substantial time in GEMM and AWQ dequantization kernels, which helps explain why reducing weight bytes can improve throughput even after dequantization overhead.
 - **KV cache becomes increasingly important:** Weight quantization frees VRAM for longer contexts, but the KV cache remains unquantized in the main sweeps and becomes a future bottleneck at higher concurrency or longer sequences.
 
 Representative figures:

@@ -1,0 +1,33 @@
+# Main Python environment for HPML Model Manager, benchmark execution, and
+# Python chart regeneration.
+#
+# Notes:
+# - The full inference stack is intended for Linux with an NVIDIA GPU, CUDA,
+#   nvidia-smi, and vLLM support.
+# - Install a CUDA-compatible PyTorch build for the target machine before this
+#   file if pip does not select the desired GPU wheel automatically.
+
+nicegui
+openai
+requests
+psutil
+tqdm
+python-dotenv
+
+# Hugging Face / model loading
+huggingface-hub
+transformers
+accelerate
+datasets
+safetensors
+sentencepiece
+protobuf
+
+# Serving, benchmarking, evaluation, and quantization
+vllm
+lm-eval
+bitsandbytes
+llmcompressor
+
+# Analysis scripts
+matplotlib

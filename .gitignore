@@ -1,4 +1,7 @@
 __pycache__/
+.env
+.env.*
+!.env.example
 .webui_secret_key
 .nicegui/
 benchmarks/queue/
