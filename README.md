@@ -18,7 +18,7 @@
 
 - **GitHub repository:** [https://github.com/schiff6827/hpml-quant](https://github.com/schiff6827/hpml-quant)
 - **Final report:** [`deliverables/HPML_Final_Report.pdf`](deliverables/HPML_Final_Report.pdf)
-- **Final presentation:** [`deliverables/HPML_Final_Presentation.pptx`](deliverables/HPML_Final_Presentation.pptx)
+- **Final presentation:** [`deliverables/HPML_Final_Presentation.pdf`](deliverables/HPML_Final_Presentation.pptx)
 - **Experiment-tracking dashboard:** [`results/dashboard/index.html`](results/dashboard/index.html)
 
 This repository includes a static dashboard export under `results/dashboard/` because the experiment tracking artifacts are local rather than hosted on a public Wandb/MLflow/TensorBoard service.
