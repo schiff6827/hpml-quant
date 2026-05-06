@@ -164,11 +164,21 @@ if missing_csv:
 
 
 # ---------- pareto frontier ----------
-def pareto(points):
+def pareto(points, x_higher_is_better=True, y_higher_is_better=True):
     front = []
     for i, p in enumerate(points):
-        if not any((q[0] >= p[0] and q[1] >= p[1] and (q[0] > p[0] or q[1] > p[1]))
-                   for j, q in enumerate(points) if j != i):
+        dominated = False
+        for j, q in enumerate(points):
+            if j == i:
+                continue
+            x_ge = q[0] >= p[0] if x_higher_is_better else q[0] <= p[0]
+            y_ge = q[1] >= p[1] if y_higher_is_better else q[1] <= p[1]
+            x_gt = q[0] > p[0] if x_higher_is_better else q[0] < p[0]
+            y_gt = q[1] > p[1] if y_higher_is_better else q[1] < p[1]
+            if x_ge and y_ge and (x_gt or y_gt):
+                dominated = True
+                break
+        if not dominated:
             front.append(p)
     return sorted(front, key=lambda p: p[0])
 
@@ -188,7 +198,8 @@ def _nominal_size_label(r):
     return f'{m.group(1)}B' if m else ''
 
 
-def _scatter(ax, plottable, xkey, ykey, xlabel, ylabel, title, ylim=None):
+def _scatter(ax, plottable, xkey, ykey, xlabel, ylabel, title, ylim=None,
+             x_higher_is_better=True, y_higher_is_better=True):
     by_q = {}
     for r in plottable:
         by_q.setdefault(r['quantization'] or 'UNKNOWN', []).append(r)
@@ -200,7 +211,7 @@ def _scatter(ax, plottable, xkey, ykey, xlabel, ylabel, title, ylim=None):
             ax.annotate(_nominal_size_label(r), (r[xkey], r[ykey]), fontsize=9,
                         xytext=(5, 5), textcoords='offset points')
     pts = [[r[xkey], r[ykey], r['run_name']] for r in plottable]
-    front = pareto(pts)
+    front = pareto(pts, x_higher_is_better, y_higher_is_better)
     if len(front) >= 2:
         ax.plot([p[0] for p in front], [p[1] for p in front], '--', color='#888', linewidth=1.5, label='Pareto frontier', zorder=1)
     ax.set_xlabel(xlabel); ax.set_ylabel(ylabel); ax.set_title(title)
@@ -239,7 +250,8 @@ front2 = _scatter(ax2, [{**r, 'vram': r['_vram'], 'q': r['mmlu_acc']} for r in p
                   'vram', 'q',
                   'Peak GPU VRAM (GB)',
                   f'MMLU acc ({EVAL_LABEL})',
-                  'Quality vs VRAM cost - lower-left dominated, upper-left ideal', ylim=MMLU_YLIM)
+                  'Quality vs VRAM cost - lower-left dominated, upper-left ideal', ylim=MMLU_YLIM,
+                  x_higher_is_better=False)
 ax2.invert_xaxis()  # left = less VRAM = better; pareto front is upper-left
 out2 = os.path.join(GRID_DIR, 'pareto_mmlu_vs_vram.png')
 fig2.savefig(out2, dpi=140, bbox_inches='tight')
@@ -254,7 +266,8 @@ _scatter(ax3, [{**r, 'pow': r['_pow'], 'tput': r['throughput_tps']} for r in plo
          'pow', 'tput',
          'Avg GPU power (W)',
          'Throughput (output tok/s)',
-         'Throughput vs Power draw')
+         'Throughput vs Power draw',
+         x_higher_is_better=False)
 out3 = os.path.join(GRID_DIR, 'tput_vs_power.png')
 fig3.savefig(out3, dpi=140, bbox_inches='tight')
 print(f'Saved: {out3}')

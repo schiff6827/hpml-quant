@@ -307,9 +307,9 @@
       <p>Context-capacity runs are separate from the fixed 10 GiB KV-cache performance sweeps. These runs use GPU memory utilization 0.95 and read vLLM's reported GPU KV-cache token capacity.</p>
       <div class="grid">
         <figure>
-          <h3>Max Context by Cell</h3>
-          <img src="context_capacity/max_context_per_model.png" alt="Maximum context capacity by model and quantization">
-          <figcaption>Maximum KV-cache capacity per model configuration.</figcaption>
+          <h3>KV Cache Capacity by Cell</h3>
+          <img src="context_capacity/max_context_per_model.png" alt="KV-cache token capacity by model and quantization">
+          <figcaption>vLLM-reported GPU KV-cache token capacity per model configuration.</figcaption>
         </figure>
         <figure>
           <h3>Context vs. Weights</h3>
