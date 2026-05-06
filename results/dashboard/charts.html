@@ -107,6 +107,7 @@
       border: 1px solid #edf0f3;
       border-radius: 4px;
       background: white;
+      cursor: zoom-in;
     }
     figcaption {
       margin-top: 10px;
@@ -122,6 +123,54 @@
       border-radius: 4px;
       font-family: "SFMono-Regular", Consolas, monospace;
       font-size: 0.95em;
+    }
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      background: rgba(8, 14, 20, 0.86);
+    }
+    .lightbox.open {
+      display: flex;
+    }
+    .lightbox-inner {
+      width: min(96vw, 1500px);
+      max-height: 94vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 10px;
+    }
+    .lightbox-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      color: white;
+    }
+    .lightbox-title {
+      font-size: 15px;
+      color: #e8edf2;
+    }
+    .lightbox-close {
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+      font: inherit;
+      padding: 7px 10px;
+      cursor: pointer;
+    }
+    .lightbox img {
+      width: 100%;
+      max-height: calc(94vh - 48px);
+      object-fit: contain;
+      background: white;
+      border-radius: 6px;
+      cursor: zoom-out;
     }
   </style>
 </head>
@@ -302,5 +351,48 @@
       </div>
     </section>
   </main>
+  <div class="lightbox" id="lightbox" aria-modal="true" role="dialog" aria-label="Expanded chart">
+    <div class="lightbox-inner">
+      <div class="lightbox-bar">
+        <div class="lightbox-title" id="lightboxTitle">Chart</div>
+        <button class="lightbox-close" type="button" id="lightboxClose">Close</button>
+      </div>
+      <img id="lightboxImage" src="" alt="">
+    </div>
+  </div>
+  <script>
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImage = document.getElementById("lightboxImage");
+    const lightboxTitle = document.getElementById("lightboxTitle");
+    const closeButton = document.getElementById("lightboxClose");
+
+    document.querySelectorAll("figure img").forEach((img) => {
+      img.addEventListener("click", () => {
+        const figure = img.closest("figure");
+        const title = figure?.querySelector("h3")?.textContent || img.alt || "Chart";
+        lightboxImage.src = img.src;
+        lightboxImage.alt = img.alt;
+        lightboxTitle.textContent = title;
+        lightbox.classList.add("open");
+      });
+    });
+
+    function closeLightbox() {
+      lightbox.classList.remove("open");
+      lightboxImage.src = "";
+    }
+
+    closeButton.addEventListener("click", closeLightbox);
+    lightbox.addEventListener("click", (event) => {
+      if (event.target === lightbox || event.target === lightboxImage) {
+        closeLightbox();
+      }
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && lightbox.classList.contains("open")) {
+        closeLightbox();
+      }
+    });
+  </script>
 </body>
 </html>
