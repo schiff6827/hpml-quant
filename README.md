@@ -21,6 +21,24 @@
 - **Final presentation:** [`deliverables/HPML_Final_Presentation.pdf`](deliverables/HPML_Final_Presentation.pptx)
 - **Experiment-tracking dashboard:** [`results/dashboard/index.html`](results/dashboard/index.html)
 
+open locally:
+
+```bash
+open results/dashboard/index.html
+```
+
+or serve from the repository root:
+
+```bash
+python3 -m http.server 8080
+```
+
+Then visit:
+
+```text
+http://localhost:8080/results/dashboard/
+```
+
 This repository includes a static dashboard export under `results/dashboard/` because the experiment tracking artifacts are local rather than hosted on a public Wandb/MLflow/TensorBoard service.
 
 ---
